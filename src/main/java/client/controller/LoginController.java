@@ -39,28 +39,13 @@ public class LoginController {
     private void login(){
         String username = usernameField.getText();
         String password = passwordField.getText();
+
     }
 
     @FXML
     private void register(){
-//        try {
-//            // 1. Carica il file FXML della schermata di registrazione
-//            // NOTA: Inserisci il percorso corretto del tuo file. Se è nella stessa cartella, basta il nome.
-//            Parent root = FXMLLoader.load(getClass().getResource("/reregistrazione.fxml"));
-//
-//            // 2. Recupera la finestra (Stage) corrente partendo dal bottone che è stato cliccato
-//            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-//
-//            // 3. Crea una nuova scena con il contenuto appena caricato
-//            Scene scene = new Scene(root);
-//
-//            // 4. Cambia la scena sul palcoscenico e mostrala
-//            stage.setScene(scene);
-//            stage.show();
-//
-//        } catch (IOException e) {
-//            System.err.println("Errore durante il caricamento della schermata di registrazione:");
-//            e.printStackTrace();
-//       }
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/register.fxml"));
+        Parent root = loader.load();
+        Scene scene = new Scene(root);
     }
 }
