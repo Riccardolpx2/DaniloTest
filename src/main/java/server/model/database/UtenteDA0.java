@@ -4,6 +4,7 @@ import shared.model.Utente;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
@@ -37,6 +38,25 @@ public class UtenteDA0 implements DA0<Utente>{
 
     @Override
     public Utente cerca(String key) throws Exception {
+        String sql = "SELECT * FROM utenti WHERE username = ?";
+        
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setString(1, key);
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return new Utente(
+                            rs.getString("username"),
+                            rs.getString("password"),
+                            rs.getString("nome"),
+                            rs.getString("cognome"),
+                            rs.getString("data_nascita")
+                    );
+                }
+            }
+        }
         return null;
     }
 

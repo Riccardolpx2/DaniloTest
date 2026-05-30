@@ -3,6 +3,7 @@ package client.model.test;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 public class DatabaseManager {
 
@@ -24,6 +25,22 @@ public class DatabaseManager {
     public static void closeConnection() throws SQLException {//idem per chiudere
         if (conn != null && !conn.isClosed()) {
             conn.close();
+        }
+    }
+
+    public static void inizializzaDatabase() {
+        try (Connection conn = getConnection();
+             Statement stmt = conn.createStatement()) {
+            String sql = "CREATE TABLE IF NOT EXISTS utenti (" +
+                    "username TEXT PRIMARY KEY," +
+                    "password TEXT NOT NULL," +
+                    "nome TEXT NOT NULL," +
+                    "cognome TEXT NOT NULL," +
+                    "data_nascita TEXT" +
+                    ");";
+            stmt.execute(sql);
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 }
