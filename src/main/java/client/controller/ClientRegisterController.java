@@ -63,6 +63,7 @@ public class ClientRegisterController {
         try{
             DatabaseManager.inizializzaDatabase();
             ud.aggiungi(u);
+            System.out.println("Utente aggiunto al db");
         } catch(Exception e){
             e.printStackTrace();
         }

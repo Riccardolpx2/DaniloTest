@@ -46,6 +46,15 @@ public class ClientLoginController {
 
         if (u.login(ul)) {
             System.out.println("L'utente è presente");
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/playerDashboard.fxml"));
+                Parent root = loader.load();
+                Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+                Scene scene = new Scene(root);
+                stage.setScene(scene);
+            } catch(Exception e){
+                e.printStackTrace();
+            }
         } else {
             System.out.println("L'utente non è presente");
         }
