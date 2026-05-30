@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 
-public class UtenteDA0 implements DA0<Utente> {
+public class UtenteDAO implements DA0<Utente> {
 
     @Override
     public void aggiungi(Utente el) throws SQLException {
