@@ -10,6 +10,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import server.model.database.UtenteDAO;
+import shared.model.UtenteLogin;
 
 import java.io.IOException;
 
@@ -40,7 +42,15 @@ public class LoginController {
     private void login(ActionEvent event){
         String username = usernameField.getText();
         String password = passwordField.getText();
+        UtenteLogin ul = new UtenteLogin(username,password);
 
+        UtenteDAO u = new UtenteDAO();
+
+        if (u.login(ul)) {
+            System.out.println("L'utente è presente");
+        } else {
+            System.out.println("L'utente non è presente");
+        }
 
         // Da completare con il metodo per inviare al server
     }
