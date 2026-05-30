@@ -40,12 +40,19 @@ public class LoginController {
         String username = usernameField.getText();
         String password = passwordField.getText();
 
+
+        // Da completare con il metodo per inviare al server
     }
 
     @FXML
     private void register(){
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/register.fxml"));
-        Parent root = loader.load();
-        Scene scene = new Scene(root);
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/register.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) ((Node) reg.getSource()).getScene().getWindow();
+            Scene scene = new Scene(root);
+        } catch(Exception e){
+            System.out.println("Errore");
+        }
     }
 }
