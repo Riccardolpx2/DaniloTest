@@ -3,7 +3,7 @@ package server.model.database;
 import java.sql.SQLException;
 import java.util.List;
 
-public interface DA0 <T> {
+public interface DAO<T> {
 
     public void aggiungi(T el) throws SQLException;
 

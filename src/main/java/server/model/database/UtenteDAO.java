@@ -1,6 +1,7 @@
-package client.model.test;
+package server.model.database;
 
 import shared.model.Utente;
+import shared.model.UtenteLogin;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -8,10 +9,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-public class UtenteDAO implements DA0<Utente> {
+public class UtenteDAO implements DAO<Utente> {
 
     @Override
     public void aggiungi(Utente el) throws SQLException {
@@ -97,5 +97,24 @@ public class UtenteDAO implements DA0<Utente> {
             }
         }
         return utenti;
+    }
+
+    public boolean login(UtenteLogin credenziali) {
+        String sql = "SELECT password FROM utenti WHERE username = ?";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setString(1, credenziali.getUsername());
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    String passwordSalvata = rs.getString("password");
+                    return passwordSalvata.equals(credenziali.getPassword());
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

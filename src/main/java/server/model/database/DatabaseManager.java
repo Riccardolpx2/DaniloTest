@@ -3,8 +3,9 @@ package server.model.database;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 
-public class DatabaseManager {
+public class  DatabaseManager {
 
     private static final String DB_URL = "jdbc:sqlite:database.db";
     private static Connection conn;
@@ -26,4 +27,22 @@ public class DatabaseManager {
             conn.close();
         }
     }
+
+    public static void inizializzaDatabase() {
+        try (Connection conn = getConnection();
+             Statement stmt = conn.createStatement()) {
+            String sql = "CREATE TABLE IF NOT EXISTS utenti (" +
+                    "username TEXT PRIMARY KEY," +
+                    "password TEXT NOT NULL," +
+                    "nome TEXT NOT NULL," +
+                    "cognome TEXT NOT NULL," +
+                    "data_nascita TEXT" +
+                    ");";
+            stmt.execute(sql);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 }

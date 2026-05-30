@@ -1,7 +1,7 @@
 package client.controller;
 
-import client.model.test.DatabaseManager;
-import client.model.test.UtenteDAO;
+import server.model.database.DatabaseManager;
+import server.model.database.UtenteDAO;
 import javafx.fxml.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
