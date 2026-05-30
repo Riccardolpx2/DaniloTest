@@ -1,5 +1,7 @@
 package server.model.database;
 
+import shared.model.Utente;
+
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
