@@ -1,4 +1,4 @@
-package server.model.database;
+package client.model.test;
 
 import shared.model.Utente;
 
@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 
-public class UtenteDA0 implements DA0<Utente>{
+public class UtenteDA0 implements DA0<Utente> {
 
     @Override
     public void aggiungi(Utente el) throws SQLException {
