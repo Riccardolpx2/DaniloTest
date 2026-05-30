@@ -9,7 +9,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import shared.model.Utente;
 
-public class RegisterController {
+public class ClientRegisterController {
 
     @FXML
     private TextField nameField;

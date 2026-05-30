@@ -1,4 +1,4 @@
-package client;
+package server;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -8,11 +8,11 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
-public class ClientApp extends Application {
+public class ServerApp extends Application {
 
     @Override
     public void start(Stage primaryStage) throws IOException {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/clientLogin.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/serverLogin.fxml"));
         Parent root = loader.load();
         Scene scene = new Scene(root);
         primaryStage.setTitle("Login");

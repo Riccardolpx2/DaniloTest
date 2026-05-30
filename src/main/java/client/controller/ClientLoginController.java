@@ -13,9 +13,7 @@ import javafx.stage.Stage;
 import server.model.database.UtenteDAO;
 import shared.model.UtenteLogin;
 
-import java.io.IOException;
-
-public class LoginController {
+public class ClientLoginController {
 
     @FXML
     private TextField usernameField;
@@ -58,7 +56,7 @@ public class LoginController {
     @FXML
     private void register(ActionEvent event){
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/register.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/clientRegister.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             Scene scene = new Scene(root);
