@@ -34,7 +34,7 @@
                         <Insets bottom="10.0" top="10.0" />
                     </padding>
                 </Button>
-                <Button fx:id="registerButton" maxWidth="Infinity" mnemonicParsing="false" onAction="#register" style="-fx-background-color: transparent; -fx-text-fill: #ecf0f1; -fx-cursor: hand;" text="Don't have an account? Register">
+                <Button fx:id="registerButton" maxWidth="Infinity" mnemonicParsing="false" onAction="#register" style="-fx-background-color: transparent; -fx-text-fill: #3498db; -fx-cursor: hand; -fx-underline: true;" text="Don't have an account? Register">
                     <font>
                         <Font size="12.0" />
                     </font>

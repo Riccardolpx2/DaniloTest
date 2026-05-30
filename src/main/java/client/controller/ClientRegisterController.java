@@ -9,6 +9,8 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import shared.model.Utente;
 
+import java.awt.event.ActionEvent;
+
 public class ClientRegisterController {
 
     @FXML
@@ -28,6 +30,9 @@ public class ClientRegisterController {
 
     @FXML
     private Button registerButton;
+
+    @FXML
+    private Button backButton;
 
     @FXML
     private void initialize(){
@@ -61,5 +66,10 @@ public class ClientRegisterController {
         } catch(Exception e){
             e.printStackTrace();
         }
+    }
+
+    @FXML
+    private void backToLogin(){
+
     }
 }

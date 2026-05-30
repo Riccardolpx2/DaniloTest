@@ -78,5 +78,11 @@
                 <Insets top="15.0" />
             </VBox.margin>
         </Button>
+
+        <Button fx:id="backButton" mnemonicParsing="false" onAction="#backToLogin" style="-fx-background-color: transparent; -fx-text-fill: #7f8c8d; -fx-cursor: hand; -fx-underline: true;" text="Torna al Login">
+            <font>
+                <Font size="13.0" />
+            </font>
+        </Button>
     </children>
-</VBox>
+ </VBox>
