@@ -1,5 +1,6 @@
 package client.controller;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -36,7 +37,7 @@ public class LoginController {
 
 
     @FXML
-    private void login(){
+    private void login(ActionEvent event){
         String username = usernameField.getText();
         String password = passwordField.getText();
 
@@ -45,14 +46,15 @@ public class LoginController {
     }
 
     @FXML
-    private void register(){
+    private void register(ActionEvent event){
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/register.fxml"));
             Parent root = loader.load();
-            Stage stage = (Stage) ((Node) reg.getSource()).getScene().getWindow();
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             Scene scene = new Scene(root);
+            stage.setScene(scene);
         } catch(Exception e){
-            System.out.println("Errore");
+            e.printStackTrace();
         }
     }
 }

@@ -12,7 +12,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox alignment="CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.controller.RegisterController" style="-fx-background-color: #f4f6f9;">
+<VBox alignment="CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.controller.RegisterController" style="-fx-background-color: #f4f6f9;">
     <padding>
         <Insets bottom="30.0" left="40.0" right="40.0" top="30.0" />
     </padding>
@@ -67,7 +67,7 @@
             </children>
         </GridPane>
 
-        <Button fx:id="registerButton" mnemonicParsing="false" onAction="#handleRegistrazione" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand;" text="Registrati">
+        <Button fx:id="registerButton" mnemonicParsing="false" onAction="#register" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand;" text="Registrati">
             <font>
                 <Font name="System Bold" size="15.0" />
             </font>

@@ -25,4 +25,10 @@ public class RegisterController {
 
     @FXML
     private Button registerButton;
+
+    @FXML
+    private void register(){
+        // Va instanziata la classe utente che ha (nome, cognome, dataNascita, username, password) e inviata serializzata al server
+
+    }
 }
