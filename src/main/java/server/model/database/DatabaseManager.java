@@ -29,16 +29,30 @@ public class  DatabaseManager {
     }
 
     public static void inizializzaDatabase() {
+        String creaTabellaUtenti = "CREATE TABLE IF NOT EXISTS utenti (" +
+                "username TEXT PRIMARY KEY," +
+                "password TEXT NOT NULL," +
+                "nome TEXT NOT NULL," +
+                "cognome TEXT NOT NULL," +
+                "data_nascita TEXT" +
+                ");";
+
+        String creaTabellaAmministratori = "CREATE TABLE IF NOT EXISTS amministratori (" +
+                "username TEXT PRIMARY KEY," +
+                "password TEXT NOT NULL" +
+                ");";
+
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement()) {
-            String sql = "CREATE TABLE IF NOT EXISTS utenti (" +
-                    "username TEXT PRIMARY KEY," +
-                    "password TEXT NOT NULL," +
-                    "nome TEXT NOT NULL," +
-                    "cognome TEXT NOT NULL," +
-                    "data_nascita TEXT" +
-                    ");";
-            stmt.execute(sql);
+            
+
+            stmt.execute(creaTabellaUtenti);
+            System.out.println("Tabella 'utenti' creata o già esistente.");
+
+           
+            stmt.execute(creaTabellaAmministratori);
+            System.out.println("Tabella 'amministratori' creata o già esistente.");
+
         } catch (SQLException e) {
             e.printStackTrace();
         }

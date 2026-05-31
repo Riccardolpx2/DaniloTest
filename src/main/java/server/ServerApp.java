@@ -5,22 +5,49 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import server.model.database.DatabaseManager;
 
 import java.io.IOException;
 
 public class ServerApp extends Application {
 
+    // Placeholder per la futura classe che gestirà il Server Socket
+    //private SocketServer socketServer;
+
     @Override
     public void start(Stage primaryStage) throws IOException {
+
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/serverLogin.fxml"));
         Parent root = loader.load();
         Scene scene = new Scene(root);
         primaryStage.setTitle("Login");
         primaryStage.setScene(scene);
         primaryStage.show();
+
+        // TODO: Inizializzare e avviare il thread del server in ascolto sulle connessioni.
+        // Ad esempio:
+        // socketServer = new SocketServer(5000); // la porta andrà letta da file properties
+        // new Thread(socketServer).start();
+    }
+
+    @Override
+    public void stop() throws Exception {
+        // Questo metodo viene chiamato automaticamente alla chiusura della finestra dell'app.
+        System.out.println("Chiusura del server e rilascio delle risorse in corso...");
+        
+        // TODO: Arrestare il thread del Server Socket e i vari Client connessi
+        // if (socketServer != null) {
+        //     socketServer.stopServer();
+        // }
+        
+        // TODO: Aggiungere un metodo al DatabaseManager per chiudere la connessione al DB
+        // DatabaseManager.chiudiConnessione();
+        
+        super.stop();
     }
 
     public static void main(String[] args) {
+        DatabaseManager.inizializzaDatabase();
         launch();
     }
 }
