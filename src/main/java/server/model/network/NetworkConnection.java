@@ -20,25 +20,7 @@ public class NetworkConnection {
     public NetworkConnection(Consumer<Serializable> onReceive) {
         this.onReceive = onReceive;
 
-        // Lettura di IP e porta dal file di configurazione
-        try (BufferedReader br = new BufferedReader(new FileReader("src/main/java/server/server.propreties"))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] parts = line.split(":");
-                if (parts.length >= 2) {
-                    if (parts[0].trim().equals("server_ip")) {
-                        this.ip = parts[1].replace(";", "").trim();
-                    } else if (parts[0].trim().equals("server_port")) {
-                        this.port = Integer.parseInt(parts[1].replace(";", "").trim());
-                    }
-                }
-            }
-        } catch (Exception e) {
-            System.err.println("Errore durante la lettura del file properties: " + e.getMessage());
-        }
-
-        this.connection = new ConnectionThread();
-
+        // TODO: Lettura di IP e porta dal file di configurazione con java properties
 
 
     }
@@ -117,7 +99,6 @@ public class NetworkConnection {
             } catch (ClassNotFoundException ex) {
                System.out.println("arrivata classe capocchiosa");
             }
-
 
         }
 

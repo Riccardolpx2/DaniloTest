@@ -18,12 +18,12 @@ public class ServerApp extends Application {
     public void init() throws Exception {
         System.out.println("Inizializzazione risorse pre-avvio in corso...");
         
-        // TODO: Qui potrai leggere il file server.properties
+        // TODO: Leggere il file server.properties
 
         
         DatabaseManager.inizializzaDatabase();
 
-        // TODO: Demoni per le socket
+        // TODO: Daemon per le socket
 
         super.init();
     }

@@ -9,6 +9,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 import server.model.database.UtenteDAO;
 import shared.model.UtenteLogin;
@@ -57,10 +58,12 @@ public class ClientLoginController {
                 e.printStackTrace();
             }
         } else {
-            System.out.println("L'utente non è presente");
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Errore di Login");
+            alert.setHeaderText(null);
+            alert.setContentText("Username o password errati.");
+            alert.showAndWait();
         }
-
-        // Da completare con il metodo per inviare al server
     }
 
     @FXML

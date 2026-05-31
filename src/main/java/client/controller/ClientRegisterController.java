@@ -1,5 +1,10 @@
 package client.controller;
 
+import javafx.event.ActionEvent;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
 import server.model.database.DatabaseManager;
 import server.model.database.UtenteDAO;
 import javafx.fxml.*;
@@ -9,7 +14,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import shared.model.Utente;
 
-import java.awt.event.ActionEvent;
+import java.io.IOException;
 
 public class ClientRegisterController {
 
@@ -70,7 +75,16 @@ public class ClientRegisterController {
     }
 
     @FXML
-    private void backToLogin(){
+    private void backToLogin(ActionEvent event){
+        try {
+            Parent loginRoot = FXMLLoader.load(getClass().getResource("/fxml/clientLogin.fxml"));
+            Scene loginScene = new Scene(loginRoot);
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 
+            stage.setScene(loginScene);
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
