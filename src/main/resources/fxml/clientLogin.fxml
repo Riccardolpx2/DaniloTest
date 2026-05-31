@@ -13,7 +13,7 @@
         <Insets bottom="30.0" left="40.0" right="40.0" top="30.0" />
     </padding>
     <children>
-        <Label text="User Login" textFill="WHITE">
+        <Label text="Accesso Giocatore" textFill="WHITE">
             <font>
                 <Font name="System Bold" size="28.0" />
             </font>
@@ -34,7 +34,7 @@
                         <Insets bottom="10.0" top="10.0" />
                     </padding>
                 </Button>
-                <Button fx:id="registerButton" maxWidth="Infinity" mnemonicParsing="false" onAction="#register" style="-fx-background-color: transparent; -fx-text-fill: #3498db; -fx-cursor: hand; -fx-underline: true;" text="Don't have an account? Register">
+                <Button fx:id="registerButton" maxWidth="Infinity" mnemonicParsing="false" onAction="#register" style="-fx-background-color: transparent; -fx-text-fill: #3498db; -fx-cursor: hand; -fx-underline: true;" text="Non hai un account? Registati">
                     <font>
                         <Font size="12.0" />
                     </font>

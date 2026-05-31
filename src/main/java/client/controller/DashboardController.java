@@ -29,7 +29,17 @@ public class DashboardController {
     }
 
     @FXML
-    private void iniziaPartita(){
+    private void iniziaPartita(ActionEvent event){
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/game.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+        } catch(Exception e){
+            e.printStackTrace();
+        }
         System.out.println("la partita è iniziata");
     }
 

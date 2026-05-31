@@ -15,7 +15,7 @@ public class ClientApp extends Application {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/clientLogin.fxml"));
         Parent root = loader.load();
         Scene scene = new Scene(root);
-        primaryStage.setTitle("Login");
+        primaryStage.setTitle("Guess the word");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
