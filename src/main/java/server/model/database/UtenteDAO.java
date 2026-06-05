@@ -11,7 +11,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UtenteDAO implements DAO<Utente> {
+public class UtenteDAO implements DAO<Utente,String> {
 
     @Override
     public void aggiungi(Utente el) throws SQLException {
@@ -29,7 +29,7 @@ public class UtenteDAO implements DAO<Utente> {
     }
 
     @Override
-    public void rimuovi(Utente el) throws Exception {
+    public void rimuovi(Utente el) throws SQLException {
         String sql = "DELETE FROM utenti WHERE username = ?";
         
         try (Connection conn = DatabaseManager.getConnection();
@@ -40,7 +40,7 @@ public class UtenteDAO implements DAO<Utente> {
     }
 
     @Override
-    public void aggiorna(Utente el) throws Exception {
+    public void aggiorna(Utente el) throws SQLException {
         String sql = "UPDATE utenti SET password = ?, nome = ?, cognome = ?, data_nascita = ? WHERE username = ?";
         
         try (Connection conn = DatabaseManager.getConnection();
@@ -55,7 +55,7 @@ public class UtenteDAO implements DAO<Utente> {
     }
 
     @Override
-    public Utente cerca(String key) throws Exception {
+    public Utente cerca(String key) throws SQLException {
         String sql = "SELECT * FROM utenti WHERE username = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -78,7 +78,7 @@ public class UtenteDAO implements DAO<Utente> {
     }
 
     @Override
-    public List<Utente> elencaTutti() throws Exception {
+    public List<Utente> elencaTutti() throws SQLException {
         List<Utente> utenti = new ArrayList<>();
         String sql = "SELECT * FROM utenti";
         
