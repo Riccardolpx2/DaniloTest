@@ -8,7 +8,7 @@ import shared.model.Utente;
 
 /**
  *
- * @author Utente
+a * @author Utente
  */
 public class Partita {
     private int idPartita;

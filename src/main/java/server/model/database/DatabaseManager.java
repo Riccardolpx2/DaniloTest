@@ -54,10 +54,13 @@ public class  DatabaseManager {
             "idSessione INTEGER PRIMARY KEY AUTOINCREMENT," +
             "utente1 TEXT NOT NULL," +
             "utente2 TEXT NOT NULL," +
+            "vincitore TEXT,"+
+            "stato TEXT NOT NULL,"+
             "data_ora TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
             "durataSessione INTEGER DEFAULT 0," + 
             "FOREIGN KEY (utente1) REFERENCES utenti(username) ON DELETE CASCADE," +
-            "FOREIGN KEY (utente2) REFERENCES utenti(username) ON DELETE CASCADE" +
+            "FOREIGN KEY (utente2) REFERENCES utenti(username) ON DELETE CASCADE," +
+            "FOREIGN KEY (vincitore) REFERENCES utenti(username)" +
             ");";        
 
         String creaTabellaPartita = "CREATE TABLE IF NOT EXISTS partite (" +
@@ -70,8 +73,6 @@ public class  DatabaseManager {
             "parolaSoluzione TEXT NOT NULL," +
             "secondiRispostaG1 INTEGER NOT NULL," + 
             "secondiRispostaG2 INTEGER NOT NULL," + 
-            "punteggioG1 INTEGER DEFAULT 0," +  
-            "punteggioG2 INTEGER DEFAULT 0," +  
             "difficolta TEXT NOT NULL," + 
             "vincitore TEXT," +
             "FOREIGN KEY (idSessione) REFERENCES sessioni(idSessione) ON DELETE CASCADE," +

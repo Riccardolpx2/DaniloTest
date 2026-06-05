@@ -4,6 +4,7 @@
  */
 package shared.model.game;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import shared.model.Utente;
@@ -16,15 +17,28 @@ public class SessioneDiGioco {
     private int idSessione;
     private int durataSessione;
     private List<Partita> partite;
+    private LocalDateTime dataInizio;
+    
+    private int punteggioTotaleG1;
+    private int punteggioTotaleG2;
+    
+    private Utente vincitore;
     private Utente player1;
     private Utente player2;
+    
+    private String stato;
 
-    public SessioneDiGioco(int idSessione, int durataSessione, Utente player1, Utente player2) {
+    public SessioneDiGioco(int idSessione, int durataSessione, List<Partita> partite, LocalDateTime dataInizio, int punteggioTotaleG1, int punteggioTotaleG2, Utente vincitore, Utente player1, Utente player2, String stato) {
         this.idSessione = idSessione;
         this.durataSessione = durataSessione;
-        this.partite = new ArrayList<>();
+        this.partite = partite;
+        this.dataInizio = dataInizio;
+        this.punteggioTotaleG1 = punteggioTotaleG1;
+        this.punteggioTotaleG2 = punteggioTotaleG2;
+        this.vincitore = vincitore;
         this.player1 = player1;
         this.player2 = player2;
+        this.stato=stato;
     }
 
     public int getIdSessione() {
@@ -43,12 +57,44 @@ public class SessioneDiGioco {
         this.durataSessione = durataSessione;
     }
 
-    public List<Partita> getPartita() {
+    public List<Partita> getPartite() {
         return partite;
     }
 
-    public void setPartita(List<Partita> partita) {
-        this.partite = partita;
+    public void setPartite(List<Partita> partite) {
+        this.partite = partite;
+    }
+
+    public LocalDateTime getDataInizio() {
+        return dataInizio;
+    }
+
+    public void setDataInizio(LocalDateTime dataInizio) {
+        this.dataInizio = dataInizio;
+    }
+
+    public int getPunteggioTotaleG1() {
+        return punteggioTotaleG1;
+    }
+
+    public void setPunteggioTotaleG1(int punteggioTotaleG1) {
+        this.punteggioTotaleG1 = punteggioTotaleG1;
+    }
+
+    public int getPunteggioTotaleG2() {
+        return punteggioTotaleG2;
+    }
+
+    public void setPunteggioTotaleG2(int punteggioTotaleG2) {
+        this.punteggioTotaleG2 = punteggioTotaleG2;
+    }
+
+    public Utente getVincitore() {
+        return vincitore;
+    }
+
+    public void setVincitore(Utente vincitore) {
+        this.vincitore = vincitore;
     }
 
     public Utente getPlayer1() {
@@ -67,7 +113,14 @@ public class SessioneDiGioco {
         this.player2 = player2;
     }
 
-   
-    
+    public String getStato() {
+        return stato;
+    }
+
+    public void setStato(String stato) {
+        this.stato = stato;
+    }
+
+ 
     
 }
