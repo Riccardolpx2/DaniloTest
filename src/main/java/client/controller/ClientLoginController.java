@@ -12,7 +12,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 import server.model.database.UtenteDAO;
-import shared.model.UtenteLogin;
+import server.model.database.entity.UtenteLogin;
 
 public class ClientLoginController {
 
@@ -41,29 +41,8 @@ public class ClientLoginController {
     private void login(ActionEvent event){
         String username = usernameField.getText();
         String password = passwordField.getText();
-        UtenteLogin ul = new UtenteLogin(username,password);
 
-        UtenteDAO u = new UtenteDAO();
-
-
-        if (u.login(ul)) {
-            System.out.println("L'utente è presente");
-            try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/playerDashboard.fxml"));
-                Parent root = loader.load();
-                Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-                Scene scene = new Scene(root);
-                stage.setScene(scene);
-            } catch(Exception e){
-                e.printStackTrace();
-            }
-        } else {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Errore di Login");
-            alert.setHeaderText(null);
-            alert.setContentText("Username o password errati.");
-            alert.showAndWait();
-        }
+        // TODO: Connessione
     }
 
     @FXML

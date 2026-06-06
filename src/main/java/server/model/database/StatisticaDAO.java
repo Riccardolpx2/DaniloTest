@@ -6,7 +6,7 @@ package server.model.database;
 
 import java.sql.SQLException;
 import java.util.List;
-import shared.model.game.Statistica;
+import shared.game.Statistica;
 
 /**
  *

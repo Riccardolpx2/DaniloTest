@@ -2,7 +2,7 @@ package server.model.network;
 
 import server.model.network.state.AuthState;
 import server.model.network.state.ClientState;
-import shared.model.protocol.Message;
+import shared.protocol.Message;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

@@ -1,6 +1,6 @@
 package server.model.network.state;
 
-import shared.model.protocol.MessageType;
+import shared.protocol.MessageType;
 
 import java.lang.annotation.*;
 

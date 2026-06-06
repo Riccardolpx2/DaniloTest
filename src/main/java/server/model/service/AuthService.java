@@ -1,9 +1,8 @@
-package server.service;
+package server.model.service;
 
-import server.model.database.DatabaseManager;
 import server.model.database.UtenteDAO;
-import shared.model.Utente;
-import shared.model.UtenteLogin;
+import server.model.database.entity.UtenteEntity;
+import server.model.database.entity.UtenteLogin;
 
 public class AuthService {
 
@@ -18,7 +17,7 @@ public class AuthService {
     }
 
 
-    public static boolean register(Utente u){
+    public static boolean register(UtenteEntity u){
         UtenteDAO ud = new UtenteDAO();
         try{
             ud.aggiungi(u);

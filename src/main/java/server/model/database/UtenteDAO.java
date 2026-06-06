@@ -1,7 +1,6 @@
 package server.model.database;
 
-import shared.model.Utente;
-import shared.model.UtenteLogin;
+import server.model.database.entity.UtenteEntity;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -11,10 +10,10 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UtenteDAO implements DAO<Utente,String> {
+public class UtenteDAO implements DAO<UtenteEntity,String> {
 
     @Override
-    public void aggiungi(Utente el) throws SQLException {
+    public void aggiungi(UtenteEntity el) throws SQLException {
         String sql = "INSERT INTO utenti(username, password, nome, cognome, data_nascita) VALUES(?,?,?,?,?)";
 
         try (Connection conn = DatabaseManager.getConnection();
@@ -29,7 +28,7 @@ public class UtenteDAO implements DAO<Utente,String> {
     }
 
     @Override
-    public void rimuovi(Utente el) throws SQLException {
+    public void rimuovi(UtenteEntity el) throws SQLException {
         String sql = "DELETE FROM utenti WHERE username = ?";
         
         try (Connection conn = DatabaseManager.getConnection();
@@ -40,7 +39,7 @@ public class UtenteDAO implements DAO<Utente,String> {
     }
 
     @Override
-    public void aggiorna(Utente el) throws SQLException {
+    public void aggiorna(UtenteEntity el) throws SQLException {
         String sql = "UPDATE utenti SET password = ?, nome = ?, cognome = ?, data_nascita = ? WHERE username = ?";
         
         try (Connection conn = DatabaseManager.getConnection();
@@ -55,7 +54,7 @@ public class UtenteDAO implements DAO<Utente,String> {
     }
 
     @Override
-    public Utente cerca(String key) throws SQLException {
+    public UtenteEntity cerca(String key) throws SQLException {
         String sql = "SELECT * FROM utenti WHERE username = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -64,7 +63,7 @@ public class UtenteDAO implements DAO<Utente,String> {
             
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    return new Utente(
+                    return new UtenteEntity(
                             rs.getString("username"),
                             rs.getString("password"),
                             rs.getString("nome"),
@@ -78,8 +77,8 @@ public class UtenteDAO implements DAO<Utente,String> {
     }
 
     @Override
-    public List<Utente> elencaTutti() throws SQLException {
-        List<Utente> utenti = new ArrayList<>();
+    public List<UtenteEntity> elencaTutti() throws SQLException {
+        List<UtenteEntity> utenti = new ArrayList<>();
         String sql = "SELECT * FROM utenti";
         
         try (Connection conn = DatabaseManager.getConnection();
@@ -87,7 +86,7 @@ public class UtenteDAO implements DAO<Utente,String> {
              ResultSet rs = stmt.executeQuery(sql)) {
             
             while (rs.next()) {
-                utenti.add(new Utente(
+                utenti.add(new UtenteEntity(
                         rs.getString("username"),
                         rs.getString("password"),
                         rs.getString("nome"),
@@ -99,22 +98,5 @@ public class UtenteDAO implements DAO<Utente,String> {
         return utenti;
     }
 
-    public boolean login(UtenteLogin credenziali) {
-        String sql = "SELECT password FROM utenti WHERE username = ?";
-        try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
-            pstmt.setString(1, credenziali.getUsername());
-            
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    String passwordSalvata = rs.getString("password");
-                    return passwordSalvata.equals(credenziali.getPassword());
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
+
 }

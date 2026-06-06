@@ -1,8 +1,8 @@
 package server.model.network.state;
 
 import server.model.network.ClientHandler;
-import shared.model.protocol.Message;
-import shared.model.protocol.MessageType;
+import shared.protocol.Message;
+import shared.protocol.MessageType;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;

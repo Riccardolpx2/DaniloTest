@@ -1,4 +1,4 @@
-package shared.model;
+package server.model.database.entity;
 
 public class UtenteLogin {
     private String username;

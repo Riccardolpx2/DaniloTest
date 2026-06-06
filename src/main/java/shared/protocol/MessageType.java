@@ -1,4 +1,4 @@
-package shared.model.protocol;
+package shared.protocol;
 
 import java.io.Serializable;
 

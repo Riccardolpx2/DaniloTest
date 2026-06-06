@@ -2,22 +2,22 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package shared.model.game;
+package shared.game;
 
-import shared.model.Utente;
+import server.model.database.entity.UtenteEntity;
 
 /**
  *
  * @author Utente
  */
 public class Statistica {
-    private Utente player;
+    private UtenteEntity player;
     private int vittorie;
     private int sconfitte;
     private int percentualeVittorie;
     private double mediaRisposta;
 
-    public Statistica(Utente player, int vittorie, int sconfitte, int percentualeVittorie, double mediaRisposta) {
+    public Statistica(UtenteEntity player, int vittorie, int sconfitte, int percentualeVittorie, double mediaRisposta) {
         this.player = player;
         this.vittorie = vittorie;
         this.sconfitte = sconfitte;
@@ -25,11 +25,11 @@ public class Statistica {
         this.mediaRisposta = mediaRisposta;
     }
     
-    public Utente getPlayer() {
+    public UtenteEntity getPlayer() {
         return player;
     }
 
-    public void setPlayer(Utente player) {
+    public void setPlayer(UtenteEntity player) {
         this.player = player;
     }
 

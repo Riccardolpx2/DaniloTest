@@ -1,4 +1,4 @@
-package shared.model.protocol.payload;
+package shared.protocol.DTO;
 
 public class LoginDTO {
     private String username;

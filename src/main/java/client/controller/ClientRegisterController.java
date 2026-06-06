@@ -12,7 +12,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import shared.model.Utente;
+import server.model.database.entity.UtenteEntity;
 import java.time.LocalDate;
 
 import java.io.IOException;
@@ -63,7 +63,7 @@ public class ClientRegisterController {
         String password = passwordField.getText();
         LocalDate dataNascita = birthdate.getValue();
 
-        Utente u = new Utente(username,password,nome,cognome,dataNascita.toString());
+        UtenteEntity u = new UtenteEntity(username,password,nome,cognome,dataNascita.toString());
 
         UtenteDAO ud = new UtenteDAO();
         try{

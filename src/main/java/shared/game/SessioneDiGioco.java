@@ -2,12 +2,11 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package shared.model.game;
+package shared.game;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import shared.model.Utente;
+import server.model.database.entity.UtenteEntity;
 
 /**
  *
@@ -22,13 +21,13 @@ public class SessioneDiGioco {
     private int punteggioTotaleG1;
     private int punteggioTotaleG2;
     
-    private Utente vincitore;
-    private Utente player1;
-    private Utente player2;
+    private UtenteEntity vincitore;
+    private UtenteEntity player1;
+    private UtenteEntity player2;
     
     private String stato;
 
-    public SessioneDiGioco(int idSessione, int durataSessione, List<Partita> partite, LocalDateTime dataInizio, int punteggioTotaleG1, int punteggioTotaleG2, Utente vincitore, Utente player1, Utente player2, String stato) {
+    public SessioneDiGioco(int idSessione, int durataSessione, List<Partita> partite, LocalDateTime dataInizio, int punteggioTotaleG1, int punteggioTotaleG2, UtenteEntity vincitore, UtenteEntity player1, UtenteEntity player2, String stato) {
         this.idSessione = idSessione;
         this.durataSessione = durataSessione;
         this.partite = partite;
@@ -89,27 +88,27 @@ public class SessioneDiGioco {
         this.punteggioTotaleG2 = punteggioTotaleG2;
     }
 
-    public Utente getVincitore() {
+    public UtenteEntity getVincitore() {
         return vincitore;
     }
 
-    public void setVincitore(Utente vincitore) {
+    public void setVincitore(UtenteEntity vincitore) {
         this.vincitore = vincitore;
     }
 
-    public Utente getPlayer1() {
+    public UtenteEntity getPlayer1() {
         return player1;
     }
 
-    public void setPlayer1(Utente player1) {
+    public void setPlayer1(UtenteEntity player1) {
         this.player1 = player1;
     }
 
-    public Utente getPlayer2() {
+    public UtenteEntity getPlayer2() {
         return player2;
     }
 
-    public void setPlayer2(Utente player2) {
+    public void setPlayer2(UtenteEntity player2) {
         this.player2 = player2;
     }
 

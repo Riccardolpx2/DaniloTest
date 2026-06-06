@@ -2,9 +2,9 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package shared.model.game;
+package shared.game;
 
-import shared.model.Utente;
+import server.model.database.entity.UtenteEntity;
 
 /**
  *
@@ -22,10 +22,10 @@ public class Partita {
     private int punteggioG1;
     private int punteggioG2;
     private String difficolta;
-    private Utente vincitore;
+    private UtenteEntity vincitore;
     private Documento documento;
 
-    public Partita(int idPartita, int idSessione, int offsetInizio, int lunghezza, int shiftCesare, String parolaSoluzione, int secondiRispostaG1, int secondiRispostaG2, int punteggioG1, int punteggioG2, String difficolta, Utente vincitore, Documento documento) {
+    public Partita(int idPartita, int idSessione, int offsetInizio, int lunghezza, int shiftCesare, String parolaSoluzione, int secondiRispostaG1, int secondiRispostaG2, int punteggioG1, int punteggioG2, String difficolta, UtenteEntity vincitore, Documento documento) {
         this.idPartita = idPartita;
         this.idSessione = idSessione;
         this.offsetInizio = offsetInizio;
@@ -131,11 +131,11 @@ public class Partita {
         this.difficolta = difficolta;
     }
 
-    public Utente getVincitore() {
+    public UtenteEntity getVincitore() {
         return vincitore;
     }
 
-    public void setVincitore(Utente vincitore) {
+    public void setVincitore(UtenteEntity vincitore) {
         this.vincitore = vincitore;
     }
 

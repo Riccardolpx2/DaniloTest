@@ -1,9 +1,10 @@
 package server.model.network.state;
 
+import server.model.database.UtenteDAO;
 import server.model.network.ClientHandler;
-import shared.model.protocol.Message;
-import shared.model.protocol.MessageType;
-import shared.model.protocol.payload.LoginDTO;
+import shared.protocol.Message;
+import shared.protocol.MessageType;
+import shared.protocol.DTO.LoginDTO;
 
 public class AuthState extends ClientState{
 
@@ -14,7 +15,7 @@ public class AuthState extends ClientState{
         String username = payload.getUsername();
         String password = payload.getPassword();
 
-
+        UtenteDAO u = new UtenteDAO()
 
     }
 

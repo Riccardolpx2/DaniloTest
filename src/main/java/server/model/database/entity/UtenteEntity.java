@@ -1,13 +1,13 @@
-package shared.model;
+package server.model.database.entity;
 
-public class Utente {
+public class UtenteEntity {
     private String username;
     private String password;
     private String nome;
     private String cognome;
     private String dataNascita;
 
-    public Utente(String username, String password, String nome, String cognome, String dataNascita) {
+    public UtenteEntity(String username, String password, String nome, String cognome, String dataNascita) {
         this.username = username;
         this.password = password;
         this.nome = nome;
