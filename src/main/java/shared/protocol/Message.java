@@ -15,7 +15,7 @@ public class Message implements Serializable {
     }
 
     // Questo viene utilizzato dal server
-    public Message(MessageType msgTyp, Object payload){
+    public Message(MessageType msgType, Object payload){
         this.msgType = msgType;
         this.payload = payload;
     }

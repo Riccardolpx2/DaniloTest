@@ -29,6 +29,8 @@ public class AuthState extends ClientState{
 
         try {
             if (authService.login(username, password)){
+                // Serve per cambiare lo stato
+                clientHandler.setCurrentState(new DashboardState());
                 clientHandler.getOut().writeObject(new Message(MessageType.loginSuccess, null));
             } else {
                 clientHandler.getOut().writeObject(new Message(MessageType.loginFailure, "Username o Password errati"));

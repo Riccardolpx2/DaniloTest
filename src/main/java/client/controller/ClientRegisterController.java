@@ -5,8 +5,6 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import server.model.database.DatabaseManager;
-import server.model.database.UtenteDAO;
 import javafx.fxml.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
@@ -14,6 +12,9 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import server.model.database.entity.UtenteEntity;
 import java.time.LocalDate;
+import shared.protocol.DTO.RegisterDTO;
+import shared.protocol.Message;
+import shared.protocol.MessageType;
 
 import java.io.IOException;
 
@@ -63,16 +64,11 @@ public class ClientRegisterController {
         String password = passwordField.getText();
         LocalDate dataNascita = birthdate.getValue();
 
-        UtenteEntity u = new UtenteEntity(username,password,nome,cognome,dataNascita.toString());
-
-        UtenteDAO ud = new UtenteDAO();
-        try{
-            DatabaseManager.inizializzaDatabase();
-            ud.aggiungi(u);
-            System.out.println("Utente aggiunto al db");
-        } catch(Exception e){
-            e.printStackTrace();
-        }
+        RegisterDTO registerPayload = new RegisterDTO(username, password, nome, cognome, dataNascita.toString());
+        Message msg = new Message(MessageType.register, username, registerPayload);
+        
+        // TODO: Invia msg tramite la classe che gestisce il Socket lato client
+        System.out.println("Pronto per l'invio del messaggio di tipo: " + msg.getMsgType());
     }
 
     @FXML

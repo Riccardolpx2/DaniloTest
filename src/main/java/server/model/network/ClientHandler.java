@@ -51,6 +51,10 @@ public class ClientHandler implements Runnable{
         return currentState;
     }
 
+    public void setCurrentState(ClientState currentState) {
+        this.currentState = currentState;
+    }
+
     public ObjectInputStream getIn() {
         return in;
     }
