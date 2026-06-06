@@ -6,6 +6,8 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import server.model.database.DatabaseManager;
+import server.model.network.ServerListener;
+import server.model.network.state.ClientState;
 
 import java.io.IOException;
 
@@ -24,6 +26,15 @@ public class ServerApp extends Application {
         DatabaseManager.inizializzaDatabase();
 
         // TODO: Daemon per le socket
+
+        ServerListener serverListener = new ServerListener(9090);
+
+        Thread thread = new Thread(serverListener);
+
+        thread.setDaemon(true);
+        thread.start();
+
+        ClientState.inizializzaRoutingServer();
 
         super.init();
     }

@@ -1,6 +1,8 @@
 package shared.protocol.DTO;
 
-public class RegisterDTO {
+import java.io.Serializable;
+
+public class RegisterDTO implements Serializable {
     private String username;
     private String password;
     private String nome;

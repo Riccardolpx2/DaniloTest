@@ -1,6 +1,8 @@
 package shared.protocol.DTO;
 
-public class LoginDTO {
+import java.io.Serializable;
+
+public class LoginDTO implements Serializable {
     private String username;
     private String password;
 

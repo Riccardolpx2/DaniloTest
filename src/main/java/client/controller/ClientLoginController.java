@@ -10,6 +10,12 @@ import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import shared.protocol.DTO.LoginDTO;
+import shared.protocol.Message;
+import shared.protocol.MessageType;
+
+import java.io.*;
+import java.net.Socket;
 
 public class ClientLoginController {
 
@@ -35,11 +41,23 @@ public class ClientLoginController {
 
 
     @FXML
-    private void login(ActionEvent event){
+    private void login(ActionEvent event) throws IOException, ClassNotFoundException {
         String username = usernameField.getText();
         String password = passwordField.getText();
 
-        // TODO: Connessione
+
+        // Scrivo giusto per fare un test
+        Socket socket = new Socket("127.0.0.1", 9090);
+        ObjectOutputStream OOS = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+        OOS.flush();
+        ObjectInputStream OIS = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
+
+
+        OOS.writeObject(new Message(MessageType.login, new LoginDTO(username, password)));
+        OOS.flush();
+        Message m = (Message) OIS.readObject();
+        System.out.println(m.getMsgType());
+        // *********************************
     }
 
     @FXML

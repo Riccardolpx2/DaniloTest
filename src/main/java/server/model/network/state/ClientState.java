@@ -45,6 +45,8 @@ public abstract class ClientState {
                     throw new IllegalStateException("Errore: Il tipo messaggio " + tipoMessaggio +
                             " è già mappato su un metodo nella classe " + classe.getSimpleName());
                 }
+                
+                metodo.setAccessible(true); // Rende i metodi privati invocabili tramite reflection
                 localMap.put(tipoMessaggio, metodo);
             }
         }
