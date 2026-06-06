@@ -15,7 +15,7 @@ public enum MessageType implements Serializable {
     registerError,
 
 
-    // --------- Messaggi di lobby ---------
+    // --------- Messaggi di Dashboard ---------
 
     // Il client lo invia quando cerca una partita
     gameSearch,

@@ -39,9 +39,9 @@ public class ServerApp extends Application {
         primaryStage.show();
 
         // TODO: Inizializzare e avviare il thread del server in ascolto sulle connessioni.
-        // Ad esempio:
+
         // socketServer = new SocketServer(5000); // la porta andrà letta da file properties
-        // new Thread(socketServer).start();
+
     }
 
     @Override
@@ -55,13 +55,11 @@ public class ServerApp extends Application {
         // }
         
         // TODO: Aggiungere un metodo al DatabaseManager per chiudere la connessione al DB
-        // DatabaseManager.chiudiConnessione();
         
         super.stop();
     }
 
     public static void main(String[] args) {
-        // Il main dovrebbe occuparsi solo di lanciare l'applicazione JavaFX
         launch();
     }
 }

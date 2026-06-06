@@ -13,6 +13,7 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import shared.model.Utente;
+import java.time.LocalDate;
 
 import java.io.IOException;
 
@@ -60,7 +61,7 @@ public class ClientRegisterController {
         String cognome = surnameField.getText();
         String username = usernameField.getText();
         String password = passwordField.getText();
-        java.time.LocalDate dataNascita = birthdate.getValue();
+        LocalDate dataNascita = birthdate.getValue();
 
         Utente u = new Utente(username,password,nome,cognome,dataNascita.toString());
 
