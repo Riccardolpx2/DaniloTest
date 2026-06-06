@@ -7,9 +7,16 @@ public class Message implements Serializable {
     private String playerID; //username
     private Object payload;
 
+    // Questo viene utilizzato dal client
     public Message(MessageType msgType, String playerID, Object payload) {
         this.msgType = msgType;
         this.playerID = playerID;
+        this.payload = payload;
+    }
+
+    // Questo viene utilizzato dal server
+    public Message(MessageType msgTyp, Object payload){
+        this.msgType = msgType;
         this.payload = payload;
     }
 

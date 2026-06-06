@@ -8,11 +8,11 @@ public enum MessageType implements Serializable {
 
     login,
     loginSuccess,
-    loginError,
+    loginFailure,
 
     register,
     registerSuccess,
-    registerError,
+    registerFailure,
 
 
     // --------- Messaggi di Dashboard ---------
