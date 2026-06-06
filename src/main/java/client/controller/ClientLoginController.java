@@ -47,7 +47,7 @@ public class ClientLoginController {
 
 
         // Scrivo giusto per fare un test
-        Socket socket = new Socket("127.0.0.1", 9090);
+        Socket socket = new Socket("127.0.0.1", 5000);
         ObjectOutputStream OOS = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
         OOS.flush();
         ObjectInputStream OIS = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
