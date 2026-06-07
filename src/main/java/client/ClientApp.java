@@ -27,7 +27,7 @@ public class ClientApp extends Application {
         Properties prop = new Properties();
         String filename = "client.properties";
 
-        try (InputStream input = ServerApp.class.getClassLoader().getResourceAsStream(filename)) {
+        try (InputStream input = ClientApp.class.getClassLoader().getResourceAsStream(filename)) {
 
             if (input == null) {
                 System.out.println("Il file di configurazione non è stato trovato " + filename);
