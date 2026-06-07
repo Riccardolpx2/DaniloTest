@@ -10,6 +10,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import shared.gui.util.SceneManager;
 import shared.protocol.DTO.LoginDTO;
 import shared.protocol.Message;
 import shared.protocol.MessageType;
@@ -62,14 +63,6 @@ public class ClientLoginController {
 
     @FXML
     private void register(ActionEvent event){
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/clientRegister.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-        } catch(Exception e){
-            e.printStackTrace();
-        }
+        SceneManager.switchScene(event, "/fxml/clienRegister.fxml");
     }
 }
