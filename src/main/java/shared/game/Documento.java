@@ -10,14 +10,14 @@ package shared.game;
  * @author Utente
  */
 public class Documento {
-    private int id;
+    private int idDocumento;
     private String nome;
     private String testo;
 
-    public Documento(int id, String nome, String testo) {
-        this.id = id;
+    public Documento(int idDocumento, String nome, String testo) {
+        this.idDocumento = idDocumento;
         this.nome = nome;
-        this.testo=testo;
+        this.testo = testo;
     }
     
 
@@ -29,12 +29,12 @@ public class Documento {
         this.nome = nome;
     }
 
-    public int getId() {
-        return id;
+    public int getIdDocumento() {
+        return idDocumento;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setIdDocumento(int idDocumento) {
+        this.idDocumento = idDocumento;
     }
 
     public String getTesto() {

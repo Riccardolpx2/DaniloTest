@@ -24,6 +24,9 @@ public class UtenteDAO implements DAO<UtenteEntity,String> {
             pstmt.setString(4, el.getCognome());
             pstmt.setString(5, el.getDataNascita());
             pstmt.executeUpdate();
+        }catch (SQLException e) {
+            System.out.println(e.getMessage());
+            throw e;
         }
     }
 
@@ -35,6 +38,9 @@ public class UtenteDAO implements DAO<UtenteEntity,String> {
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, el.getUsername());
             pstmt.executeUpdate();
+        }catch (SQLException e) {
+            System.out.println(e.getMessage());
+            throw e;
         }
     }
 
@@ -50,6 +56,9 @@ public class UtenteDAO implements DAO<UtenteEntity,String> {
             pstmt.setString(4, el.getDataNascita());
             pstmt.setString(5, el.getUsername());
             pstmt.executeUpdate();
+        }catch (SQLException e) {
+            System.out.println(e.getMessage());
+            throw e;
         }
     }
 
@@ -72,6 +81,9 @@ public class UtenteDAO implements DAO<UtenteEntity,String> {
                     );
                 }
             }
+        }catch (SQLException e) {
+            System.out.println(e.getMessage());
+            throw e;
         }
         return null;
     }
@@ -94,6 +106,9 @@ public class UtenteDAO implements DAO<UtenteEntity,String> {
                         rs.getString("data_nascita")
                 ));
             }
+        }catch (SQLException e) {
+            System.out.println(e.getMessage());
+            throw e;
         }
         return utenti;
     }

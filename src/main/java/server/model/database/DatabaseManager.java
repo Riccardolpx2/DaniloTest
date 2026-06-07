@@ -37,7 +37,7 @@ public class  DatabaseManager {
                 ");";
         
         String creaTabellaDocumenti = "CREATE TABLE IF NOT EXISTS documenti (" +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "idDocumento INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "nome TEXT NOT NULL, " +
                 "testo TEXT NOT NULL" +
                 ");";
@@ -49,7 +49,9 @@ public class  DatabaseManager {
             "vincitore TEXT,"+
             "stato TEXT NOT NULL,"+
             "data_ora TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
-            "durataSessione INTEGER DEFAULT 0," + 
+            "durataSessione INTEGER DEFAULT 0," +
+            "punteggioG1 INTEGER DEFAULT 0," +
+            "punteggioG2 INTEGER DEFAULT 0," + 
             "FOREIGN KEY (utente1) REFERENCES utenti(username) ON DELETE CASCADE," +
             "FOREIGN KEY (utente2) REFERENCES utenti(username) ON DELETE CASCADE," +
             "FOREIGN KEY (vincitore) REFERENCES utenti(username)" +
@@ -59,7 +61,7 @@ public class  DatabaseManager {
             "idPartita INTEGER PRIMARY KEY AUTOINCREMENT," +
             "idSessione INTEGER NOT NULL," +
             "idDocumento INTEGER NOT NULL, " +
-            "offsetInizio INTEGER NOT NULL," +
+            "offsetIniziale INTEGER NOT NULL," +
             "lunghezza INTEGER NOT NULL," +
             "shiftCesare INTEGER NOT NULL," +
             "parolaSoluzione TEXT NOT NULL," +
@@ -68,7 +70,7 @@ public class  DatabaseManager {
             "difficolta TEXT NOT NULL," + 
             "vincitore TEXT," +
             "FOREIGN KEY (idSessione) REFERENCES sessioni(idSessione) ON DELETE CASCADE," +
-            "FOREIGN KEY (idDocumento) REFERENCES documenti(id) ON DELETE CASCADE," +
+            "FOREIGN KEY (idDocumento) REFERENCES documenti(idDocumento) ON DELETE CASCADE," +
             "FOREIGN KEY (vincitore) REFERENCES utenti(username)" +
             ");";
         
@@ -76,9 +78,15 @@ public class  DatabaseManager {
                 "username TEXT PRIMARY KEY, " + 
                 "vittorie INTEGER DEFAULT 0, " +
                 "sconfitte INTEGER DEFAULT 0, " +
-                "percentualeRisposte INTEGER DEFAULT 0,"+
+                "percentualeVittorie INTEGER DEFAULT 0,"+
                 "mediaRisposta REAL DEFAULT 0.0, " + 
                 "FOREIGN KEY (username) REFERENCES utenti(username) ON DELETE CASCADE" +
+                ");";
+        
+            String creaTabellaAnalisi = "CREATE TABLE IF NOT EXISTS analisi_testi (" +
+                "idDocumento INTEGER PRIMARY KEY," + 
+                "dati_serializzati BLOB NOT NULL," +
+                "FOREIGN KEY (idDocumento) REFERENCES documenti(idDocumento) ON DELETE CASCADE" +
                 ");";
         
         try (Connection conn = getConnection();
@@ -101,6 +109,9 @@ public class  DatabaseManager {
             
             stmt.execute(creaTabellaStatistiche);
             System.out.println("Tabella 'statistiche' creata o già esistente.");
+            
+            stmt.execute(creaTabellaAnalisi);
+            System.out.println("Tabella 'analisi_testi' creata o già esistente.");
             
             System.out.println("-> Database inizializzato con successo!");
             

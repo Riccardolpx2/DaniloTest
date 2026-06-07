@@ -5,6 +5,7 @@
 package shared.game;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import server.model.database.entity.UtenteEntity;
 
@@ -30,7 +31,7 @@ public class SessioneDiGioco {
     public SessioneDiGioco(int idSessione, int durataSessione, List<Partita> partite, LocalDateTime dataInizio, int punteggioTotaleG1, int punteggioTotaleG2, UtenteEntity vincitore, UtenteEntity player1, UtenteEntity player2, String stato) {
         this.idSessione = idSessione;
         this.durataSessione = durataSessione;
-        this.partite = partite;
+        this.partite = (partite != null) ? partite : new ArrayList<>();
         this.dataInizio = dataInizio;
         this.punteggioTotaleG1 = punteggioTotaleG1;
         this.punteggioTotaleG2 = punteggioTotaleG2;
@@ -120,6 +121,17 @@ public class SessioneDiGioco {
         this.stato = stato;
     }
 
- 
+    public void aggiungiPartita(Partita p) {
+        if (p != null) {
+            this.partite.add(p);
+        }
+    }
     
+    public void incrementaPunteggioG1(int punti) {
+    this.punteggioTotaleG1 += punti;
+    }
+
+    public void incrementaPunteggioG2(int punti) {
+    this.punteggioTotaleG2 += punti;
+    }
 }

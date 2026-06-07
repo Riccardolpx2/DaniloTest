@@ -32,32 +32,35 @@ public class DocumentoDAO implements DAO<Documento,Integer>{
 
         try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
             if (generatedKeys.next()) {
-                d.setId(generatedKeys.getInt(1));
+                d.setIdDocumento(generatedKeys.getInt(1));
             }
         }
-        System.out.println("Documento '" + d.getNome() + "' inserito con successo con ID: " + d.getId());
+        System.out.println("Documento '" + d.getNome() + "' inserito con successo con ID: " + d.getIdDocumento());
     } catch (SQLException e) {
         System.out.println(e.getMessage());
+        throw e;
+        
     }
     }
     
 
     @Override
     public void rimuovi(Documento d) throws SQLException{
-    String sql = "DELETE FROM documenti WHERE id = ?;";
+    String sql = "DELETE FROM documenti WHERE idDocumento = ?;";
     
     try (Connection conn = DatabaseManager.getConnection();
             PreparedStatement pstmt = conn.prepareStatement(sql)){
             
-    pstmt.setInt(1, d.getId());
+    pstmt.setInt(1, d.getIdDocumento());
     
     int righeEliminate = pstmt.executeUpdate();
     
-    if(righeEliminate > 0) System.out.println("Documento (id: " + d.getId() + " ) e tutte le sue parole-frequenze eliminate a cascata con successo!");
-    else System.out.println("Nessun documento trovato con ID: " + d.getId());
+    if(righeEliminate > 0) System.out.println("Documento (id: " + d.getIdDocumento() + " ) eliminato con successo!");
+    else System.out.println("Nessun documento trovato con ID: " + d.getIdDocumento());
         
             }catch(SQLException e){
             System.out.println(e.getMessage());
+            throw e;
             }
     }
 
@@ -68,7 +71,7 @@ public class DocumentoDAO implements DAO<Documento,Integer>{
 
     @Override
     public Documento cerca(Integer key) throws SQLException{
-    String sqlDoc = "SELECT id, nome, testo FROM documenti WHERE id = ?;";
+    String sqlDoc = "SELECT idDocumento, nome, testo FROM documenti WHERE idDocumento = ?;";
     Documento doc = null;
     try (Connection conn = DatabaseManager.getConnection();
         PreparedStatement pstmtDoc = conn.prepareStatement(sqlDoc)) {      
@@ -76,7 +79,7 @@ public class DocumentoDAO implements DAO<Documento,Integer>{
         
         try (ResultSet rsDoc = pstmtDoc.executeQuery()) {
             if (rsDoc.next()) {
-                int id = rsDoc.getInt("id");
+                int id = rsDoc.getInt("idDocumento");
                 String nome = rsDoc.getString("nome");
                 String testo = rsDoc.getString("testo");
 
@@ -85,13 +88,14 @@ public class DocumentoDAO implements DAO<Documento,Integer>{
         }
     } catch (SQLException e) {
         System.out.println(e.getMessage());
+        throw e;
     }
     return doc;
     }
    
     @Override
     public List<Documento> elencaTutti() throws SQLException{
-    String sql = "SELECT id, nome, testo FROM documenti;";
+    String sql = "SELECT idDocumento, nome, testo FROM documenti;";
     List<Documento> listaDocumenti = new ArrayList<>();
 
     try (Connection conn = DatabaseManager.getConnection();
@@ -99,7 +103,7 @@ public class DocumentoDAO implements DAO<Documento,Integer>{
          ResultSet rs = pstmt.executeQuery()) {
 
         while (rs.next()) {
-            int id = rs.getInt("id");
+            int id = rs.getInt("idDocumento");
             String nome = rs.getString("nome");
             String testo = rs.getString("testo");
 
@@ -108,6 +112,7 @@ public class DocumentoDAO implements DAO<Documento,Integer>{
         }
     } catch (SQLException e) {
         System.out.println(e.getMessage());
+        throw e;
     }
     return listaDocumenti;
     }    

@@ -13,29 +13,28 @@ a * @author Utente
 public class Partita {
     private int idPartita;
     private int idSessione;
-    private int offsetInizio;
+    private int offsetIniziale;
     private int lunghezza;
     private int shiftCesare;
     private String parolaSoluzione;
     private int secondiRispostaG1;
     private int secondiRispostaG2;
-    private int punteggioG1;
-    private int punteggioG2;
+
     private String difficolta;
     private UtenteEntity vincitore;
     private Documento documento;
 
-    public Partita(int idPartita, int idSessione, int offsetInizio, int lunghezza, int shiftCesare, String parolaSoluzione, int secondiRispostaG1, int secondiRispostaG2, int punteggioG1, int punteggioG2, String difficolta, UtenteEntity vincitore, Documento documento) {
+    public Partita(int idPartita, int idSessione, int offsetIniziale, int lunghezza, int shiftCesare, 
+            String parolaSoluzione, int secondiRispostaG1, int secondiRispostaG2, String difficolta, UtenteEntity vincitore, Documento documento) {
         this.idPartita = idPartita;
         this.idSessione = idSessione;
-        this.offsetInizio = offsetInizio;
+        this.offsetIniziale = offsetIniziale;
         this.lunghezza = lunghezza;
         this.shiftCesare = shiftCesare;
         this.parolaSoluzione = parolaSoluzione;
         this.secondiRispostaG1 = secondiRispostaG1;
         this.secondiRispostaG2 = secondiRispostaG2;
-        this.punteggioG1 = punteggioG1;
-        this.punteggioG2 = punteggioG2;
+
         this.difficolta = difficolta;
         this.vincitore = vincitore;
         this.documento = documento;
@@ -59,12 +58,12 @@ public class Partita {
         this.idSessione = idSessione;
     }
 
-    public int getOffsetInizio() {
-        return offsetInizio;
+    public int getOffsetIniziale() {
+        return offsetIniziale;
     }
 
-    public void setOffsetInizio(int offsetInizio) {
-        this.offsetInizio = offsetInizio;
+    public void setOffsetIniziale(int offsetIniziale) {
+        this.offsetIniziale = offsetIniziale;
     }
 
     public int getLunghezza() {
@@ -105,22 +104,6 @@ public class Partita {
 
     public void setSecondiRispostaG2(int secondiRispostaG2) {
         this.secondiRispostaG2 = secondiRispostaG2;
-    }
-
-    public int getPunteggioG1() {
-        return punteggioG1;
-    }
-
-    public void setPunteggioG1(int punteggioG1) {
-        this.punteggioG1 = punteggioG1;
-    }
-
-    public int getPunteggioG2() {
-        return punteggioG2;
-    }
-
-    public void setPunteggioG2(int punteggioG2) {
-        this.punteggioG2 = punteggioG2;
     }
 
     public String getDifficolta() {
