@@ -1,13 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ListView?>
-<?import javafx.scene.effect.InnerShadow?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.paint.Color?>
 <?import javafx.scene.text.Font?>
 
 <VBox alignment="CENTER" prefHeight="400.0" prefWidth="600.0" spacing="20.0" style="-fx-background-color: #2c3e50;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.controller.DashboardController">
@@ -24,19 +20,7 @@
             </VBox.margin>
         </Label>
 
-        <ListView fx:id="listadash" maxWidth="300.0" prefHeight="200.0" style="-fx-background-radius: 5;">
-         <effect>
-            <InnerShadow choke="0.27">
-               <color>
-                  <Color red="0.8157894611358643" green="0.11330409348011017" blue="0.11330409348011017" />
-               </color>
-            </InnerShadow>
-         </effect>
-         <cursor>
-            <Cursor fx:constant="DEFAULT" />
-         </cursor></ListView>
-
-        <Button fx:id="startButton" maxWidth="300.0" mnemonicParsing="false" onAction="#iniziaPartita" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand;" text="Inizia Partita">
+        <Button fx:id="startButton" maxWidth="300.0" mnemonicParsing="false" onAction="#viewStatistiche" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand;" text="Visualizza Statistiche">
             <font>
                 <Font name="System Bold" size="14.0" />
             </font>
@@ -44,5 +28,13 @@
                 <Insets bottom="10.0" top="10.0" />
             </padding>
         </Button>
+      <Button fx:id="startButton1" maxWidth="300.0" mnemonicParsing="false" onAction="#iniziaPartita" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand;" text="Inizia Partita">
+         <font>
+            <Font name="System Bold" size="14.0" />
+         </font>
+         <padding>
+            <Insets bottom="10.0" top="10.0" />
+         </padding>
+      </Button>
     </children>
 </VBox>

@@ -12,6 +12,8 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import server.model.database.entity.UtenteEntity;
 import java.time.LocalDate;
+
+import shared.gui.util.SceneManager;
 import shared.protocol.DTO.RegisterDTO;
 import shared.protocol.Message;
 import shared.protocol.MessageType;
@@ -73,15 +75,6 @@ public class ClientRegisterController {
 
     @FXML
     private void backToLogin(ActionEvent event){
-        try {
-            Parent loginRoot = FXMLLoader.load(getClass().getResource("/fxml/clientLogin.fxml"));
-            Scene loginScene = new Scene(loginRoot);
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-
-            stage.setScene(loginScene);
-            stage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        SceneManager.switchScene(event, "/fxml/clientLogin.fxml");
     }
 }
