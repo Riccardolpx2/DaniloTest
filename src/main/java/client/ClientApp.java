@@ -69,6 +69,24 @@ public class ClientApp extends Application {
         primaryStage.show();
     }
 
+
+    /*
+    Chiusura delle risorse impiegate dal client
+     */
+    @Override
+    public void stop() throws Exception {
+
+        System.out.println("Chiusura del cient e relative risorse in corso attendere...");
+
+        if(connectionHandlerThread != null){
+            connectionHandlerThread.interrupt();
+        }
+
+
+        super.stop();
+    }
+
+
     public static void main(String[] args) {
         launch();
     }
