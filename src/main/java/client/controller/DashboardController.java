@@ -31,4 +31,14 @@ public class DashboardController {
     }
 
 
+    @FXML
+    private void viewStatistiche(){
+        // Da fare
+    }
+
+    @FXML
+    private void iniziaPartita(){
+        // anche questo da fare
+    }
+
 }

@@ -21,8 +21,20 @@ public class ClientApp extends Application {
     String ip_addr;
     String vers;
 
+    private static ClientApp instance;
+
+    public static ClientApp getInstance() {
+        return instance;
+    }
+
+    public ConnectionHandler getConnectionHandler() {
+        return connectionHandler;
+    }
+
     @Override
     public  void init() throws Exception{
+
+        instance = this;
 
         Properties prop = new Properties();
         String filename = "client.properties";

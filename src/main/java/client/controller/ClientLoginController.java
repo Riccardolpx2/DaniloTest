@@ -1,5 +1,9 @@
 package client.controller;
 
+import client.ClientApp;
+import client.network.ConnectionHandler;
+import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -20,6 +24,8 @@ import java.net.Socket;
 
 public class ClientLoginController {
 
+    private ConnectionHandler connectionHandler;
+
     @FXML
     private TextField usernameField;
 
@@ -38,6 +44,29 @@ public class ClientLoginController {
                 usernameField.textProperty().isEmpty().or(
                         passwordField.textProperty().isEmpty()
                 ));
+
+        this.connectionHandler = ClientApp.getInstance().getConnectionHandler();
+        this.connectionHandler.setCurrentListener(this::handleMessage);
+    }
+
+
+    private void handleMessage(Message message) {
+        switch (message.getMsgType()) {
+            case loginSuccess:
+                Platform.runLater(() -> {
+                    Stage stage = (Stage) loginButton.getScene().getWindow();
+                    SceneManager.switchScene(stage, "/fxml/playerDashboard.fxml");
+                });
+                break;
+            case loginFailure:
+                Platform.runLater(() -> {
+                    // TODO: Inserire pop up per il login fallito
+                });
+                break;
+            default:
+                System.out.println("Messaggio non gestito dal Login: " + message.getMsgType());
+                break;
+        }
     }
 
 
@@ -46,23 +75,21 @@ public class ClientLoginController {
         String username = usernameField.getText();
         String password = passwordField.getText();
 
+        Task<Void> task = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception{
+                connectionHandler.sendMessage(new Message(MessageType.login, new LoginDTO(username, password)));
+                return null;
+            }
+        };
 
-        // Scrivo giusto per fare un test
-        Socket socket = new Socket("127.0.0.1", 9090);
-        ObjectOutputStream OOS = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
-        OOS.flush();
-        ObjectInputStream OIS = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
-
-
-        OOS.writeObject(new Message(MessageType.login, new LoginDTO(username, password)));
-        OOS.flush();
-        Message m = (Message) OIS.readObject();
-        System.out.println(m.getMsgType());
-        // *********************************
+        Thread thread = new Thread(task);
+        thread.setDaemon(true);
+        thread.start();
     }
 
     @FXML
     private void register(ActionEvent event){
-        SceneManager.switchScene(event, "/fxml/clienRegister.fxml");
+        SceneManager.switchScene(event, "/fxml/clientRegister.fxml");
     }
 }

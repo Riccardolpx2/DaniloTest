@@ -1,5 +1,9 @@
 package client.controller;
 
+import client.ClientApp;
+import client.network.ConnectionHandler;
+import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -10,7 +14,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import server.model.database.entity.UtenteEntity;
+
 import java.time.LocalDate;
 
 import shared.gui.util.SceneManager;
@@ -21,6 +25,8 @@ import shared.protocol.MessageType;
 import java.io.IOException;
 
 public class ClientRegisterController {
+
+    private ConnectionHandler connectionHandler;
 
     @FXML
     private TextField nameField;
@@ -53,11 +59,26 @@ public class ClientRegisterController {
                 passwordField.textProperty().isEmpty()).or(
                 birthdate.valueProperty().isNull())
         );
+
+        this.connectionHandler = ClientApp.getInstance().getConnectionHandler();
+        this.connectionHandler.setCurrentListener(this::handleMessage);
+    }
+
+    private void handleMessage(Message message){
+        switch(message.getMsgType()){
+            case registerSuccess:
+                // TODO: Pop up che la registrazione è andata a buon fine
+                Platform.runLater(() -> {
+                    Stage stage = (Stage) backButton.getScene().getWindow();
+                    SceneManager.switchScene(stage, "/fxml/clientLogin.fxml");
+                });
+                break;
+        }
     }
 
 
     @FXML
-    private void register(){
+    private void register() throws IOException {
         // Va instanziata la classe utente che ha (nome, cognome, dataNascita, username, password) e inviata serializzata al server
 
         String nome = nameField.getText();
@@ -70,7 +91,19 @@ public class ClientRegisterController {
         Message msg = new Message(MessageType.register, username, registerPayload);
         
         // TODO: Invia msg tramite la classe che gestisce il Socket lato client
-        System.out.println("Pronto per l'invio del messaggio di tipo: " + msg.getMsgType());
+
+        Task<Void> task = new Task<Void>(){
+            @Override
+            protected Void call() throws IOException {
+                connectionHandler.sendMessage(msg);
+                return null;
+            }
+        };
+
+        Thread thread = new Thread(task);
+        thread.setDaemon(true);
+        thread.start();
+
     }
 
     @FXML
