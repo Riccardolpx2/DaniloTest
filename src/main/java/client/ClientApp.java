@@ -6,8 +6,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import server.ServerApp;
-import server.model.database.DatabaseManager;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,7 +16,7 @@ public class ClientApp extends Application {
     Thread connectionHandlerThread;
     ConnectionHandler connectionHandler;
     String port;
-    String ip_addr;
+    String ipAddress;
     String vers;
 
     private static ClientApp instance;
@@ -48,19 +46,19 @@ public class ClientApp extends Application {
 
             prop.load(input);
             port=prop.getProperty("server.port");
-            ip_addr=prop.getProperty("server.ip");
+            ipAddress =prop.getProperty("server.ip");
             vers=prop.getProperty("version");
 
 
 
-            System.out.println("Avvio connessione verso :" + ip_addr + ":"+port+" version "+vers);
+            System.out.println("Avvio connessione verso :" + ipAddress + ":"+port+" version "+vers);
 
 
         } catch (IOException ex) {
             System.err.println("errore lettura file configurazione");
         }
 
-        connectionHandler=new ConnectionHandler(Integer.parseInt(port),ip_addr);
+        connectionHandler=new ConnectionHandler(Integer.parseInt(port), ipAddress);
 
         connectionHandlerThread = new Thread(connectionHandler);
         connectionHandlerThread.setDaemon(true);
@@ -73,7 +71,7 @@ public class ClientApp extends Application {
     @Override
     public void start(Stage primaryStage) throws IOException {
 
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/clientLogin.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/client/clientLogin.fxml"));
         Parent root = loader.load();
         Scene scene = new Scene(root);
         primaryStage.setTitle("Guess The Word");

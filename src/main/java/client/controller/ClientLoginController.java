@@ -6,10 +6,7 @@ import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -20,7 +17,6 @@ import shared.protocol.Message;
 import shared.protocol.MessageType;
 
 import java.io.*;
-import java.net.Socket;
 
 public class ClientLoginController {
 
@@ -55,12 +51,16 @@ public class ClientLoginController {
             case loginSuccess:
                 Platform.runLater(() -> {
                     Stage stage = (Stage) loginButton.getScene().getWindow();
-                    SceneManager.switchScene(stage, "/fxml/playerDashboard.fxml");
+                    SceneManager.switchScene(stage, "/fxml/client/playerDashboard.fxml");
                 });
                 break;
             case loginFailure:
                 Platform.runLater(() -> {
-                    // TODO: Inserire pop up per il login fallito
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("Login fallito");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Il Login è fallito, Username o Password non validi");
+                    alert.showAndWait();
                 });
                 break;
             default:
@@ -90,6 +90,6 @@ public class ClientLoginController {
 
     @FXML
     private void register(ActionEvent event){
-        SceneManager.switchScene(event, "/fxml/clientRegister.fxml");
+        SceneManager.switchScene(event, "/fxml/client/clientRegister.fxml");
     }
 }

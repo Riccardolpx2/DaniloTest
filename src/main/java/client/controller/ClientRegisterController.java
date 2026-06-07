@@ -5,11 +5,9 @@ import client.network.ConnectionHandler;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.fxml.*;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.PasswordField;
@@ -67,10 +65,25 @@ public class ClientRegisterController {
     private void handleMessage(Message message){
         switch(message.getMsgType()){
             case registerSuccess:
-                // TODO: Pop up che la registrazione è andata a buon fine
                 Platform.runLater(() -> {
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("Registrazione Completata");
+                    alert.setHeaderText(null);
+                    alert.setContentText("La registrazione è avvenuta con successo! Clicca 'ok' per toranre al login.");
+                    alert.showAndWait();
+
+
                     Stage stage = (Stage) backButton.getScene().getWindow();
-                    SceneManager.switchScene(stage, "/fxml/clientLogin.fxml");
+                    SceneManager.switchScene(stage, "/fxml/client/clientLogin.fxml");
+                });
+                break;
+            case registerFailure:
+                Platform.runLater(() -> {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Errore di Registrazione");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Impossibile completare la registrazione. È possibile che l'username sia già in uso. Riprova.");
+                    alert.showAndWait();
                 });
                 break;
         }
@@ -79,8 +92,6 @@ public class ClientRegisterController {
 
     @FXML
     private void register() throws IOException {
-        // Va instanziata la classe utente che ha (nome, cognome, dataNascita, username, password) e inviata serializzata al server
-
         String nome = nameField.getText();
         String cognome = surnameField.getText();
         String username = usernameField.getText();
@@ -89,8 +100,7 @@ public class ClientRegisterController {
 
         RegisterDTO registerPayload = new RegisterDTO(username, password, nome, cognome, dataNascita.toString());
         Message msg = new Message(MessageType.register, username, registerPayload);
-        
-        // TODO: Invia msg tramite la classe che gestisce il Socket lato client
+
 
         Task<Void> task = new Task<Void>(){
             @Override
@@ -108,6 +118,6 @@ public class ClientRegisterController {
 
     @FXML
     private void backToLogin(ActionEvent event){
-        SceneManager.switchScene(event, "/fxml/clientLogin.fxml");
+        SceneManager.switchScene(event, "/fxml/client/clientLogin.fxml");
     }
 }

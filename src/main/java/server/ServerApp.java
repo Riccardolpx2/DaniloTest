@@ -75,7 +75,7 @@ public class ServerApp extends Application {
     @Override
     public void start(Stage primaryStage) throws IOException {
 
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/serverLogin.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/server/serverLogin.fxml"));
         Parent root = loader.load();
         Scene scene = new Scene(root);
         primaryStage.setTitle("Gestionale Guess The Word");

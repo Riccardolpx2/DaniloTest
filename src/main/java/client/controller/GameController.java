@@ -1,5 +1,7 @@
 package client.controller;
 
+import client.ClientApp;
+import client.network.ConnectionHandler;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -7,8 +9,14 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import shared.protocol.Message;
+import shared.protocol.MessageType;
+
+import java.io.IOException;
 
 public class GameController {
+
+    private ConnectionHandler connectionHandler;
 
     @FXML
     private Label timerLabel;
@@ -30,7 +38,30 @@ public class GameController {
 
     @FXML
     public void initialize() {
-        startTimer();
+        this.connectionHandler = ClientApp.getInstance().getConnectionHandler();
+        this.connectionHandler.setCurrentListener(this::messageHandler);
+    }
+
+    private void messageHandler(Message message){
+        switch(message.getMsgType()){
+            case gameQuestion:
+                startTimer();
+                Task<Void> task = new Task(){
+                    @Override
+                    protected Void call(){
+                        Platform.runLater(() -> {
+                            updateTextLabel((String) message.getPayload());
+                        });
+                        return null;
+                    }
+                };
+                Thread thread = new Thread(task);
+                thread.setDaemon(true);
+                thread.start();
+                break;
+            default:
+                // TODO: gli altri  case
+        }
     }
 
     private void startTimer() {
@@ -63,8 +94,12 @@ public class GameController {
         timerLabel.setText(String.format("%02d:%02d", minutes, secs));
     }
 
+    private void updateTextLabel(String text){
+        textLabel.setText(text);
+    }
+
     @FXML
-    void submitAnswer(ActionEvent event) {
+    void submitAnswer(ActionEvent event) throws IOException {
         String answer = answerField.getText().trim();
         if (answer.isEmpty()) {
             statusLabel.setText("Inserisci una parola.");
@@ -73,6 +108,8 @@ public class GameController {
         }
 
         // Qui inviare la risposta al server tramite socket
+        this.connectionHandler.sendMessage(new Message(MessageType.gameAnswer, answer));
+
         System.out.println("Risposta inviata: " + answer);
         statusLabel.setText("Risposta inviata in attesa di verifica...");
         statusLabel.setStyle("-fx-text-fill: lightgreen;");
