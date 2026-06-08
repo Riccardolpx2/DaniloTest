@@ -5,6 +5,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import server.model.service.AuthService;
 
 public class ServerLoginController {
 
@@ -17,8 +18,12 @@ public class ServerLoginController {
     @FXML
     private Button loginButton;
 
+    private AuthService authService;
+
     @FXML
     private void initialize(){
+
+
         loginButton.disableProperty().bind(
                 usernameField.textProperty().isEmpty().or(
                         passwordField.textProperty().isEmpty()
