@@ -51,7 +51,7 @@ public class ClientLoginController {
             case loginSuccess:
                 Platform.runLater(() -> {
                     Stage stage = (Stage) loginButton.getScene().getWindow();
-                    SceneManager.switchScene(stage, "/fxml/client/playerDashboard.fxml");
+                    SceneManager.switchScene(stage, "/fxml/client/clientDashboard.fxml");
                 });
                 break;
             case loginFailure:
@@ -74,6 +74,8 @@ public class ClientLoginController {
     private void login(ActionEvent event) throws IOException, ClassNotFoundException {
         String username = usernameField.getText();
         String password = passwordField.getText();
+
+        ClientApp.getInstance().setCurrentUser(username);
 
         Task<Void> task = new Task<Void>() {
             @Override

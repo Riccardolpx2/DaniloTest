@@ -6,7 +6,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -18,6 +17,7 @@ public class ClientApp extends Application {
     String port;
     String ipAddress;
     String vers;
+    private String currentUser;
 
     private static ClientApp instance;
 
@@ -27,6 +27,14 @@ public class ClientApp extends Application {
 
     public ConnectionHandler getConnectionHandler() {
         return connectionHandler;
+    }
+
+    public String getCurrentUser() {
+        return currentUser;
+    }
+
+    public void setCurrentUser(String currentUser) {
+        this.currentUser = currentUser;
     }
 
     @Override
@@ -65,7 +73,6 @@ public class ClientApp extends Application {
         connectionHandlerThread.start();
 
         super.init();
-
     }
 
     @Override
