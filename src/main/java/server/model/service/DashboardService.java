@@ -1,6 +1,9 @@
 package server.model.service;
 
+import server.model.database.DatabaseManager;
+import server.model.database.StatisticaDAO;
 import server.model.database.UtenteDAO;
+import shared.game.Statistica;
 import shared.protocol.DTO.StatDTO;
 
 public class DashboardService {
@@ -11,9 +14,11 @@ public class DashboardService {
 
     }
 
-    //todo metodo per trovare stat e avvio partite
+
     public StatDTO getStatistiche(String username) throws Exception {
-        return  null;
+        StatisticaDAO sd = new StatisticaDAO();
+        Statistica s =sd.cerca(username);
+        return new StatDTO(s.getPlayer().getUsername(), s.getVittorie(), s.getSconfitte(), s.getPercentualeVittorie(), s.getMediaRisposta());
     }
 
 
