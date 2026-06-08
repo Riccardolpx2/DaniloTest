@@ -11,7 +11,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.control.ProgressIndicator?>
 
-<StackPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.controller.DashboardController">
+<StackPane xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.controller.DashboardController">
    <children>
       <BorderPane fx:id="mainContent" prefHeight="500.0" prefWidth="700.0" style="-fx-background-color: #f8f9fa;">
    <top>
