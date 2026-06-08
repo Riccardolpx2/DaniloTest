@@ -17,21 +17,20 @@ public class AuthService {
         this.amministratoreDAO = new AmministratoreDAO();
     }
 
-    //verifica login dell'admin
-    public boolean loginAdmin(String username, String password) throws SQLException {
+    public AmministratoreEntity loginAdmin(String username, String password) throws SQLException {
         AmministratoreEntity admin = amministratoreDAO.cerca(username);
-        return admin != null && admin.getPassword().equals(password);
+        return (admin != null && admin.getPassword().equals(password)) ? admin : null;
     }
 
 
     // metodo per verificare la login sul server
-    public boolean login(String username, String password) throws SQLException {
+    public UtenteEntity login(String username, String password) throws SQLException {
         UtenteEntity utenteEntity;
 
 
         utenteEntity = utenteDAO.cerca(username);
-        // Ritorna falso se non è stato trovato un utente o la password non corrisponde
-        return utenteEntity != null && utenteEntity.getPassword().equals(password);
+
+        return (utenteEntity != null && utenteEntity.getPassword().equals(password)) ? utenteEntity : null;
     }
 
 
