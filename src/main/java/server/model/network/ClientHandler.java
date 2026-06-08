@@ -3,6 +3,7 @@ package server.model.network;
 import server.model.database.entity.UtenteEntity;
 import server.model.network.state.AuthState;
 import server.model.network.state.ClientState;
+import server.logica.GameMatchHandler;
 import shared.protocol.Message;
 
 import java.io.EOFException;
@@ -19,6 +20,7 @@ public class ClientHandler implements Runnable{
     private ObjectInputStream in;
     private ClientState currentState;
     private UtenteEntity loggedUser;
+    private GameMatchHandler currentMatch;
 
     public ClientHandler(Socket socket) {
         this.socket = socket;
@@ -58,6 +60,9 @@ public class ClientHandler implements Runnable{
         if (currentState != null) {
             currentState.onDisconnect(this);
         }
+        if (currentMatch != null) {
+            currentMatch.disconnettiClient();
+        }
 
         try {
             if (in != null) in.close();
@@ -82,6 +87,14 @@ public class ClientHandler implements Runnable{
 
     public void setCurrentState(ClientState currentState) {
         this.currentState = currentState;
+    }
+
+    public GameMatchHandler getCurrentMatch() {
+        return currentMatch;
+    }
+
+    public void setCurrentMatch(GameMatchHandler currentMatch) {
+        this.currentMatch = currentMatch;
     }
 
     public ObjectInputStream getIn() {
