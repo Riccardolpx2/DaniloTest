@@ -1,5 +1,6 @@
 package server.model.network;
 
+import server.model.database.entity.UtenteEntity;
 import server.model.network.state.AuthState;
 import server.model.network.state.ClientState;
 import shared.protocol.Message;
@@ -17,6 +18,7 @@ public class ClientHandler implements Runnable{
     private ObjectOutputStream out;
     private ObjectInputStream in;
     private ClientState currentState;
+    private UtenteEntity loggedUser;
 
     public ClientHandler(Socket socket) {
         this.socket = socket;
@@ -64,6 +66,14 @@ public class ClientHandler implements Runnable{
         } catch (IOException e) {
             System.err.println("Errore durante la chiusura del socket: " + e.getMessage());
         }
+    }
+
+    public UtenteEntity getLoggedUser() {
+        return loggedUser;
+    }
+
+    public void setLoggedUser(UtenteEntity loggedUser) {
+        this.loggedUser = loggedUser;
     }
 
     public ClientState getCurrentState() {

@@ -1,15 +1,14 @@
 package server.model.service;
 
 import server.model.database.UtenteDAO;
-import shared.game.Statistica;
 import shared.protocol.DTO.StatDTO;
 
-public class DashService {
+public class DashboardService {
 
     private UtenteDAO utenteDAO;
 
-    public DashService() {
-        this.utenteDAO = new UtenteDAO();
+    public DashboardService() {
+
     }
 
     //todo metodo per trovare stat e avvio partite

@@ -88,11 +88,10 @@ public class DashboardController {
     private void iniziaPartita(ActionEvent event){
         System.out.println("Ricerca partita avviata. In attesa del server...");
         
-        // 1. Mostriamo l'overlay di caricamento
+        // Mostriamo l'overlay di caricamento
         waitingOverlay.setVisible(true);
         mainContent.setDisable(true); // Impedisce i click sui bottoni sottostanti
-        
-        // 2. Comunichiamo al server che stiamo cercando una partita
+
         try {
             connectionHandler.sendMessage(new Message(MessageType.gameSearch, ClientApp.getInstance().getCurrentUser(), null));
         } catch (IOException e) {
@@ -106,11 +105,10 @@ public class DashboardController {
     private void annullaRicerca(ActionEvent event){
         System.out.println("Annullamento ricerca partita in corso...");
         
-        // 1. Nascondiamo l'overlay e riabilitiamo la dashboard
+        // Nascondiamo l'overlay e riabilitiamo la dashboard
         waitingOverlay.setVisible(false);
         mainContent.setDisable(false);
-        
-        // 2. Comunichiamo al server che abbiamo annullato la ricerca
+
         try {
             connectionHandler.sendMessage(new Message(MessageType.gameSearchCancel, ClientApp.getInstance().getCurrentUser(), null));
         } catch (IOException e) {

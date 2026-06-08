@@ -1,6 +1,7 @@
 package server.model.network.state;
 
 import server.model.database.UtenteDAO;
+import server.model.database.entity.UtenteEntity;
 import server.model.network.ClientHandler;
 import server.model.service.AuthService;
 import shared.protocol.DTO.RegisterDTO;
@@ -28,7 +29,10 @@ public class AuthState extends ClientState{
         String password = payload.getPassword();
 
         try {
-            if (authService.login(username, password)){
+            UtenteEntity utenteEntity = authService.login(username, password);
+            if (utenteEntity != null){
+                // associo l'utente alla socket tcp
+                clientHandler.setLoggedUser(utenteEntity);
                 // Serve per cambiare lo stato
                 clientHandler.setCurrentState(new DashboardState());
                 clientHandler.getOut().writeObject(new Message(MessageType.loginSuccess, null));

@@ -15,13 +15,13 @@ public class AuthService {
 
 
     // metodo per verificare la login sul server
-    public boolean login(String username, String password) throws SQLException {
+    public UtenteEntity login(String username, String password) throws SQLException {
         UtenteEntity utenteEntity;
 
 
         utenteEntity = utenteDAO.cerca(username);
-        // Ritorna falso se non è stato trovato un utente o la password non corrisponde
-        return utenteEntity != null && utenteEntity.getPassword().equals(password);
+
+        return (utenteEntity != null && utenteEntity.getPassword().equals(password)) ? utenteEntity : null;
     }
 
 

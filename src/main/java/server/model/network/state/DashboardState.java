@@ -1,8 +1,7 @@
 package server.model.network.state;
 
 import server.model.network.ClientHandler;
-import server.model.service.DashService;
-import shared.game.Statistica;
+import server.model.service.DashboardService;
 import shared.protocol.DTO.StatDTO;
 import shared.protocol.Message;
 import shared.protocol.MessageType;
@@ -12,20 +11,20 @@ import java.sql.SQLException;
 
 public class DashboardState extends ClientState{
 
-    private DashService ds;
+    private DashboardService dashboardService;
 
     public DashboardState() {
-        this.ds = new DashService();
+        this.dashboardService = new DashboardService();
     }
 
     @MessageHandler(MessageType.stats)
     private void stats(Message message, ClientHandler clientHandler) {
         String username = message.getPlayerID();
         try {
-            StatDTO statDTO = ds.getStatistiche(username);
-            if (statDTO != null) { //restituisce la statistica se non e null
-                clientHandler.getOut().writeObject(new Message(MessageType.statsInfo, statDTO));
-            }
+            StatDTO statDTO = dashboardService.getStatistiche(username);
+            // lato client gestire se non ci sono statistiche
+            clientHandler.getOut().writeObject(new Message(MessageType.statsInfo, statDTO));
+
         } catch (SQLException e) {
             try {
                 clientHandler.getOut().writeObject(new Message(MessageType.generalError, "Errore lato server, riprova riprova più tardi"));
@@ -43,6 +42,7 @@ public class DashboardState extends ClientState{
     @MessageHandler(MessageType.logout)
     private void logout(Message message, ClientHandler clientHandler) {
         try {
+            clientHandler.setLoggedUser(null);
             clientHandler.setCurrentState(new AuthState());
         } catch (Exception e) {
             e.printStackTrace();
@@ -51,23 +51,8 @@ public class DashboardState extends ClientState{
 
 
     @MessageHandler(MessageType.gameSearch)
-    private void cercaGame(Message message, ClientHandler clientHandler){
+    private void searchGame(Message message, ClientHandler clientHandler){
 
     }
-
-
-    @MessageHandler(MessageType.gameStart)
-    private void startGame(Message message, ClientHandler clientHandler){
-
-    }
-
-    @MessageHandler(MessageType.gameSearchError)
-    private void erroreGame(Message message, ClientHandler clientHandler){
-
-    }
-
-
-
-
 
 }

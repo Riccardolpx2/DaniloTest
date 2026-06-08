@@ -99,14 +99,13 @@ public class ClientApp extends Application {
         System.out.println("Chiusura del client e relative risorse in corso, attendere...");
 
         if (connectionHandler != null) {
-            // 1. Proviamo ad inviare un logout pulito al server
             try {
                 connectionHandler.sendMessage(new Message(MessageType.logout, null));
             } catch (Exception e) {
                 System.out.println("Impossibile contattare il server per il logout (connessione già interrotta).");
             }
             
-            // 2. Chiudiamo forzatamente il socket, sbloccando il thread di lettura
+            // Chiudiamo la socket sbloccando il thread in lettura
             connectionHandler.closeConnection();
         }
 
