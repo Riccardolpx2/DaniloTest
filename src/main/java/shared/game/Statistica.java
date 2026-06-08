@@ -9,6 +9,7 @@ import server.model.database.entity.UtenteEntity;
 /**
  *
  * @author Utente
+ * 
  */
 public class Statistica {
     private UtenteEntity player;

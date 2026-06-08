@@ -40,10 +40,12 @@ public class AnalisiTesto implements Serializable{
     }
     
     public void analizza(String testo) {
-        if (testo == null) return;
-        this.frequenzaParole = Stream.of(testo.toLowerCase().split("\\s+"))
-            .map(parola -> parola.replaceAll("[^a-zàèìòù]", "")) 
-            .filter(parola -> parola.length() > 3)  
+        if (testo == null || testo.trim().isEmpty()) return;
+
+        String testoPulito = testo.toLowerCase().replaceAll("[^a-zàèìòùáéíóú]", " ");
+
+        this.frequenzaParole = Stream.of(testoPulito.split("\\s+"))
+            .filter(parola -> !parola.isEmpty() && parola.length() >= 3)  
             .collect(Collectors.toMap( 
                 parola -> parola,
                 parola -> 1,
