@@ -99,7 +99,7 @@ public class ClientRegisterController {
         LocalDate dataNascita = birthdate.getValue();
 
         RegisterDTO registerPayload = new RegisterDTO(username, password, nome, cognome, dataNascita.toString());
-        Message msg = new Message(MessageType.register, username, registerPayload);
+        Message msg = new Message(MessageType.register, registerPayload);
 
 
         Task<Void> task = new Task<Void>(){

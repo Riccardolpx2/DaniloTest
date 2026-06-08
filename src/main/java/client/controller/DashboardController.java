@@ -93,7 +93,7 @@ public class DashboardController {
         mainContent.setDisable(true); // Impedisce i click sui bottoni sottostanti
 
         try {
-            connectionHandler.sendMessage(new Message(MessageType.gameSearch, ClientApp.getInstance().getCurrentUser(), null));
+            connectionHandler.sendMessage(new Message(MessageType.gameSearch,null));
         } catch (IOException e) {
             e.printStackTrace();
             waitingOverlay.setVisible(false);
@@ -110,7 +110,7 @@ public class DashboardController {
         mainContent.setDisable(false);
 
         try {
-            connectionHandler.sendMessage(new Message(MessageType.gameSearchCancel, ClientApp.getInstance().getCurrentUser(), null));
+            connectionHandler.sendMessage(new Message(MessageType.gameSearchCancel, null));
         } catch (IOException e) {
             e.printStackTrace();
         }

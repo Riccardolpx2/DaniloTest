@@ -19,7 +19,7 @@ public class DashboardState extends ClientState{
 
     @MessageHandler(MessageType.stats)
     private void stats(Message message, ClientHandler clientHandler) {
-        String username = message.getPlayerID();
+        String username = clientHandler.getLoggedUser().getUsername();
         try {
             StatDTO statDTO = dashboardService.getStatistiche(username);
             // lato client gestire se non ci sono statistiche
