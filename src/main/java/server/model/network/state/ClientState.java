@@ -46,7 +46,7 @@ public abstract class ClientState {
                             " è già mappato su un metodo nella classe " + classe.getSimpleName());
                 }
                 
-                metodo.setAccessible(true); // Rende i metodi privati invocabili tramite reflection
+                metodo.setAccessible(true);
                 localMap.put(tipoMessaggio, metodo);
             }
         }
@@ -67,6 +67,12 @@ public abstract class ClientState {
             e.printStackTrace();
         }
 
+    }
+
+    public void onDisconnect(ClientHandler clientHandler) {
+        // Implementazione di default vuota.
+        // Le classi figlie (es. DashboardState, GameState) faranno l'override di questo
+        // metodo per rimuovere il client dalle code di ricerca o terminare partite.
     }
 
 }

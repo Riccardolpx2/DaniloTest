@@ -6,6 +6,9 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import shared.protocol.Message;
+import shared.protocol.MessageType;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -93,12 +96,23 @@ public class ClientApp extends Application {
     @Override
     public void stop() throws Exception {
 
-        System.out.println("Chiusura del cient e relative risorse in corso attendere...");
+        System.out.println("Chiusura del client e relative risorse in corso, attendere...");
 
-        if(connectionHandlerThread != null){
-            connectionHandlerThread.interrupt();
+        if (connectionHandler != null) {
+            // 1. Proviamo ad inviare un logout pulito al server
+            try {
+                connectionHandler.sendMessage(new Message(MessageType.logout, null));
+            } catch (Exception e) {
+                System.out.println("Impossibile contattare il server per il logout (connessione già interrotta).");
+            }
+            
+            // 2. Chiudiamo forzatamente il socket, sbloccando il thread di lettura
+            connectionHandler.closeConnection();
         }
 
+        if (connectionHandlerThread != null) {
+            connectionHandlerThread.interrupt();
+        }
 
         super.stop();
     }

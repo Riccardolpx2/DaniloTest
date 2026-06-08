@@ -6,10 +6,14 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.control.ProgressIndicator?>
 
-<BorderPane prefHeight="500.0" prefWidth="700.0" style="-fx-background-color: #f8f9fa;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.controller.DashboardController">
+<StackPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.controller.DashboardController">
+   <children>
+      <BorderPane fx:id="mainContent" prefHeight="500.0" prefWidth="700.0" style="-fx-background-color: #f8f9fa;">
    <top>
       <HBox alignment="CENTER_LEFT" prefHeight="60.0" style="-fx-background-color: #ffffff; -fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0;" BorderPane.alignment="CENTER">
          <children>
@@ -67,3 +71,25 @@
       </VBox>
    </center>
 </BorderPane>
+      
+      <!-- OVERLAY DI ATTESA -->
+      <VBox fx:id="waitingOverlay" alignment="CENTER" prefHeight="500.0" prefWidth="700.0" spacing="20.0" style="-fx-background-color: rgba(0, 0, 0, 0.6);" visible="false">
+         <children>
+            <ProgressIndicator prefHeight="50.0" prefWidth="50.0" style="-fx-progress-color: white;" />
+            <Label text="Ricerca di un avversario in corso..." textFill="WHITE">
+               <font>
+                  <Font name="System Bold" size="18.0" />
+               </font>
+            </Label>
+            <Button fx:id="cancelSearchButton" mnemonicParsing="false" onAction="#annullaRicerca" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand;" text="Annulla Ricerca">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+               <padding>
+                  <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+               </padding>
+            </Button>
+         </children>
+      </VBox>
+   </children>
+</StackPane>

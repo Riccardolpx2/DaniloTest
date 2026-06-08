@@ -19,6 +19,8 @@ public enum MessageType implements Serializable {
 
     // Il client lo invia quando cerca una partita
     gameSearch,
+    // Il client lo invia per annullare la ricerca in corso
+    gameSearchCancel,
     // Il server lo invia con le informazioni dello sfidante, la modalità di difficoltà ecc.
     gameStart,
     // Il server lo invia per segnalare un errore nella ricerca partita

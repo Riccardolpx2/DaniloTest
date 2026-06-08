@@ -4,9 +4,11 @@ import server.model.network.state.AuthState;
 import server.model.network.state.ClientState;
 import shared.protocol.Message;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.SocketException;
 import java.net.Socket;
 
 public class ClientHandler implements Runnable{
@@ -39,11 +41,28 @@ public class ClientHandler implements Runnable{
 
                 currentState.handleMessage(message, this);
             }
+        } catch (EOFException | SocketException e) {
+            // Disconnessione gestita: il client ha chiuso l'app o si è disconnesso dalla rete
+            System.out.println("Client disconnesso (IP: " + socket.getInetAddress() + ")");
         } catch (Exception e) {
+            System.err.println("Errore critico durante la lettura dei messaggi dal client:");
             e.printStackTrace();
-            System.out.println("Errore critico: impossibile deserializzare l'oggetto ricevuto.");
         } finally {
-            // pulisciERimuoviClient();
+            cleanClient();
+        }
+    }
+
+    private void cleanClient() {
+        if (currentState != null) {
+            currentState.onDisconnect(this);
+        }
+
+        try {
+            if (in != null) in.close();
+            if (out != null) out.close();
+            if (socket != null && !socket.isClosed()) socket.close();
+        } catch (IOException e) {
+            System.err.println("Errore durante la chiusura del socket: " + e.getMessage());
         }
     }
 
