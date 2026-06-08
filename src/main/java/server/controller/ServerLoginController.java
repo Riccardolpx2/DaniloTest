@@ -4,6 +4,7 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -43,7 +44,6 @@ public class ServerLoginController {
         String username = usernameField.getText();
         String password = passwordField.getText();
 
-        loginButton.setDisable(true);
         Task<AmministratoreEntity> loginTask = new Task<AmministratoreEntity>() {
             @Override
             protected AmministratoreEntity call() throws Exception {
@@ -52,18 +52,27 @@ public class ServerLoginController {
         };
 
         loginTask.setOnSucceeded(e->{
-            boolean isValidAdmin = loginTask.getValue();
-            if(isValidAdmin){
+            AmministratoreEntity admin = loginTask.getValue();
+            if(admin != null){
                 Stage stage = SceneManager.getStageFromEvent(event);
                 SceneManager.switchScene(stage, "/fxml/server/serverDashboard.fxml");
-            } else{
-                loginButton.setDisable(false);
+            } else {
+
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Login fallito");
+                alert.setHeaderText(null);
+                alert.setContentText("Login fallito: Username o Password sbagliati");
+                alert.showAndWait();
             }
         });
 
         loginTask.setOnFailed(e->{
             loginTask.getException().printStackTrace();
-            loginButton.setDisable(false);
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Errore di Sistema");
+            alert.setHeaderText(null);
+            alert.setContentText("Impossibile connettersi al database.");
+            alert.showAndWait();
         });
 
         Thread thread = new Thread(loginTask);
