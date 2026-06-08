@@ -55,13 +55,12 @@ public class DashboardController {
     private void handleMessage(Message message){
         switch(message.getMsgType()){
             case gameStart:
-                // È stato trovato un avversario! Nascondiamo l'overlay e cambiamo scena.
-                // Ricorda: le modifiche alla UI da un thread di rete devono usare Platform.runLater
+
                 Platform.runLater(() -> {
                     waitingOverlay.setVisible(false);
                     mainContent.setDisable(false);
                     
-                    // Recuperiamo lo stage attuale a partire da un nodo qualsiasi (es. waitingOverlay)
+
                     Stage stage = (Stage) waitingOverlay.getScene().getWindow();
                     SceneManager.switchScene(stage, "/fxml/client/clientGame.fxml");
                 });
@@ -80,7 +79,8 @@ public class DashboardController {
                 });
                 break;
                 
-            // TODO: Gestire le statistiche (statsInfo)
+            default:
+                System.out.println("Messaggio non gestito dal Dashboard: " + message.getMsgType());
         }
     }
 
@@ -117,8 +117,11 @@ public class DashboardController {
     }
 
     @FXML
-    private void viewStatistiche(){
-        // Da fare
+    private void viewStatistiche(ActionEvent event){
+
+        SceneManager.switchScene(event, "/fxml/client/clientStatistiche.fxml");
+
+
     }
 
     @FXML

@@ -1,6 +1,8 @@
 package shared.protocol.DTO;
 
-public class StatDTO {
+import java.io.Serializable;
+
+public class StatDTO implements Serializable {
     private String username;
 
     private int vittorie;
