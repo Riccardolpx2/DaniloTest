@@ -1,6 +1,7 @@
 package server.controller;
 
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -22,8 +23,8 @@ import shared.gui.util.SceneManager;
 import java.io.*;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class ServerDashboardController {
 
@@ -41,6 +42,9 @@ public class ServerDashboardController {
 
     @FXML
     private Button loadSerializedButton;
+
+    @FXML
+    private Button deleteTextButton;
 
     @FXML
     private Label statusAnalisiLabel;
@@ -76,6 +80,12 @@ public class ServerDashboardController {
         configureStatsTable();
         serverStatusLabel.setText("Stato server: In ascolto... (Pronto)");
         analyzeTextButton.setDisable(true);
+
+        listDocuments.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
+        deleteTextButton.disableProperty().bind(
+                Bindings.isEmpty(listDocuments.getSelectionModel().getSelectedItems())
+        );
         caricaDocumentiDatabase();
     }
 
@@ -169,7 +179,7 @@ public class ServerDashboardController {
 
                     final int count = filesElaborati;
                     final String oldOutput = file.getName() + " (In attesa)";
-                    final String newOutput = file.getName() + " (Analizzato";
+                    final String newOutput = file.getName() + " (Analizzato)";
 
                     Platform.runLater(() -> {
                         statusAnalisiLabel.setText("Stato: Elaborati " + count + " di " + filesSelected.size() + " file...");
@@ -193,11 +203,7 @@ public class ServerDashboardController {
             analyzeTextButton.setDisable(true);
             loadTextButton.setDisable(false);
 
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Analisi Completata");
-            alert.setHeaderText(null);
-            alert.setContentText("I file selezionati sono stati analizzati con successo");
-            alert.showAndWait();
+            showAlert(Alert.AlertType.INFORMATION, "Analisi Completata", "I file selezionati sono stati analizzati con successo");
         });
 
         taskAnalisi.setOnFailed(e->{
@@ -215,11 +221,8 @@ public class ServerDashboardController {
     @FXML
     private void salvaDatiSerializzati(ActionEvent event){
         if(listaAnalisi == null || listaAnalisi.isEmpty()){
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Errore Salvataggio");
-            alert.setHeaderText(null);
-            alert.setContentText("Nessuna analisi presente");
-            alert.showAndWait();
+
+            showAlert(Alert.AlertType.ERROR, "Errore Salvataggio", "Nessuna analisi presente");
             return;
         }
 
@@ -249,22 +252,14 @@ public class ServerDashboardController {
                 statusAnalisiLabel.setText("Stato: File .dat salvato con successo");
                 saveSerializedButton.setDisable(false);
 
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Salvataggio Completato");
-                alert.setHeaderText(null);
-                alert.setContentText("Le analisi sono state salvate in:\n" + fileSelected.getName());
-                alert.showAndWait();
+                showAlert(Alert.AlertType.INFORMATION, "Salvataggio Completato", "Le analisi sono state salvate in:\n" + fileSelected.getName());
             });
 
             taskSalvataggio.setOnFailed(e->{
                 taskSalvataggio.getException().printStackTrace();
                 statusAnalisiLabel.setText("Stato: Errore durante la creazione del file .dat");
                 saveSerializedButton.setDisable(false);
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Errore Salvataggio");
-                alert.setHeaderText(null);
-                alert.setContentText("Nessuna analisi presente");
-                alert.showAndWait();
+                showAlert(Alert.AlertType.ERROR, "Errore Salvataggio", "Nessuna analisi presente");
             });
 
             Thread thread = new Thread(taskSalvataggio);
@@ -301,22 +296,14 @@ public class ServerDashboardController {
 
                 statusAnalisiLabel.setText("Stato: Ripristinate anlisi dal file " + fileSelected.getName());
 
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Caricamento Completato");
-                alert.setHeaderText(null);
-                alert.setContentText("Caricamento delle analisi avvenuto con successo");
-                alert.showAndWait();
+                showAlert(Alert.AlertType.INFORMATION, "Caricamento Completato", "Caricamento delle analisi avvenuto con successo");
             });
 
             taskCaricamento.setOnFailed(e->{
                 taskCaricamento.getException().printStackTrace();
                 statusAnalisiLabel.setText("Stato: File .dat non valido o corrotto");
                 loadSerializedButton.setDisable(false);
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Errore di Caricamento");
-                alert.setHeaderText(null);
-                alert.setContentText("Il file selezionato non è valido o è corrotto");
-                alert.showAndWait();
+                showAlert(Alert.AlertType.ERROR, "Errore di Caricamento", "Il file selezione non è valido o corrotto");
             });
 
             Thread thread = new Thread(taskCaricamento);
@@ -325,6 +312,71 @@ public class ServerDashboardController {
         }
     }
 
+    @FXML
+    private void eliminaDocumenti(ActionEvent event){
+        List<String> filesSelected = new ArrayList<>(listDocuments.getSelectionModel().getSelectedItems());
+        if(filesSelected.isEmpty()){
+            return;
+        }
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Conferma Eliminazione");
+        alert.setContentText("Sei sicuro di voler eliminare definitivamente questi documenti? \n\n" +
+                "ATTENZIONE: Questa operazione eliminerà anche le analisi e la cronologia delle partite associate a questi file");
+        alert.setHeaderText(null);
+        Optional<ButtonType> risultato = alert.showAndWait();
+
+        if(risultato.isPresent() && risultato.get() == ButtonType.OK){
+            statusAnalisiLabel.setText("Stato: Eliminazione dal database in corso...");
+
+            Task<Void> deleteTask = new Task<Void>() {
+                @Override
+                protected Void call() throws Exception {
+                    DocumentoDAO documentoDAO = new DocumentoDAO();
+                    List<Documento> documenti = documentoDAO.elencaTutti();
+
+                    for(String s : filesSelected){
+                        Documento docRemove = null;
+
+                        for (Documento doc : documenti){
+                            String docName = doc.getNome() + " (Analizzato)";
+                            if (s.equals(docName)){
+                                docRemove = doc;
+                                break;
+                            }
+                        }
+
+                        if (docRemove != null){
+                            documentoDAO.rimuovi(docRemove);
+
+                            final int idDoc = docRemove.getIdDocumento();
+                            listaAnalisi.removeIf(analisi -> analisi.getIdDocumento() == idDoc);
+                        }
+                    }
+                    return null;
+                }
+            };
+
+            deleteTask.setOnSucceeded(e->{
+                listDocuments.getItems().removeAll(filesSelected);
+                statusAnalisiLabel.setText("Stato: Documenti rimossi con successo");
+                showAlert(Alert.AlertType.INFORMATION, "Eliminazione Completata", "I documenti sono stati rimossi con successo");
+
+                aggiornaStatistiche();
+            });
+
+            deleteTask.setOnFailed(e->{
+                deleteTask.getException().printStackTrace();
+                statusAnalisiLabel.setText("Stato: Errore durante l'eliminazione");
+                showAlert(Alert.AlertType.ERROR, "Errore", "Impossibile completare l'operazione: " + deleteTask.getException().getMessage());
+            });
+
+            Thread thread = new Thread(deleteTask);
+            thread.setDaemon(true);
+            thread.start();
+        }
+
+    }
     @FXML
     private void configureStatsTable(){
         userCol.setCellValueFactory(cellData->new SimpleStringProperty(cellData.getValue().getPlayer().getUsername()));
@@ -372,6 +424,15 @@ public class ServerDashboardController {
 
         new Thread(loadStatsTask).start();
     }
+
+    private void showAlert(Alert.AlertType tipo, String titolo, String messaggio) {
+        Alert alert = new Alert(tipo);
+        alert.setTitle(titolo);
+        alert.setHeaderText(null);
+        alert.setContentText(messaggio);
+        alert.showAndWait();
+    }
+
 
 
 }

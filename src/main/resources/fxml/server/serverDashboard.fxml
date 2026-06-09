@@ -13,7 +13,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="550.0" prefWidth="750.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="server.controller.ServerDashboardController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="550.0" prefWidth="750.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="server.controller.ServerDashboardController">
     <top>
         <HBox alignment="CENTER_LEFT" prefHeight="60.0" prefWidth="200.0" style="-fx-background-color: #2c3e50;" BorderPane.alignment="CENTER">
             <children>
@@ -60,6 +60,14 @@
                                         </Label>
                                         <Button fx:id="saveSerializedButton" mnemonicParsing="false" onAction="#salvaDatiSerializzati" prefWidth="230.0" text="Salva Analisi su File (.dat)" />
                                         <Button fx:id="loadSerializedButton" mnemonicParsing="false" onAction="#caricaDatiSerializzati" prefWidth="230.0" text="Ripristina Analisi da File" />
+                              <Button fx:id="deleteTextButton" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#eliminaDocumenti" prefWidth="230.0" style="-fx-background-color: #d22e2e;" text="Elimina Documenti" textAlignment="CENTER" textFill="WHITE">
+                                 <font>
+                                    <Font name="System Bold" size="12.0" />
+                                 </font>
+                                 <VBox.margin>
+                                    <Insets top="30.0" />
+                                 </VBox.margin>
+                              </Button>
                                         <Label fx:id="statusAnalisiLabel" text="Stato: Pronto" textFill="#7f8c8d" wrapText="true" />
                                     </children>
                                 </VBox>
