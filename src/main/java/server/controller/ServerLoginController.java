@@ -79,7 +79,6 @@ public class ServerLoginController {
         thread.setDaemon(true);
         thread.start();
 
-        // Da completare con il metodo per inviare al server
     }
 
 //    @FXML

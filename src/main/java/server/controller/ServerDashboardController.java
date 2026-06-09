@@ -12,16 +12,12 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import server.model.database.AnalisiTestoDAO;
-import server.model.database.DocumentoDAO;
-import server.model.database.StatisticaDAO;
-import shared.game.AnalisiTesto;
-import shared.game.Documento;
+import server.model.database.DatabaseManager;
+import server.model.service.ServerDashboardService;
 import shared.game.Statistica;
 import shared.gui.util.SceneManager;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -38,16 +34,13 @@ public class ServerDashboardController {
     private Button analyzeTextButton;
 
     @FXML
-    private Button saveSerializedButton;
+    private Button backupButton;
 
     @FXML
-    private Button loadSerializedButton;
+    private Button restoreButton;
 
     @FXML
     private Button deleteTextButton;
-
-    @FXML
-    private Label statusAnalisiLabel;
 
     @FXML
     private TableView<Statistica> statsTableView;
@@ -71,61 +64,44 @@ public class ServerDashboardController {
     private Label serverStatusLabel;
 
     private List<File> filesSelected = new ArrayList<>();
-
-    private List<AnalisiTesto> listaAnalisi = new ArrayList<>();
-
+    private final ServerDashboardService serverService = new ServerDashboardService();
 
     @FXML
     public void initialize(){
         configureStatsTable();
-        serverStatusLabel.setText("Stato server: In ascolto... (Pronto)");
+        serverStatusLabel.setText("In ascolto... (Pronto)");
         analyzeTextButton.setDisable(true);
 
         listDocuments.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
-        deleteTextButton.disableProperty().bind(
-                Bindings.isEmpty(listDocuments.getSelectionModel().getSelectedItems())
-        );
-        caricaDocumentiDatabase();
+        if(deleteTextButton != null){
+            deleteTextButton.disableProperty().bind(
+                    Bindings.isEmpty(listDocuments.getSelectionModel().getSelectedItems())
+            );
+            caricaDatiDatabase();
+        }
     }
 
-    private void caricaDocumentiDatabase(){
-        statusAnalisiLabel.setText("Stato: Sincronizzazione con il Database in corso...");
-        Task<Void> loadTask = new Task<Void>() {
+    private void caricaDatiDatabase(){
+        aggiornaStato("Sincronizzazione con il Database in corso...");
+        Task<List<String>> loadTask = new Task<List<String>>() {
             @Override
-            protected Void call() throws Exception {
-                DocumentoDAO documentoDAO = new DocumentoDAO();
-                List<Documento> documenti = documentoDAO.elencaTutti();
-
-                List<String> nomiDocumenti = new ArrayList<>();
-                for(Documento doc : documenti){
-                    nomiDocumenti.add(doc.getNome() + " (Analizzato)");
-                }
-
-                AnalisiTestoDAO analisiTestoDAO = new AnalisiTestoDAO();
-                List<AnalisiTesto> analisi = analisiTestoDAO.elencaTutti();
-
-                Platform.runLater(() -> {
-                    listDocuments.getItems().setAll(nomiDocumenti);
-                    listaAnalisi.clear();
-                    listaAnalisi.addAll(analisi);
-                });
-                return null;
+            protected List<String> call() throws Exception {
+                return serverService.getNomiDocumenti();
             }
         };
 
         loadTask.setOnSucceeded(e -> {
-            statusAnalisiLabel.setText("Stato: Sincronizzazione completata");
+            listDocuments.getItems().setAll(loadTask.getValue());
+            aggiornaStato("Sincronizzazione completata");
         });
 
         loadTask.setOnFailed(e -> {
             loadTask.getException().printStackTrace();
-            statusAnalisiLabel.setText("Stato: Errore nel caricamento dei dati iniziali");
+            aggiornaStato("Errore nel caricamento dei dati iniziali");
         });
 
-        Thread thread = new Thread(loadTask);
-        thread.setDaemon(true);
-        thread.start();
+        startTask(loadTask);
     }
 
     @FXML
@@ -143,7 +119,7 @@ public class ServerDashboardController {
                 listDocuments.getItems().add(f.getName() + " (In attesa)");
             }
 
-            statusAnalisiLabel.setText("Stato: " + files.size() + " file pronti per l'analisi");
+            aggiornaStato( files.size() + " file pronti per l'analisi");
             analyzeTextButton.setDisable(false);
         }
     }
@@ -152,161 +128,112 @@ public class ServerDashboardController {
     private void avviaAnalisiTask(){
         if(filesSelected.isEmpty()) return;
 
-        statusAnalisiLabel.setText("Stato: Analisi in corso...");
+        aggiornaStato("Analisi in corso...");
         analyzeTextButton.setDisable(true);
         loadTextButton.setDisable(true);
 
         Task<Integer> taskAnalisi = new Task<Integer>() {
             @Override
             protected Integer call() throws Exception {
-                DocumentoDAO documentoDAO = new DocumentoDAO();
-                AnalisiTestoDAO analisiTestoDAO = new AnalisiTestoDAO();
-                int filesElaborati = 0;
-
-                for(File file : filesSelected){
-                    String testo = new String(Files.readAllBytes(file.toPath()), "UTF-8");
-
-                    Documento documento = new Documento(0, file.getName(), testo);
-                    documentoDAO.aggiungi(documento);
-
-                    AnalisiTesto analisiTesto = new AnalisiTesto(documento.getIdDocumento());
-                    analisiTesto.analizza(testo);
-
-                    listaAnalisi.add(analisiTesto);
-                    analisiTestoDAO.aggiungi(analisiTesto);
-
-                    filesElaborati++;
-
-                    final int count = filesElaborati;
-                    final String oldOutput = file.getName() + " (In attesa)";
-                    final String newOutput = file.getName() + " (Analizzato)";
-
-                    Platform.runLater(() -> {
-                        statusAnalisiLabel.setText("Stato: Elaborati " + count + " di " + filesSelected.size() + " file...");
-
-                        int index = listDocuments.getItems().indexOf(oldOutput);
-                        if(index != -1){
-                            listDocuments.getItems().set(index, newOutput);
-                        }
-                    });
-                }
-
-                return filesElaborati;
+                return serverService.analizzaFile(filesSelected);
             }
         };
 
         taskAnalisi.setOnSucceeded(e->{
-            int elaborati = taskAnalisi.getValue();
-            statusAnalisiLabel.setText("Stato: Analisi completata");
-
+            aggiornaStato("Analisi completata");
             filesSelected.clear();
             analyzeTextButton.setDisable(true);
             loadTextButton.setDisable(false);
-
             showAlert(Alert.AlertType.INFORMATION, "Analisi Completata", "I file selezionati sono stati analizzati con successo");
         });
 
         taskAnalisi.setOnFailed(e->{
-            taskAnalisi.getException().printStackTrace();
-            statusAnalisiLabel.setText("Stato: Errore durante l'analisi");
+            aggiornaStato("Errore durante l'analisi");
             analyzeTextButton.setDisable(false);
             loadTextButton.setDisable(false);
+            showAlert(Alert.AlertType.ERROR, "Errore", "Impossibile analizzare i file: " + taskAnalisi.getException().getMessage());
         });
 
-        Thread th = new Thread(taskAnalisi);
-        th.setDaemon(true);
-        th.start();
+        startTask(taskAnalisi);
     }
 
     @FXML
-    private void salvaDatiSerializzati(ActionEvent event){
-        if(listaAnalisi == null || listaAnalisi.isEmpty()){
-
-            showAlert(Alert.AlertType.ERROR, "Errore Salvataggio", "Nessuna analisi presente");
-            return;
-        }
-
+    private void eseguiBackup(ActionEvent event){
         FileChooser fc = new FileChooser();
-        fc.setTitle("Salva le analisi serializzate");
-        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("File Dati Serializzati (*.dat)", "*.dat"));
-        fc.setInitialFileName("analisi_backup.dat");
+        fc.setTitle("Esporta Database (.db)");
+        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("File SQLite (*.db)", "*.db"));
+        fc.setInitialFileName("Backup_GuessTheWord.db");
 
         Stage stage = SceneManager.getStageFromEvent(event);
         File fileSelected = fc.showSaveDialog(stage);
 
-        if (fileSelected != null){
-            statusAnalisiLabel.setText("Stato: Salvataggio nel file .dat in corso");
-            saveSerializedButton.setDisable(true);
+        if(fileSelected != null){
+            aggiornaStato("Esecuzione backup in corso...");
+            backupButton.setDisable(true);
 
-            Task<Void> taskSalvataggio = new Task<Void>() {
+            Task<Void> taskBackup = new Task<Void>() {
                 @Override
                 protected Void call() throws Exception {
-                    try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fileSelected))){
-                        oos.writeObject(listaAnalisi);
-                    }
+                    serverService.esportaDatabase(fileSelected);
                     return null;
                 }
             };
 
-            taskSalvataggio.setOnSucceeded(e->{
-                statusAnalisiLabel.setText("Stato: File .dat salvato con successo");
-                saveSerializedButton.setDisable(false);
-
-                showAlert(Alert.AlertType.INFORMATION, "Salvataggio Completato", "Le analisi sono state salvate in:\n" + fileSelected.getName());
+            taskBackup.setOnSucceeded(e->{
+                aggiornaStato("Backup completato con successo.");
+                backupButton.setDisable(false);
+                showAlert(Alert.AlertType.INFORMATION, "Backup Completato", "Esportazione completata.");
             });
 
-            taskSalvataggio.setOnFailed(e->{
-                taskSalvataggio.getException().printStackTrace();
-                statusAnalisiLabel.setText("Stato: Errore durante la creazione del file .dat");
-                saveSerializedButton.setDisable(false);
-                showAlert(Alert.AlertType.ERROR, "Errore Salvataggio", "Nessuna analisi presente");
+            taskBackup.setOnFailed(e->{
+                aggiornaStato("Errore durante il backup.");
+                backupButton.setDisable(false);
+                showAlert(Alert.AlertType.ERROR, "Errore Database", "Impossibile eseguire l'esportazione: " + taskBackup.getException().getMessage());
             });
 
-            Thread thread = new Thread(taskSalvataggio);
-            thread.setDaemon(true);
-            thread.start();
+            startTask(taskBackup);
         }
     }
 
     @FXML
-    private void caricaDatiSerializzati(ActionEvent event){
+    private void restoreBackup(ActionEvent event){
         FileChooser fc = new FileChooser();
-        fc.setTitle("Carica un file di analisi");
-        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("File Dati (*.dat)", "*.dat"));
+        fc.setTitle("Restore del database");
+        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("File SQLite (*.db)", "*.db"));
 
         Stage stage = SceneManager.getStageFromEvent(event);
         File fileSelected = fc.showOpenDialog(stage);
 
         if(fileSelected != null){
-            statusAnalisiLabel.setText("Stato: Lettura del file .dat in corso");
-            loadSerializedButton.setDisable(true);
+            aggiornaStato("Restore del database in corso...");
+            restoreButton.setDisable(true);
 
-            Task<List<AnalisiTesto>> taskCaricamento = new Task<List<AnalisiTesto>>() {
+            Task<Void> taskRestore = new Task<Void>() {
                 @Override
-                protected List<AnalisiTesto> call() throws Exception {
-                    try(ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fileSelected))){
-                        return (List<AnalisiTesto>) ois.readObject();
-                    }
+                protected Void call() throws Exception {
+                    DatabaseManager.eseguiRestore(fileSelected.getAbsolutePath());
+                    return null;
                 }
             };
 
-            taskCaricamento.setOnSucceeded(e->{
-                listaAnalisi = taskCaricamento.getValue();
-                loadSerializedButton.setDisable(false);
+            taskRestore.setOnSucceeded(e->{
+                aggiornaStato("Restore Completato con successo");
+                restoreButton.setDisable(false);
 
-                statusAnalisiLabel.setText("Stato: Ripristinate anlisi dal file " + fileSelected.getName());
+                caricaDatiDatabase();
+                aggiornaStatistiche();
 
-                showAlert(Alert.AlertType.INFORMATION, "Caricamento Completato", "Caricamento delle analisi avvenuto con successo");
+                showAlert(Alert.AlertType.INFORMATION, "Restore Completato", "Il database è satto ripristinato con successo");
             });
 
-            taskCaricamento.setOnFailed(e->{
-                taskCaricamento.getException().printStackTrace();
-                statusAnalisiLabel.setText("Stato: File .dat non valido o corrotto");
-                loadSerializedButton.setDisable(false);
-                showAlert(Alert.AlertType.ERROR, "Errore di Caricamento", "Il file selezione non è valido o corrotto");
+            taskRestore.setOnFailed(e->{
+                taskRestore.getException().printStackTrace();
+                aggiornaStato("Errore durante il restore");
+                restoreButton.setDisable(false);
+                showAlert(Alert.AlertType.ERROR, "Errore Database", "Impossibile ripristinare il file");
             });
 
-            Thread thread = new Thread(taskCaricamento);
+            Thread thread = new Thread(taskRestore);
             thread.setDaemon(true);
             thread.start();
         }
@@ -327,53 +254,28 @@ public class ServerDashboardController {
         Optional<ButtonType> risultato = alert.showAndWait();
 
         if(risultato.isPresent() && risultato.get() == ButtonType.OK){
-            statusAnalisiLabel.setText("Stato: Eliminazione dal database in corso...");
+            aggiornaStato("Eliminazione dal database in corso...");
 
-            Task<Void> deleteTask = new Task<Void>() {
+            Task<Integer> deleteTask = new Task<Integer>() {
                 @Override
-                protected Void call() throws Exception {
-                    DocumentoDAO documentoDAO = new DocumentoDAO();
-                    List<Documento> documenti = documentoDAO.elencaTutti();
-
-                    for(String s : filesSelected){
-                        Documento docRemove = null;
-
-                        for (Documento doc : documenti){
-                            String docName = doc.getNome() + " (Analizzato)";
-                            if (s.equals(docName)){
-                                docRemove = doc;
-                                break;
-                            }
-                        }
-
-                        if (docRemove != null){
-                            documentoDAO.rimuovi(docRemove);
-
-                            final int idDoc = docRemove.getIdDocumento();
-                            listaAnalisi.removeIf(analisi -> analisi.getIdDocumento() == idDoc);
-                        }
-                    }
-                    return null;
+                protected Integer call() throws Exception {
+                    return serverService.eliminaDocumenti(filesSelected);
                 }
             };
 
             deleteTask.setOnSucceeded(e->{
                 listDocuments.getItems().removeAll(filesSelected);
-                statusAnalisiLabel.setText("Stato: Documenti rimossi con successo");
+                aggiornaStato("Documenti rimossi con successo");
                 showAlert(Alert.AlertType.INFORMATION, "Eliminazione Completata", "I documenti sono stati rimossi con successo");
-
                 aggiornaStatistiche();
             });
 
             deleteTask.setOnFailed(e->{
-                deleteTask.getException().printStackTrace();
-                statusAnalisiLabel.setText("Stato: Errore durante l'eliminazione");
+                aggiornaStato("Errore durante l'eliminazione");
                 showAlert(Alert.AlertType.ERROR, "Errore", "Impossibile completare l'operazione: " + deleteTask.getException().getMessage());
             });
 
-            Thread thread = new Thread(deleteTask);
-            thread.setDaemon(true);
-            thread.start();
+            startTask(deleteTask);
         }
 
     }
@@ -393,24 +295,24 @@ public class ServerDashboardController {
     private void aggiornaStatistiche(){
 
         refreshStatsButton.setDisable(true);
-        serverStatusLabel.setText("Stato Server: Estrazione statistiche dal DB in corso...");
+        serverStatusLabel.setText("Estrazione statistiche dal DB in corso...");
 
         Task<List<Statistica>> loadStatsTask = new Task<List<Statistica>>() {
             @Override
             protected List<Statistica> call() throws Exception {
-                StatisticaDAO statDao = new StatisticaDAO();
-                return statDao.elencaTutti();
+                return serverService.getClassifica();
             }
         };
+
         loadStatsTask.setOnSucceeded(e->{
             List<Statistica> stats = loadStatsTask.getValue();
 
             if(stats != null && !stats.isEmpty()){
                 statsTableView.setItems(FXCollections.observableArrayList(stats));
-                serverStatusLabel.setText("Stato Server: Statistiche aggiornate con successo.");
+                serverStatusLabel.setText("Statistiche aggiornate con successo.");
             } else {
                 statsTableView.getItems().clear();
-                serverStatusLabel.setText("Stato Server: Nessuna statistica presente nel DB.");
+                serverStatusLabel.setText("Nessuna statistica presente nel DB.");
             }
 
             refreshStatsButton.setDisable(false);
@@ -418,7 +320,7 @@ public class ServerDashboardController {
 
         loadStatsTask.setOnFailed(e->{
             loadStatsTask.getException().printStackTrace();
-            serverStatusLabel.setText("Stato Server: Errore nel caricamento delle statistiche del Database-");
+            serverStatusLabel.setText("Errore nel caricamento delle statistiche del Database-");
             refreshStatsButton.setDisable(false);
         });
 
@@ -433,6 +335,17 @@ public class ServerDashboardController {
         alert.showAndWait();
     }
 
+    private void startTask(Task<?> task){
+        Thread thread = new Thread(task);
+        thread.setDaemon(true);
+        thread.start();
+    }
+    
+    private void aggiornaStato(String messaggio){
+        Platform.runLater(()->{
+            serverStatusLabel.setText("Stato: " + messaggio);
+        });
+    }
 
 
 }

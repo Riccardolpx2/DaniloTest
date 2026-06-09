@@ -121,5 +121,18 @@ public class  DatabaseManager {
         
     }
 
+    public static void eseguiBackup(String filePath) throws SQLException{
+        try (Connection connection = getConnection();
+        Statement stmt = connection.createStatement()) {
+            stmt.executeUpdate("BACKUP TO '" + filePath +"'");
+        }
+    }
+
+    public static void eseguiRestore(String filePath) throws SQLException{
+        try(Connection connection = getConnection();
+        Statement stmt = connection.createStatement()){
+            stmt.executeUpdate("RESTORE FROM '" + filePath + "'");
+        }
+    }
 
 }
