@@ -6,6 +6,7 @@ import server.model.network.ClientHandler;
 import server.model.network.state.GameState;
 import shared.game.AnalisiTesto;
 import shared.game.Documento;
+import shared.protocol.DTO.GameStartDTO;
 import shared.protocol.Message;
 import shared.protocol.MessageType;
 import shared.protocol.DTO.EsitoRoundDTO;
@@ -74,8 +75,8 @@ public class GameMatchHandler implements Runnable {
             player2.setCurrentState(new GameState());
 
             // 3. Notifica di inizio ai client e invio info avversari
-            player1.getOut().writeObject(new Message(MessageType.gameStart, player2.getLoggedUser().getUsername()));
-            player2.getOut().writeObject(new Message(MessageType.gameStart, player1.getLoggedUser().getUsername()));
+            player1.getOut().writeObject(new Message(MessageType.gameStart, new GameStartDTO(player2.getLoggedUser().getUsername(), "MEDIA")));
+            player2.getOut().writeObject(new Message(MessageType.gameStart, new GameStartDTO(player1.getLoggedUser().getUsername(), "MEDIA")));
             Thread.sleep(2000);
 
             // 4. Ciclo dei Round
