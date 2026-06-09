@@ -1,5 +1,6 @@
 package server.model.network.state;
 
+import server.logica.MatchmakingManager;
 import server.model.network.ClientHandler;
 import server.model.service.DashboardService;
 import shared.protocol.DTO.StatDTO;
@@ -55,7 +56,7 @@ public class DashboardState extends ClientState{
 
     @MessageHandler(MessageType.gameSearch)
     private void searchGame(Message message, ClientHandler clientHandler){
-
+        MatchmakingManager.enterLobby(clientHandler);
     }
 
 }

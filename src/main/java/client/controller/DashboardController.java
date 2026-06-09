@@ -55,7 +55,6 @@ public class DashboardController {
     private void handleMessage(Message message){
         switch(message.getMsgType()){
             case gameStart:
-
                 Platform.runLater(() -> {
                     waitingOverlay.setVisible(false);
                     mainContent.setDisable(false);

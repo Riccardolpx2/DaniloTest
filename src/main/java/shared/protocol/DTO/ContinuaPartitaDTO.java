@@ -10,11 +10,11 @@ import java.io.Serializable;
  *
  * @author Utente
  */
-public class ContinuaPartitDTO implements Serializable{
+public class ContinuaPartitaDTO implements Serializable{
     
     private boolean vuoleContinuare;
 
-    public ContinuaPartitDTO(boolean vuoleContinuare) {
+    public ContinuaPartitaDTO(boolean vuoleContinuare) {
         this.vuoleContinuare = vuoleContinuare;
     }
 

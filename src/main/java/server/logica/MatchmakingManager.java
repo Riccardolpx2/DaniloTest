@@ -4,10 +4,11 @@ import server.model.network.ClientHandler;
 import shared.protocol.Message;
 import shared.protocol.MessageType;
 
+// TODO: togliere ASSOLUTAMENTE lo static !!!!!!!!!!!!!!!!!!!!
 public class MatchmakingManager {
-    private ClientHandler clientWaiting;
+    private static ClientHandler clientWaiting;
 
-    public synchronized void enterLobby(ClientHandler clientHandler){
+    public static synchronized void enterLobby(ClientHandler clientHandler){
         if (clientWaiting == null){
             clientWaiting = clientHandler;
         } else{
