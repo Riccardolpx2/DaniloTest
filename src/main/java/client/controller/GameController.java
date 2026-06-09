@@ -32,6 +32,9 @@ public class GameController {
 
     @FXML
     private Label statusLabel;
+    
+    @FXML
+    private Label sfidanteLabel;
 
     private int timeRemaining = 30;
     private Thread timerThread;
@@ -44,6 +47,11 @@ public class GameController {
      */
     public void inizializzaDati(String messaggio) {
         usernameSfidante=messaggio;
+        Platform.runLater(() -> {
+            if (sfidanteLabel != null) {
+                sfidanteLabel.setText("Sfidante: " + usernameSfidante);
+            }
+        });
     }
 
     @FXML
