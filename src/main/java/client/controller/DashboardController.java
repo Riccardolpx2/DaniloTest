@@ -13,6 +13,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import shared.gui.util.SceneManager;
+import shared.protocol.DTO.GameStartDTO;
 import shared.protocol.Message;
 import shared.protocol.MessageType;
 
@@ -59,7 +60,9 @@ public class DashboardController {
                 Platform.runLater(() -> {
                     waitingOverlay.setVisible(false);
                     mainContent.setDisable(false);
-                    
+                    GameStartDTO gs = (GameStartDTO) message.getPayload();
+                    gs.getSfindateUsername();
+
 
                     Stage stage = (Stage) waitingOverlay.getScene().getWindow();
                     SceneManager.switchScene(stage, "/fxml/client/clientGame.fxml");

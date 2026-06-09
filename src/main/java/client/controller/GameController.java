@@ -35,6 +35,16 @@ public class GameController {
 
     private int timeRemaining = 30;
     private Thread timerThread;
+    private String usernameSfidante;
+
+
+
+    /*
+    metodo per scambiare info sfidante dal dashbaoard
+     */
+    public void inizializzaDati(String messaggio) {
+        usernameSfidante=messaggio;
+    }
 
     @FXML
     public void initialize() {
