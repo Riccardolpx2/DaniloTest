@@ -47,5 +47,9 @@ public class TestoDTO implements Serializable{
         this.testoSuccessivo = testoSuccessivo;
     }
 
+
+    public String getTesto(){
+        return this.testoPrecedente + "\n" + this.testoSuccessivo;
+    }
     
 }

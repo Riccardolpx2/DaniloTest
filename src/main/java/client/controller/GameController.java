@@ -9,6 +9,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import shared.protocol.DTO.TestoDTO;
 import shared.protocol.Message;
 import shared.protocol.MessageType;
 
@@ -68,7 +69,7 @@ public class GameController {
                     @Override
                     protected Void call(){
                         Platform.runLater(() -> {
-                            updateTextLabel((String) message.getPayload());
+                            updateTextLabel(((TestoDTO) message.getPayload()).getTesto());
                         });
                         return null;
                     }
