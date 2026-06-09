@@ -59,8 +59,6 @@ public class ServerApp extends Application {
          */
         DatabaseManager.inizializzaDatabase();
 
-        // TODO: Daemon per le socket
-
         ServerListener serverListener = new ServerListener(Integer.parseInt(port));
 
         serverThread = new Thread(serverListener);
@@ -93,9 +91,6 @@ public class ServerApp extends Application {
         if(serverThread != null){
             serverThread.interrupt();
         }
-
-        // TODO: Aggiungere un metodo al DatabaseManager per chiudere la connessione al DB
-
 
         super.stop();
     }
