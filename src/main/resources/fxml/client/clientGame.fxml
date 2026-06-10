@@ -16,15 +16,9 @@
    <children>
       <HBox alignment="CENTER_LEFT" spacing="10.0">
          <children>
-            <Label text="Partita in corso" textFill="WHITE">
+            <Label fx:id="sfidanteLabel" text="Partita contro in attesa..." textFill="WHITE">
                <font>
                   <Font name="GFSGazis-Regular" size="24.0" />
-               </font>
-            </Label>
-            <Region HBox.hgrow="ALWAYS" />
-            <Label fx:id="sfidanteLabel" text="Sfidante: in attesa..." textFill="#f39c12">
-               <font>
-                  <Font name="System Bold" size="18.0" />
                </font>
             </Label>
             <Region HBox.hgrow="ALWAYS" />

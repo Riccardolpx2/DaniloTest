@@ -3,6 +3,7 @@ package server.model.network.state;
 import server.model.database.UtenteDAO;
 import server.model.database.entity.UtenteEntity;
 import server.model.network.ClientHandler;
+import server.model.network.SessionManager;
 import server.model.service.AuthService;
 import shared.protocol.DTO.RegisterDTO;
 import shared.protocol.Message;
@@ -31,6 +32,13 @@ public class AuthState extends ClientState{
         try {
             UtenteEntity utenteEntity = authService.login(username, password);
             if (utenteEntity != null){
+
+                // Controlliamo se l'utente ha già una sessione attiva
+                if (!SessionManager.getInstance().login(username, clientHandler)) {
+                    clientHandler.getOut().writeObject(new Message(MessageType.loginFailure, "Utente già connesso."));
+                    return;
+                }
+
                 // associo l'utente alla socket tcp
                 clientHandler.setLoggedUser(utenteEntity);
                 // Serve per cambiare lo stato

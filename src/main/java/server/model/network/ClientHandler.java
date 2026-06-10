@@ -57,6 +57,11 @@ public class ClientHandler implements Runnable{
     }
 
     private void cleanClient() {
+        // Se l'utente era loggato e la connessione cade, lo liberiamo!
+        if (loggedUser != null) {
+            SessionManager.getInstance().logout(loggedUser.getUsername());
+        }
+
         if (currentState != null) {
             currentState.onDisconnect(this);
         }

@@ -50,7 +50,7 @@ public class GameController {
         usernameSfidante=messaggio;
         Platform.runLater(() -> {
             if (sfidanteLabel != null) {
-                sfidanteLabel.setText("Sfidante: " + usernameSfidante);
+                sfidanteLabel.setText("Partita contro " + usernameSfidante);
             }
         });
     }

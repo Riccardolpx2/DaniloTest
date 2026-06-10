@@ -2,6 +2,7 @@ package server.model.network.state;
 
 import server.logica.MatchmakingManager;
 import server.model.network.ClientHandler;
+import server.model.network.SessionManager;
 import server.model.service.DashboardService;
 import shared.protocol.DTO.StatDTO;
 import shared.protocol.Message;
@@ -46,6 +47,9 @@ public class DashboardState extends ClientState{
     @MessageHandler(MessageType.logout)
     private void logout(Message message, ClientHandler clientHandler) {
         try {
+            if (clientHandler.getLoggedUser() != null) {
+                SessionManager.getInstance().logout(clientHandler.getLoggedUser().getUsername());
+            }
             clientHandler.setLoggedUser(null);
             clientHandler.setCurrentState(new AuthState());
         } catch (Exception e) {
