@@ -1,5 +1,6 @@
 package server.model.network.state;
 
+import server.logica.MatchManager;
 import server.logica.MatchmakingManager;
 import server.model.network.ClientHandler;
 import server.model.network.SessionManager;
@@ -61,6 +62,11 @@ public class DashboardState extends ClientState{
     @MessageHandler(MessageType.gameSearch)
     private void searchGame(Message message, ClientHandler clientHandler){
         MatchmakingManager.enterLobby(clientHandler);
+    }
+
+    @MessageHandler(MessageType.gameSearchCancel)
+    private void cancelSearchGame(Message message, ClientHandler clientHandler){
+        MatchmakingManager.exitLobby(clientHandler);
     }
 
 }

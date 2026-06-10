@@ -24,4 +24,13 @@ public class MatchmakingManager {
     }
 
 
+    public static synchronized void exitLobby(ClientHandler clientHandler){
+        if (clientWaiting == clientHandler){
+            clientWaiting = null;
+        } else {
+            System.out.println("Errore nella lobby");
+        }
+    }
+
+
 }
