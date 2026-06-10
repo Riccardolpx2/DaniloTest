@@ -22,13 +22,19 @@ public class DashboardState extends ClientState{
 
     @MessageHandler(MessageType.stats)
     private void stats(Message message, ClientHandler clientHandler) {
-        System.out.println("santa loia abate");
+
         String username = clientHandler.getLoggedUser().getUsername();
         try {
             StatDTO statDTO = dashboardService.getStatistiche(username);
-            System.out.println("statistiche trovate" + statDTO.toString());
-            // lato client gestire se non ci sono statistiche
-            clientHandler.getOut().writeObject(new Message(MessageType.statsInfo, statDTO));
+            if(statDTO!=null){
+                System.out.println("statistiche trovate" + statDTO.toString());
+                // lato client gestire se non ci sono statistiche
+                clientHandler.getOut().writeObject(new Message(MessageType.statsInfo, statDTO));
+            }else{
+                System.out.println("statistiche non trovate");
+                clientHandler.getOut().writeObject(new Message(MessageType.statsInfo, null));
+            }
+
 
 
         } catch (SQLException e) {

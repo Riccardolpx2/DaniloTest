@@ -8,8 +8,6 @@ import shared.protocol.DTO.StatDTO;
 
 public class DashboardService {
 
-    private UtenteDAO utenteDAO;
-
     public DashboardService() {
 
     }
@@ -18,6 +16,9 @@ public class DashboardService {
     public StatDTO getStatistiche(String username) throws Exception {
         StatisticaDAO sd = new StatisticaDAO();
         Statistica s =sd.cerca(username);
+        if(s==null){
+            return null;
+        }
         return new StatDTO(s.getPlayer().getUsername(), s.getVittorie(), s.getSconfitte(), s.getPercentualeVittorie(), s.getMediaRisposta());
     }
 

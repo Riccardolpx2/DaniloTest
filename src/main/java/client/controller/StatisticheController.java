@@ -48,8 +48,12 @@ public class StatisticheController {
         switch (message.getMsgType()) {
             case statsInfo:
                 Platform.runLater(() -> {
+                    String username = ClientApp.getInstance().getCurrentUser();
                     StatDTO stat = (StatDTO) message.getPayload();
-                    setStatistiche(stat.getUsername(), stat);
+                    if (stat == null) {
+                        stat = new StatDTO(username, 0, 0, 0, 0.0);
+                    }
+                    setStatistiche(username, stat);
                 });
                 break;
             case generalError:
