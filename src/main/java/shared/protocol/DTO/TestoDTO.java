@@ -13,43 +13,30 @@ import java.util.List;
  */
 public class TestoDTO implements Serializable{
     
-    private String testoPrecedente;
-    private List<String> paroleOscurate;
-    private String testoSuccessivo;
+    private String testoCifrato;
+    private List<String> paroleCifrate;
 
-    public TestoDTO(String testoPrecedente, List<String> paroleOscurate, String testoSuccessivo) {
-        this.testoPrecedente = testoPrecedente;
-        this.paroleOscurate = paroleOscurate;
-        this.testoSuccessivo = testoSuccessivo;
+    public TestoDTO(String testoCifrato, List<String> paroleCifrate) {
+        this.testoCifrato = testoCifrato;
+        this.paroleCifrate=paroleCifrate;
+    }
+    
+ 
+
+    public String getTestoCifrato() {
+        return testoCifrato;
     }
 
-    public String getTestoPrecedente() {
-        return testoPrecedente;
+    public void setTestoCifrato(String testoCifrato) {
+        this.testoCifrato = testoCifrato;
+    } 
+
+    public List<String> getParoleCifrate() {
+        return paroleCifrate;
     }
 
-    public void setTestoPrecedente(String testoPrecedente) {
-        this.testoPrecedente = testoPrecedente;
-    }
-
-    public List<String> getParoleOscurate() {
-        return paroleOscurate;
-    }
-
-    public void setParoleOscurate(List<String> paroleOscurate) {
-        this.paroleOscurate = paroleOscurate;
-    }
-
-    public String getTestoSuccessivo() {
-        return testoSuccessivo;
-    }
-
-    public void setTestoSuccessivo(String testoSuccessivo) {
-        this.testoSuccessivo = testoSuccessivo;
-    }
-
-
-    public String getTesto(){
-        return this.testoPrecedente + "\n" + this.testoSuccessivo;
+    public void setParoleCifrate(List<String> paroleCifrate) {
+        this.paroleCifrate = paroleCifrate;
     }
     
 }

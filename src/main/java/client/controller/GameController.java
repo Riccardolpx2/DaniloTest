@@ -69,7 +69,7 @@ public class GameController {
                     @Override
                     protected Void call(){
                         Platform.runLater(() -> {
-                            updateTextLabel(((TestoDTO) message.getPayload()).getTesto());
+                            updateTextLabel(((TestoDTO) message.getPayload()).getTestoCifrato());
                         });
                         return null;
                     }
