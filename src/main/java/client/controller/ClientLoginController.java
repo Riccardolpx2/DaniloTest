@@ -59,7 +59,7 @@ public class ClientLoginController {
                     Alert alert = new Alert(Alert.AlertType.INFORMATION);
                     alert.setTitle("Login fallito");
                     alert.setHeaderText(null);
-                    alert.setContentText("Il Login è fallito, Username o Password non validi");
+                    alert.setContentText((String) message.getPayload());
                     alert.showAndWait();
                 });
                 break;

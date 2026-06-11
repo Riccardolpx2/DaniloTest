@@ -1,33 +1,15 @@
 package server.logica;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.stream.Collectors;
-import server.model.database.PartitaDAO;
-import server.model.database.SessioneDiGiocoDAO;
-import server.model.database.StatisticaDAO;
+
 import server.model.database.entity.UtenteEntity;
-import shared.game.AnalisiTesto;
-import shared.game.Documento;
 import shared.game.Partita;
 import shared.game.SessioneDiGioco;
 import shared.game.Statistica;
 import shared.protocol.DTO.EsitoRoundDTO;
 import shared.protocol.DTO.RispostaGiocatoreDTO;
-import shared.protocol.DTO.TestoDTO;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 
 
 public class MatchManager {

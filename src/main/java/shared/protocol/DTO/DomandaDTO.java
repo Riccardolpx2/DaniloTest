@@ -11,12 +11,12 @@ import java.util.List;
  *
  * @author Utente
  */
-public class TestoDTO implements Serializable{
+public class DomandaDTO implements Serializable{
     
     private String testoCifrato;
     private List<String> paroleCifrate;
 
-    public TestoDTO(String testoCifrato, List<String> paroleCifrate) {
+    public DomandaDTO(String testoCifrato, List<String> paroleCifrate) {
         this.testoCifrato = testoCifrato;
         this.paroleCifrate=paroleCifrate;
     }
