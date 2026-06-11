@@ -4,6 +4,8 @@
  */
 package shared.protocol.DTO;
 
+import server.logica.Domanda;
+
 import java.io.Serializable;
 import java.util.List;
 
@@ -19,6 +21,10 @@ public class DomandaDTO implements Serializable{
     public DomandaDTO(String testoCifrato, List<String> paroleCifrate) {
         this.testoCifrato = testoCifrato;
         this.paroleCifrate=paroleCifrate;
+    }
+
+    public DomandaDTO(Domanda domanda){
+        this(domanda.getTestoCifrato(), domanda.getParoleSoluzioniCifrate());
     }
     
  

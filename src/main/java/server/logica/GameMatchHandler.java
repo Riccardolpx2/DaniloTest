@@ -1,6 +1,9 @@
 package server.logica;
 
 import server.model.network.ClientHandler;
+import server.model.network.state.AuthState;
+import server.model.network.state.GameState;
+import shared.protocol.DTO.DomandaDTO;
 import shared.protocol.Message;
 import shared.protocol.MessageType;
 import shared.protocol.DTO.RispostaGiocatoreDTO;
@@ -13,6 +16,7 @@ public class GameMatchHandler implements Runnable {
     private final ClientHandler player1;
     private final ClientHandler player2;
     private MatchManager matchManager;
+    private Domanda domandaCorrente;
 
     private RispostaGiocatoreDTO rispostaP1;
     private RispostaGiocatoreDTO rispostaP2;
@@ -32,10 +36,26 @@ public class GameMatchHandler implements Runnable {
             disconnettiClient();
             throw new RuntimeException(e);
         }
+
+        player1.setCurrentState(new GameState());
+        player2.setCurrentState(new GameState());
     }
 
     @Override
     public void run() {
+        while(matchRunning){
+            this.domandaCorrente = this.matchManager.getDomanda();
+            if(domandaCorrente == null) {
+                this.matchRunning = false;
+                //da modificare che manda il vincitore, punti, ecc.
+                inviaMessaggioEntrambi(new Message(MessageType.gameEnd, null));
+                break;
+            }
+            inviaMessaggioEntrambi(new Message(MessageType.gameQuestion, new DomandaDTO(this.domandaCorrente)));
+
+
+
+        }
 
     }
 
@@ -45,11 +65,15 @@ public class GameMatchHandler implements Runnable {
 
 
     public synchronized void registraRisposta(ClientHandler client, String parolaTentata) {
+        if (this.domandaCorrente.getParoleSoluzioni().contains(parolaTentata)){
 
+        }
     }
 
     public synchronized void disconnettiClient() {
-        player1.getOut().writeObject();
+        // Mi assicuro di terminare il thread
+        this.matchRunning = false;
+        inviaMessaggioEntrambi(new Message(MessageType.gameError, "Errore durante la partita"));
     }
 
     private void inviaMessaggioEntrambi(Message msg) {
@@ -57,7 +81,9 @@ public class GameMatchHandler implements Runnable {
         try { player2.getOut().writeObject(msg); player2.getOut().flush(); } catch (IOException ignored) {}
     }
 
-    private void inviaErroreEntrambi(String errorStr) {
-        inviaMessaggioEntrambi(new Message(MessageType.gameError, errorStr));
+    private void inviaDomandaEntrambi(Domanda domanda){
+        DomandaDTO domandaDTO = new DomandaDTO(domanda.getTestoCifrato(), domanda.getParoleSoluzioniCifrate());
+        inviaMessaggioEntrambi(new Message(MessageType.gameQuestion, domandaDTO));
     }
+
 }
