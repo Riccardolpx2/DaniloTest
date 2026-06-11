@@ -13,6 +13,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
+<?import javafx.scene.control.TextField?>
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="480.0" prefWidth="640.0" style="-fx-background-color: #f4f6f7;" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="server.controller.ServerDashboardController">
 
     <top>
@@ -34,33 +35,55 @@
         <TabPane style="-fx-background-color: transparent;" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
             <tabs>
 
-                <Tab text="Gestione Documenti">
+                <Tab text="Archivio Documenti">
                     <content>
                         <VBox spacing="15.0" style="-fx-background-color: white;">
                             <padding>
                                 <Insets bottom="20.0" left="25.0" right="25.0" top="20.0" />
                             </padding>
                             <children>
-                                <Label text="Documenti Caricati e Analizzati nel Sistema">
+                                <Label text="Documenti Analizzati.">
                                     <font>
                                         <Font name="System Bold" size="16.0" />
                                     </font>
                                 </Label>
+
+                                <TextField fx:id="searchDocumentField" promptText="Inserisci il nome del documento..." style="-fx-font-size: 14px; -fx-background-radius: 5; -fx-border-color: #bdc3c7; -fx-border-radius: 5;" />
+
                                 <ListView fx:id="listDocuments" style="-fx-font-size: 14px; -fx-background-radius: 5; -fx-border-radius: 5; -fx-border-color: #bdc3c7;" VBox.vgrow="ALWAYS" />
 
                                 <HBox alignment="CENTER_LEFT" spacing="15.0">
                                     <children>
-                                        <Button fx:id="loadTextButton" mnemonicParsing="false" onAction="#loadFileText" style="-fx-padding: 8 15; -fx-font-size: 14px; -fx-background-color: #ecf0f1; -fx-text-fill: #2c3e50; -fx-background-radius: 5; -fx-border-color: #bdc3c7; -fx-border-radius: 5;" text="Carica file TXT" textAlignment="CENTER" />
-
-                                        <Button fx:id="analyzeTextButton" mnemonicParsing="false" onAction="#avviaAnalisiTask" style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 8 15; -fx-background-radius: 5; -fx-cursor: hand;" text="Avvia Analisi">
+                                        <Button fx:id="deleteTextButton" mnemonicParsing="false" onAction="#eliminaDocumenti" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 8 15; -fx-background-radius: 5; -fx-cursor: hand;" text="Elimina Selezionati">
                                             <font>
                                                 <Font name="System Bold" size="14.0" />
                                             </font>
                                         </Button>
+                                    </children>
+                                </HBox>
+                            </children>
+                        </VBox>
+                    </content>
+                </Tab>
 
-                                        <HBox HBox.hgrow="ALWAYS" />
+                <Tab text="Aggiungi Documenti">
+                    <content>
+                        <VBox spacing="15.0" style="-fx-background-color: white;">
+                            <padding>
+                                <Insets bottom="20.0" left="25.0" right="25.0" top="20.0" />
+                            </padding>
+                            <children>
+                                <Label text="Documenti da analizzare">
+                                    <font>
+                                        <Font name="System Bold" size="16.0" />
+                                    </font>
+                                </Label>
+                                <ListView fx:id="listNewDocuments" style="-fx-font-size: 14px; -fx-background-radius: 5; -fx-border-radius: 5; -fx-border-color: #bdc3c7;" VBox.vgrow="ALWAYS" />
 
-                                        <Button fx:id="deleteTextButton" mnemonicParsing="false" onAction="#eliminaDocumenti" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 8 15; -fx-background-radius: 5; -fx-cursor: hand;" text="Elimina Selezionati">
+                                <HBox alignment="CENTER_LEFT" spacing="15.0">
+                                    <children>
+                                        <Button fx:id="loadTextButton" mnemonicParsing="false" onAction="#loadFileText" style="-fx-padding: 8 15; -fx-font-size: 14px; -fx-background-color: #ecf0f1; -fx-text-fill: #2c3e50; -fx-background-radius: 5; -fx-border-color: #bdc3c7; -fx-border-radius: 5;" text="Carica file TXT" textAlignment="CENTER" />
+                                        <Button fx:id="analyzeTextButton" mnemonicParsing="false" onAction="#avviaAnalisiTask" style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 8 15; -fx-background-radius: 5; -fx-cursor: hand;" text="Avvia Analisi">
                                             <font>
                                                 <Font name="System Bold" size="14.0" />
                                             </font>
@@ -85,9 +108,10 @@
                                     </font>
                                 </Label>
                                 <ListView fx:id="listUsers" style="-fx-font-size: 14px; -fx-background-radius: 5; -fx-border-radius: 5; -fx-border-color: #bdc3c7;" VBox.vgrow="ALWAYS" />
-                                <HBox alignment="CENTER_RIGHT">
+                                <HBox alignment="CENTER_RIGHT" spacing="15.0">
                                     <children>
-                                        <Button fx:id="deleteUserButton" mnemonicParsing="false" onAction="#eliminaUtentiSelezionati" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 8 15; -fx-background-radius: 5; -fx-cursor: hand;" text="❌ Elimina Utenti Selezionati">
+                                        <Button fx:id="refreshUserButton" mnemonicParsing="false" onAction="#aggiornaUtenti" style="-fx-padding: 8 15; -fx-font-size: 14px; -fx-background-color: #ecf0f1; -fx-text-fill: #2c3e50; -fx-background-radius: 5; -fx-border-color: #bdc3c7; -fx-border-radius: 5;" text="Aggiorna Utenti" />
+                                        <Button fx:id="deleteUserButton" mnemonicParsing="false" onAction="#eliminaUtentiSelezionati" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 8 15; -fx-background-radius: 5; -fx-cursor: hand;" text="Elimina Utenti Selezionati">
                                             <font>
                                                 <Font name="System Bold" size="14.0" />
                                             </font>
@@ -115,7 +139,7 @@
                                         </Label>
                                     </left>
                                     <right>
-                                        <Button fx:id="refreshStatsButton" mnemonicParsing="false" onAction="#aggiornaStatistiche" style="-fx-background-color: #ecf0f1; -fx-border-color: #bdc3c7; -fx-border-radius: 5; -fx-background-radius: 5; -fx-padding: 5 15;" text="Aggiorna Classifica" BorderPane.alignment="CENTER">
+                                        <Button fx:id="refreshStatsButton" mnemonicParsing="false" onAction="#aggiornaStatistiche" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 6 15; -fx-cursor: hand; -fx-font-weight: bold;" text="Aggiorna Classifica" BorderPane.alignment="CENTER">
                                             <font>
                                                 <Font size="13.0" />
                                             </font>
@@ -123,12 +147,14 @@
                                     </right>
                                 </BorderPane>
 
-                                <TableView fx:id="statsTableView" style="-fx-font-size: 14px; -fx-border-color: #bdc3c7; -fx-border-radius: 5;" VBox.vgrow="ALWAYS">
+                                <TextField fx:id="searchStatsField" promptText="Cerca giocatore per username..." style="-fx-font-size: 14px; -fx-background-radius: 5; -fx-border-color: #bdc3c7; -fx-border-radius: 5;" />
+
+                                <TableView fx:id="statsTableView" style="-fx-font-size: 14px; -fx-border-color: #e0e0e0; -fx-background-color: white; -fx-selection-bar: #e3f2fd;" VBox.vgrow="ALWAYS">
                                     <columns>
-                                        <TableColumn fx:id="userCol" prefWidth="200.0" text="Username" />
-                                        <TableColumn fx:id="winsCol" prefWidth="150.0" text="Vittorie" />
-                                        <TableColumn fx:id="matchesCol" prefWidth="150.0" text="Partite Giocate" />
-                                        <TableColumn fx:id="avgTimeCol" prefWidth="200.0" text="Tempo Medio (s)" />
+                                        <TableColumn fx:id="userCol" prefWidth="200.0" style="-fx-alignment: CENTER-LEFT; -fx-padding: 5;" text="Username" />
+                                        <TableColumn fx:id="winsCol" prefWidth="150.0" style="-fx-alignment: CENTER;" text="Vittorie" />
+                                        <TableColumn fx:id="matchesCol" prefWidth="150.0" style="-fx-alignment: CENTER;" text="Partite Giocate" />
+                                        <TableColumn fx:id="avgTimeCol" prefWidth="200.0" style="-fx-alignment: CENTER;" text="Tempo Medio (s)" />
                                     </columns>
                                     <columnResizePolicy>
                                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />

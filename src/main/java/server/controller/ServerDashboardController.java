@@ -5,14 +5,13 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import server.model.database.DatabaseManager;
+import javafx.stage.Window;
 import server.model.service.ServerDashboardService;
 import shared.game.Statistica;
 import shared.gui.util.SceneManager;
@@ -21,11 +20,21 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ServerDashboardController {
 
     @FXML
+    private TextField searchDocumentField;
+
+    @FXML
     private ListView<String> listDocuments;
+
+    @FXML
+    private Button deleteTextButton;
+
+    @FXML
+    private ListView<String> listNewDocuments;
 
     @FXML
     private Button loadTextButton;
@@ -40,7 +49,7 @@ public class ServerDashboardController {
     private Button restoreButton;
 
     @FXML
-    private Button deleteTextButton;
+    private TextField searchStatsField;
 
     @FXML
     private TableView<Statistica> statsTableView;
@@ -73,6 +82,8 @@ public class ServerDashboardController {
     private Button refreshUserButton;
 
     private List<File> filesSelected = new ArrayList<>();
+    private List<String> allDocumentsList = new ArrayList<>();
+    private List<Statistica> allStatsList = new ArrayList<>();
     private final ServerDashboardService serverService = new ServerDashboardService();
 
     @FXML
@@ -82,8 +93,30 @@ public class ServerDashboardController {
 
         analyzeTextButton.setDisable(true);
 
-        listDocuments.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        listUsers.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        if(listDocuments != null){
+            listDocuments.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
+        }
+
+        if(listUsers != null){
+            listUsers.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        }
+
+        if(listNewDocuments != null){
+            listNewDocuments.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        }
+
+        if(searchDocumentField != null){
+            searchDocumentField.textProperty().addListener((observable, oldValue, newValue) -> {
+                filtraDocumenti(newValue);
+            });
+        }
+
+        if(searchStatsField != null){
+            searchStatsField.textProperty().addListener((observable, oldValue, newValue) -> {
+                filtraStatistiche(newValue);
+            });
+        }
 
         if(deleteTextButton != null) {
             deleteTextButton.disableProperty().bind(
@@ -99,7 +132,27 @@ public class ServerDashboardController {
 
         aggiornaDocumenti();
         aggiornaUtenti();
+    }
 
+    private void filtraDocumenti(String filtro){
+        if(filtro == null || filtro.trim().isEmpty()){
+            listDocuments.getItems().setAll(allDocumentsList);
+        } else {
+            List<String> filtrati = allDocumentsList.stream()
+                    .filter(doc->doc.toLowerCase().contains(filtro.toLowerCase()))
+                    .collect(Collectors.toList());
+            listDocuments.getItems().setAll(filtrati);
+        }
+    }
+
+    private void filtraStatistiche(String filtro){
+        if(filtro == null || filtro.trim().isEmpty()){
+            statsTableView.getItems().setAll(allStatsList);
+        } else {
+            List<Statistica> filtrati = allStatsList.stream()
+                    .filter(stat -> stat.getPlayer().getUsername().toLowerCase().contains(filtro.toLowerCase()))
+                    .collect(Collectors.toList());
+        }
     }
 
     private void aggiornaDocumenti(){
@@ -112,7 +165,9 @@ public class ServerDashboardController {
         };
 
         loadTask.setOnSucceeded(event -> {
-            listDocuments.getItems().setAll(loadTask.getValue());
+            allDocumentsList = loadTask.getValue();
+
+            filtraDocumenti(searchDocumentField != null ? searchDocumentField.getText() : "");
             aggiornaStato("Elenco documenti sincronizzato.");
         });
 
@@ -158,8 +213,6 @@ public class ServerDashboardController {
     }
 
 
-
-
     @FXML
     private void loadFileText(ActionEvent event) {
         FileChooser fc = new FileChooser();
@@ -169,12 +222,10 @@ public class ServerDashboardController {
         List<File> files = fc.showOpenMultipleDialog(stage);
 
         if(files != null && !files.isEmpty()){
-
             filesSelected.addAll(files);
             for (File f: files){
-                listDocuments.getItems().add(f.getName() + " (In attesa)");
+                listNewDocuments.getItems().add(f.getName() + " (In attesa)");
             }
-
             aggiornaStato( files.size() + " file pronti per l'analisi");
             analyzeTextButton.setDisable(false);
         }
@@ -188,6 +239,12 @@ public class ServerDashboardController {
         analyzeTextButton.setDisable(true);
         loadTextButton.setDisable(true);
 
+        Alert popupAttesa = new Alert(Alert.AlertType.INFORMATION);
+        popupAttesa.setTitle("Elaborazione in corso");
+        popupAttesa.setHeaderText("Analisi dei documenti...");
+        popupAttesa.getDialogPane().getButtonTypes().clear();
+        popupAttesa.show();
+
         Task<Void> taskAnalisi = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
@@ -197,8 +254,14 @@ public class ServerDashboardController {
         };
 
         taskAnalisi.setOnSucceeded(e->{
+            popupAttesa.getDialogPane().getButtonTypes().add(ButtonType.OK);
+            popupAttesa.close();
+
             aggiornaStato("Analisi completata");
             filesSelected.clear();
+
+            if(listNewDocuments != null) listNewDocuments.getItems().clear();
+
             analyzeTextButton.setDisable(true);
             loadTextButton.setDisable(false);
 
@@ -208,6 +271,10 @@ public class ServerDashboardController {
         });
 
         taskAnalisi.setOnFailed(e->{
+
+            popupAttesa.getDialogPane().getButtonTypes().add(ButtonType.OK);
+            popupAttesa.close();
+
             aggiornaStato("Errore durante l'analisi");
             analyzeTextButton.setDisable(false);
             loadTextButton.setDisable(false);
@@ -395,7 +462,10 @@ public class ServerDashboardController {
     @FXML
     private void aggiornaStatistiche(){
 
-        refreshStatsButton.setDisable(true);
+        if(refreshStatsButton!=null){
+            refreshStatsButton.setDisable(true);
+        }
+
         serverStatusLabel.setText("Estrazione statistiche dal DB in corso...");
 
         Task<List<Statistica>> loadStatsTask = new Task<List<Statistica>>() {
@@ -406,26 +476,24 @@ public class ServerDashboardController {
         };
 
         loadStatsTask.setOnSucceeded(e->{
-            List<Statistica> stats = loadStatsTask.getValue();
+            allStatsList = loadStatsTask.getValue();
 
-            if(stats != null && !stats.isEmpty()){
-                statsTableView.getItems().setAll(stats);
-                serverStatusLabel.setText("Statistiche aggiornate con successo.");
-            } else {
-                statsTableView.getItems().clear();
-                serverStatusLabel.setText("Nessuna statistica presente nel DB.");
+            filtraStatistiche(searchStatsField != null ? searchStatsField.getText() : "");
+            aggiornaStato("Statistiche aggiornate con successo");
+
+            if(refreshStatsButton != null){
+                refreshStatsButton.setDisable(false);
             }
-
-            refreshStatsButton.setDisable(false);
         });
 
         loadStatsTask.setOnFailed(e->{
-            loadStatsTask.getException().printStackTrace();
-            serverStatusLabel.setText("Errore nel caricamento delle statistiche del Database-");
-            refreshStatsButton.setDisable(false);
+            aggiornaStato("Errore nel caricamento delle statistiche del Database: " +loadStatsTask.getException().getMessage());
+            if(refreshStatsButton != null){
+                refreshStatsButton.setDisable(false);
+            }
         });
 
-        new Thread(loadStatsTask).start();
+        startTask(loadStatsTask);
     }
 
 
