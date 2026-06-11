@@ -22,7 +22,7 @@ public class MatchmakingManager {
                                waitingClient.getLoggedUser().getUsername() + " vs " + 
                                clientHandler.getLoggedUser().getUsername());
 
-            GameMatchHandler match = new GameMatchHandler(waitingClient, clientHandler);
+            GameMatchHandler match = new GameMatchHandler(waitingClient, clientHandler, key);
             Thread matchThread = new Thread(match);
             matchThread.setDaemon(true);
             matchThread.start();

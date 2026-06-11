@@ -17,6 +17,7 @@ public class GameMatchHandler implements Runnable {
     private final ClientHandler player1;
     private final ClientHandler player2;
     private final MatchManager matchManager;
+    private final String difficolta;
     private Domanda domandaCorrente;
 
     private RispostaGiocatoreDTO rispostaP1;
@@ -29,13 +30,14 @@ public class GameMatchHandler implements Runnable {
     private long roundStartTime;
     private boolean roundConcluso = false;
 
-    public GameMatchHandler(ClientHandler player1, ClientHandler player2) {
+    public GameMatchHandler(ClientHandler player1, ClientHandler player2, String difficolta) {
         this.player1 = player1;
         this.player2 = player2;
+        this.difficolta = difficolta;
         GameFactory gameFactory = new GameFactory();
         try {
             this.matchManager = gameFactory.creaMatch(player1.getLoggedUser(), player2.getLoggedUser(),
-                    "MEDIA", NUM_ROUNDS);
+                    difficolta, NUM_ROUNDS);
         } catch (SQLException e) {
             disconnettiClient();
             throw new RuntimeException(e);
@@ -64,8 +66,9 @@ public class GameMatchHandler implements Runnable {
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
-                //da modificare che manda il vincitore, punti, ecc.
-                inviaMessaggioEntrambi(new Message(MessageType.gameEnd, "Partita Terminata!"));
+                //String fineMsg = "Partita Terminata! " + matchManager.getPunteggioG1() + " - " + matchManager.getPunteggioG2();
+                String fineMsg = "";
+                inviaMessaggioEntrambi(new Message(MessageType.gameEnd, fineMsg));
                 break;
             }
 
@@ -148,11 +151,11 @@ public class GameMatchHandler implements Runnable {
     private void inviaInizioPartita(){
         try {
             player1.getOut().writeObject(new Message(MessageType.gameStart,
-                    new GameStartDTO(player2.getLoggedUser().getUsername(), "MEDIA")));
+                    new GameStartDTO(player2.getLoggedUser().getUsername(), difficolta)));
             player1.getOut().flush();
 
             player2.getOut().writeObject(new Message(MessageType.gameStart,
-                    new GameStartDTO(player1.getLoggedUser().getUsername(), "MEDIA")));
+                    new GameStartDTO(player1.getLoggedUser().getUsername(), difficolta)));
             player2.getOut().flush();
         } catch (Exception e) {
             inviaMessaggioEntrambi(new Message(MessageType.gameError, "Errore"));
@@ -160,9 +163,14 @@ public class GameMatchHandler implements Runnable {
         }
     }
 
+    private void inviaMessaggioClient(ClientHandler player, Message msg){
+        try { player.getOut().writeObject(msg); player.getOut().flush(); } catch (IOException ignored) {}
+    }
+
     private void inviaMessaggioEntrambi(Message msg) {
-        try { player1.getOut().writeObject(msg); player1.getOut().flush(); } catch (IOException ignored) {}
-        try { player2.getOut().writeObject(msg); player2.getOut().flush(); } catch (IOException ignored) {}
+        inviaMessaggioClient(player1, msg);
+        inviaMessaggioClient(player2, msg);
+
     }
 
     private void inviaDomandaEntrambi(Domanda domanda){

@@ -21,13 +21,11 @@ public class MatchManager {
     private int indiceRound = 0;
 
     private Domanda domandaCorrente;
-   
+
     private final SessioneDiGioco sessione;
 
     private int puntiG1 = 0;
     private int puntiG2 = 0;
-
-    private boolean continua = true;
 
     private Partita roundCorrente;
 
@@ -48,7 +46,6 @@ public class MatchManager {
     public Domanda getDomanda() {
 
         if (indiceRound >= listaDomande.size()) {
-            continua = false;
             return null;
         }
         domandaCorrente = listaDomande.get(indiceRound);
@@ -133,9 +130,6 @@ public class MatchManager {
         gameService.aggiornaStatistica(stat);
     }
 
-    public boolean isFinita() {
-        return !continua;
-    }
 
     public SessioneDiGioco getSessione() {
         return sessione;
