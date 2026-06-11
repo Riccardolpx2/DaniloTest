@@ -1,9 +1,7 @@
 package server.model.service;
 
-import server.model.database.AnalisiTestoDAO;
-import server.model.database.DatabaseManager;
-import server.model.database.DocumentoDAO;
-import server.model.database.StatisticaDAO;
+import server.model.database.*;
+import server.model.database.entity.UtenteEntity;
 import shared.game.AnalisiTesto;
 import shared.game.Documento;
 import shared.game.Statistica;
@@ -34,8 +32,7 @@ public class ServerDashboardService {
         return nomi;
     }
 
-    public int analizzaFile(List<File> files) throws Exception {
-        int fileElaborati = 0;
+    public void analizzaFile(List<File> files) throws Exception {
         for (File file : files) {
             String testo = new String(Files.readAllBytes(file.toPath()), "UTF-8");
 
@@ -45,15 +42,11 @@ public class ServerDashboardService {
             AnalisiTesto analisiTesto = new AnalisiTesto(documento.getIdDocumento());
             analisiTesto.analizza(testo);
             analisiTestoDAO.aggiungi(analisiTesto);
-
-            fileElaborati++;
         }
-        return fileElaborati;
     }
 
-    public int eliminaDocumenti(List<String> filesSelected) throws Exception {
+    public void eliminaDocumenti(List<String> filesSelected) throws Exception {
         List<Documento> tuttiIDocumenti = documentoDAO.elencaTutti();
-        int rimossi = 0;
 
         for (String stringaSelezionata : filesSelected) {
             for (Documento doc : tuttiIDocumenti) {
@@ -62,16 +55,33 @@ public class ServerDashboardService {
 
                 if (stringaSelezionata.equals(formatoStandard) || stringaSelezionata.equals(formatoBackup)) {
                     documentoDAO.rimuovi(doc);
-                    rimossi++;
                     break;
                 }
             }
         }
-        return rimossi;
     }
 
     public List<Statistica> getClassifica() throws Exception {
         return statisticaDAO.elencaTutti();
+    }
+
+    public List<String> getListaUsernameUtenti() throws Exception {
+        UtenteDAO utenteDAO = new UtenteDAO();
+        List<UtenteEntity> utenti = utenteDAO.elencaTutti();
+        List<String> usernames = new ArrayList<>();
+        for (UtenteEntity u : utenti) {
+            usernames.add(u.getUsername());
+        }
+        return usernames;
+    }
+
+    public void eliminaUtente(String username) throws Exception{
+        UtenteDAO utenteDAO = new UtenteDAO();
+        UtenteEntity utente = utenteDAO.cerca(username);
+
+        if(utente != null){
+            utenteDAO.rimuovi(utente);
+        }
     }
 
     public void esportaDatabase(File fileDestinazione) throws Exception {

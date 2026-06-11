@@ -63,46 +63,102 @@ public class ServerDashboardController {
     @FXML
     private Label serverStatusLabel;
 
+    @FXML
+    private ListView<String> listUsers;
+
+    @FXML
+    private Button deleteUserButton;
+
+    @FXML
+    private Button refreshUserButton;
+
     private List<File> filesSelected = new ArrayList<>();
     private final ServerDashboardService serverService = new ServerDashboardService();
 
     @FXML
     public void initialize(){
         configureStatsTable();
-        serverStatusLabel.setText("In ascolto... (Pronto)");
+        aggiornaStato("In ascolto.... (Pronto)");
+
         analyzeTextButton.setDisable(true);
 
         listDocuments.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        listUsers.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
-        if(deleteTextButton != null){
+        if(deleteTextButton != null) {
             deleteTextButton.disableProperty().bind(
                     Bindings.isEmpty(listDocuments.getSelectionModel().getSelectedItems())
             );
-            caricaDatiDatabase();
         }
+
+        if(deleteUserButton != null) {
+            deleteUserButton.disableProperty().bind(
+                    Bindings.isEmpty(listUsers.getSelectionModel().getSelectedItems())
+            );
+        }
+
+        aggiornaDocumenti();
+        aggiornaUtenti();
+
     }
 
-    private void caricaDatiDatabase(){
+    private void aggiornaDocumenti(){
         aggiornaStato("Sincronizzazione con il Database in corso...");
-        Task<List<String>> loadTask = new Task<List<String>>() {
+        Task<List<String>> loadTask = new Task<List<String> >() {
             @Override
             protected List<String> call() throws Exception {
                 return serverService.getNomiDocumenti();
             }
         };
 
-        loadTask.setOnSucceeded(e -> {
+        loadTask.setOnSucceeded(event -> {
             listDocuments.getItems().setAll(loadTask.getValue());
-            aggiornaStato("Sincronizzazione completata");
+            aggiornaStato("Elenco documenti sincronizzato.");
         });
 
-        loadTask.setOnFailed(e -> {
-            loadTask.getException().printStackTrace();
-            aggiornaStato("Errore nel caricamento dei dati iniziali");
+        loadTask.setOnFailed(event -> {
+            aggiornaStato("Errore caricamento documenti: " + loadTask.getException().getMessage());
         });
 
         startTask(loadTask);
     }
+
+    @FXML
+    private void aggiornaUtenti(){
+        if(refreshUserButton != null){
+            refreshUserButton.setDisable(true);
+        }
+
+        Task<List<String>> loadUsersTask = new Task<List<String>>() {
+            @Override
+            protected List<String> call() throws Exception {
+                return serverService.getListaUsernameUtenti();
+            }
+        };
+
+        loadUsersTask.setOnSucceeded(e->{
+            List<String> users = loadUsersTask.getValue();
+            if(users != null && !users.isEmpty()){
+                listUsers.getItems().setAll(users);
+                aggiornaStato("Lista utenti aggiornata con successo");
+            } else {
+                listUsers.getItems().clear();
+                aggiornaStato("Nessuna utente presente nel DB");
+            }
+
+            if(refreshUserButton != null) refreshUserButton.setDisable(false);
+        });
+
+        loadUsersTask.setOnFailed(e->{
+            aggiornaStato("Errore nel caricamento degli utenti dal Database: " + loadUsersTask.getException().getMessage());
+            if(refreshUserButton != null) refreshUserButton.setDisable(false);
+        });
+
+        startTask(loadUsersTask);
+    }
+
+
+
 
     @FXML
     private void loadFileText(ActionEvent event) {
@@ -132,10 +188,11 @@ public class ServerDashboardController {
         analyzeTextButton.setDisable(true);
         loadTextButton.setDisable(true);
 
-        Task<Integer> taskAnalisi = new Task<Integer>() {
+        Task<Void> taskAnalisi = new Task<Void>() {
             @Override
-            protected Integer call() throws Exception {
-                return serverService.analizzaFile(filesSelected);
+            protected Void call() throws Exception {
+                serverService.analizzaFile(filesSelected);
+                return null;
             }
         };
 
@@ -144,6 +201,9 @@ public class ServerDashboardController {
             filesSelected.clear();
             analyzeTextButton.setDisable(true);
             loadTextButton.setDisable(false);
+
+            aggiornaDocumenti();
+
             showAlert(Alert.AlertType.INFORMATION, "Analisi Completata", "I file selezionati sono stati analizzati con successo");
         });
 
@@ -211,7 +271,7 @@ public class ServerDashboardController {
             Task<Void> taskRestore = new Task<Void>() {
                 @Override
                 protected Void call() throws Exception {
-                    DatabaseManager.eseguiRestore(fileSelected.getAbsolutePath());
+                    serverService.ripristinaDatabase(fileSelected);
                     return null;
                 }
             };
@@ -220,22 +280,20 @@ public class ServerDashboardController {
                 aggiornaStato("Restore Completato con successo");
                 restoreButton.setDisable(false);
 
-                caricaDatiDatabase();
+                aggiornaDocumenti();
+                aggiornaUtenti();
                 aggiornaStatistiche();
 
                 showAlert(Alert.AlertType.INFORMATION, "Restore Completato", "Il database è satto ripristinato con successo");
             });
 
             taskRestore.setOnFailed(e->{
-                taskRestore.getException().printStackTrace();
-                aggiornaStato("Errore durante il restore");
+                aggiornaStato("Errore durante il restore: " + taskRestore.getException().getMessage());
                 restoreButton.setDisable(false);
                 showAlert(Alert.AlertType.ERROR, "Errore Database", "Impossibile ripristinare il file");
             });
 
-            Thread thread = new Thread(taskRestore);
-            thread.setDaemon(true);
-            thread.start();
+            startTask(taskRestore);
         }
     }
 
@@ -256,10 +314,11 @@ public class ServerDashboardController {
         if(risultato.isPresent() && risultato.get() == ButtonType.OK){
             aggiornaStato("Eliminazione dal database in corso...");
 
-            Task<Integer> deleteTask = new Task<Integer>() {
+            Task<Void> deleteTask = new Task<Void>() {
                 @Override
-                protected Integer call() throws Exception {
-                    return serverService.eliminaDocumenti(filesSelected);
+                protected Void call() throws Exception {
+                    serverService.eliminaDocumenti(filesSelected);
+                    return null;
                 }
             };
 
@@ -277,8 +336,50 @@ public class ServerDashboardController {
 
             startTask(deleteTask);
         }
-
     }
+
+    @FXML
+    private void eliminaUtentiSelezionati(ActionEvent event){
+        List<String> utentiSelected = new ArrayList<>(listUsers.getSelectionModel().getSelectedItems());
+        if(utentiSelected.isEmpty()) return;
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Conferma Eliminazione Utenti");
+        alert.setContentText("Sei sicuro di voler elimiare definitivamente gli utenti selezionati?\n\n" +
+                "Verranno rimosse anche tutte le loro statistiche e cronologie di gioco associate.");
+        alert.setHeaderText(null);
+
+        Optional<ButtonType> risultato = alert.showAndWait();
+
+        if(risultato.isPresent() && risultato.get() == ButtonType.OK){
+            aggiornaStato("Eliminazione account utenti in corso...");
+
+            Task<Void> deleteUsersTask = new Task<Void>() {
+                @Override
+                protected Void call() throws Exception {
+                    for(String username : utentiSelected){
+                        serverService.eliminaUtente(username);
+                    }
+                    return null;
+                }
+            };
+
+            deleteUsersTask.setOnSucceeded(e->{
+                aggiornaStato("Account utenti rimossi con successo");
+                listUsers.getItems().removeAll(utentiSelected);
+                aggiornaStatistiche();
+                showAlert(Alert.AlertType.INFORMATION, "Eliminazione Completata", "Gli utenti selezionati sono stati rimossi con successo");
+            });
+
+            deleteUsersTask.setOnFailed(e->{
+                aggiornaStato("Errore durante l'eliminazione degli utenti");
+                showAlert(Alert.AlertType.ERROR, "Errore", "Impossibile completare l'operazione");
+            });
+
+            startTask(deleteUsersTask);
+        }
+    }
+
     @FXML
     private void configureStatsTable(){
         userCol.setCellValueFactory(cellData->new SimpleStringProperty(cellData.getValue().getPlayer().getUsername()));
@@ -308,7 +409,7 @@ public class ServerDashboardController {
             List<Statistica> stats = loadStatsTask.getValue();
 
             if(stats != null && !stats.isEmpty()){
-                statsTableView.setItems(FXCollections.observableArrayList(stats));
+                statsTableView.getItems().setAll(stats);
                 serverStatusLabel.setText("Statistiche aggiornate con successo.");
             } else {
                 statsTableView.getItems().clear();
@@ -326,6 +427,7 @@ public class ServerDashboardController {
 
         new Thread(loadStatsTask).start();
     }
+
 
     private void showAlert(Alert.AlertType tipo, String titolo, String messaggio) {
         Alert alert = new Alert(tipo);
