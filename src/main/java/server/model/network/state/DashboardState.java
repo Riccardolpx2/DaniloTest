@@ -1,10 +1,10 @@
 package server.model.network.state;
 
-import server.logica.MatchManager;
-import server.logica.MatchmakingManager;
+import server.model.network.MatchmakingManager;
 import server.model.network.ClientHandler;
 import server.model.network.SessionManager;
 import server.model.service.DashboardService;
+import shared.protocol.DTO.GameSearchDTO;
 import shared.protocol.DTO.StatDTO;
 import shared.protocol.Message;
 import shared.protocol.MessageType;
@@ -67,7 +67,7 @@ public class DashboardState extends ClientState{
 
     @MessageHandler(MessageType.gameSearch)
     private void searchGame(Message message, ClientHandler clientHandler){
-        MatchmakingManager.enterLobby(clientHandler);
+        MatchmakingManager.enterLobby(clientHandler, ((GameSearchDTO) message.getPayload()).getDifficoltaPartita());
     }
 
     @MessageHandler(MessageType.gameSearchCancel)

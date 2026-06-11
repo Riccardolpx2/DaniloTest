@@ -9,9 +9,14 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
+import javafx.scene.control.Alert;
 import shared.protocol.DTO.DomandaDTO;
+import shared.protocol.DTO.EsitoRoundDTO;
+import shared.protocol.DTO.RispostaGiocatoreDTO;
 import shared.protocol.Message;
 import shared.protocol.MessageType;
+import shared.gui.util.SceneManager;
 
 import java.io.IOException;
 
@@ -36,6 +41,18 @@ public class GameController {
     
     @FXML
     private Label sfidanteLabel;
+
+    @FXML
+    private VBox resultOverlay;
+
+    @FXML
+    private Label roundResultLabel;
+
+    @FXML
+    private Label correctWordLabel;
+
+    @FXML
+    private Label scoresLabel;
 
     private int timeRemaining = 30;
     private Thread timerThread;
@@ -64,22 +81,93 @@ public class GameController {
     private void messageHandler(Message message){
         switch(message.getMsgType()){
             case gameQuestion:
-                startTimer();
-                Task<Void> task = new Task(){
-                    @Override
-                    protected Void call(){
-                        Platform.runLater(() -> {
-                            updateTextLabel(((DomandaDTO) message.getPayload()).getTestoCifrato());
-                        });
-                        return null;
+                Platform.runLater(() -> {
+                    if (resultOverlay != null) {
+                        resultOverlay.setVisible(false);
                     }
-                };
-                Thread thread = new Thread(task);
-                thread.setDaemon(true);
-                thread.start();
+                    answerField.setDisable(false);
+                    submitButton.setDisable(false);
+                    answerField.clear();
+                    statusLabel.setText("");
+                    
+                    updateTextLabel(((DomandaDTO) message.getPayload()).getTestoCifrato());
+                    
+                    if (timerThread != null && timerThread.isAlive()) {
+                        timerThread.interrupt();
+                    }
+                    timeRemaining = 30;
+                    startTimer();
+                });
+                break;
+            case gameResponse:
+                Platform.runLater(() -> {
+                    if (timerThread != null) {
+                        timerThread.interrupt();
+                    }
+                    EsitoRoundDTO esito = (EsitoRoundDTO) message.getPayload();
+                    showRoundResult(esito);
+                });
+                break;
+            case gameEnd:
+                Platform.runLater(() -> {
+                    if (timerThread != null) {
+                        timerThread.interrupt();
+                    }
+                    showGameEnd((String) message.getPayload());
+                });
                 break;
             default:
-                // TODO: gli altri  case
+                System.out.println("Messaggio non gestito dal GameController: " + message.getMsgType());
+        }
+    }
+
+    private void showRoundResult(EsitoRoundDTO esito) {
+        answerField.setDisable(true);
+        submitButton.setDisable(true);
+        
+        String currentUser = ClientApp.getInstance().getCurrentUser();
+        
+        if (roundResultLabel != null) {
+            if (esito.getUsernameVincitore().equals(currentUser)) {
+                roundResultLabel.setText("Hai vinto il round!");
+                roundResultLabel.setStyle("-fx-text-fill: lightgreen; -fx-font-size: 24px; -fx-font-weight: bold;");
+            } else if (esito.getUsernameVincitore().equals("Pareggio")) {
+                roundResultLabel.setText("Nessun vincitore in questo round!");
+                roundResultLabel.setStyle("-fx-text-fill: yellow; -fx-font-size: 24px; -fx-font-weight: bold;");
+            } else {
+                roundResultLabel.setText("Ha vinto " + esito.getUsernameVincitore() + "!");
+                roundResultLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 24px; -fx-font-weight: bold;");
+            }
+        }
+        
+        if (correctWordLabel != null) {
+            correctWordLabel.setText("La parola corretta era: " + esito.getParolaSoluzione());
+            correctWordLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
+        }
+        if (scoresLabel != null) {
+            scoresLabel.setText("Punteggi (G1 - G2): " + esito.getPunteggioAttualeG1() + " - " + esito.getPunteggioAttualeG2());
+            scoresLabel.setStyle("-fx-text-fill: #3498db; -fx-font-size: 18px; -fx-font-weight: bold;");
+        }
+        
+        if (resultOverlay != null) {
+            resultOverlay.setVisible(true);
+            resultOverlay.toFront(); // Pone l'overlay in primo piano sopra tutti i contenuti
+        }
+    }
+
+    private void showGameEnd(String message) {
+        statusLabel.setText(message);
+        statusLabel.setStyle("-fx-text-fill: gold;");
+        
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Partita Terminata");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+        
+        // Ritorna alla Dashboard al termine della partita
+        if (textLabel.getScene() != null && textLabel.getScene().getWindow() != null) {
+            SceneManager.switchScene((javafx.stage.Stage) textLabel.getScene().getWindow(), "/fxml/client/clientDashboard.fxml");
         }
     }
 
@@ -127,7 +215,7 @@ public class GameController {
         }
 
         // Qui inviare la risposta al server tramite socket
-        this.connectionHandler.sendMessage(new Message(MessageType.gameAnswer, answer));
+        this.connectionHandler.sendMessage(new Message(MessageType.gameAnswer, new RispostaGiocatoreDTO(answer)));
 
         System.out.println("Risposta inviata: " + answer);
         statusLabel.setText("Risposta inviata in attesa di verifica...");

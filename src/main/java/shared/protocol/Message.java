@@ -19,7 +19,4 @@ public class Message implements Serializable {
     public Object getPayload() {
         return payload;
     }
-
-
-    // TODO: Da continuare con la struttura
 }
