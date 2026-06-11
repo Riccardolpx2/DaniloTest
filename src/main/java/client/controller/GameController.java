@@ -9,12 +9,17 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import shared.protocol.DTO.DomandaDTO;
 import shared.protocol.DTO.RispostaGiocatoreDTO;
 import shared.protocol.Message;
 import shared.protocol.MessageType;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class GameController {
 
@@ -24,7 +29,7 @@ public class GameController {
     private Label timerLabel;
 
     @FXML
-    private Label textLabel;
+    private TextFlow textFlow;
 
     @FXML
     private TextField answerField;
@@ -66,11 +71,12 @@ public class GameController {
         switch(message.getMsgType()){
             case gameQuestion:
                 startTimer();
-                Task<Void> task = new Task(){
+                Task<Void> task = new Task<Void>(){
                     @Override
                     protected Void call(){
-                        Platform.runLater(() -> {
-                            updateTextLabel(((DomandaDTO) message.getPayload()).getTestoCifrato());
+                        Platform.runLater(() -> {                           
+                            DomandaDTO domanda = (DomandaDTO) message.getPayload();
+                            updateTextFlow(domanda.getTestoCifrato(), domanda.getParoleCifrate());
                         });
                         return null;
                     }
@@ -114,15 +120,39 @@ public class GameController {
         timerLabel.setText(String.format("%02d:%02d", minutes, secs));
     }
 
-    private void updateTextLabel(String text){
-        textLabel.setText(text);
+    private void updateTextFlow(String text, List<String> paroleCifrate){
+
+        textFlow.getChildren().clear();
+        
+        if (paroleCifrate == null || paroleCifrate.isEmpty()) {
+            textFlow.getChildren().add(new Text(text));
+            return;
+        }
+        
+        String regex = "(?i)\\b(" + String.join("|", paroleCifrate) + ")\\b";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(text);
+        
+        int lastEnd = 0;
+        while (matcher.find()) {
+            if (matcher.start() > lastEnd) {
+                textFlow.getChildren().add(new Text(text.substring(lastEnd, matcher.start())));
+            }
+            Text redText = new Text(matcher.group());
+            redText.setStyle("-fx-fill: red; -fx-font-weight: bold;");
+            textFlow.getChildren().add(redText);
+            lastEnd = matcher.end();
+        }
+        if (lastEnd < text.length()) {
+            textFlow.getChildren().add(new Text(text.substring(lastEnd)));
+        }
     }
 
     @FXML
     void submitAnswer(ActionEvent event) throws IOException {
         String answer = answerField.getText().trim();
         if (answer.isEmpty()) {
-            statusLabel.setText("Inserisci una parola.");
+            statusLabel.setText("Inserisci la risposta");
             statusLabel.setStyle("-fx-text-fill: orange;");
             return;
         }
