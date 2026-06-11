@@ -1,4 +1,4 @@
-package server.logica;
+package server.gameLogic;
 
 import shared.game.AnalisiTesto;
 import shared.game.Documento;

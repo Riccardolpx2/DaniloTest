@@ -10,6 +10,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import shared.protocol.DTO.DomandaDTO;
+import shared.protocol.DTO.RispostaGiocatoreDTO;
 import shared.protocol.Message;
 import shared.protocol.MessageType;
 
@@ -127,7 +128,7 @@ public class GameController {
         }
 
         // Qui inviare la risposta al server tramite socket
-        this.connectionHandler.sendMessage(new Message(MessageType.gameAnswer, answer));
+        this.connectionHandler.sendMessage(new Message(MessageType.gameAnswer, new RispostaGiocatoreDTO(answer)));
 
         System.out.println("Risposta inviata: " + answer);
         statusLabel.setText("Risposta inviata in attesa di verifica...");

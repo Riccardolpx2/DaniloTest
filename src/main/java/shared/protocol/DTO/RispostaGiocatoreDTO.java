@@ -13,11 +13,8 @@ import java.io.Serializable;
 public class RispostaGiocatoreDTO implements Serializable{
     
     private String parolaTentata;
-    private int tempo;
-
-    public RispostaGiocatoreDTO(String parolaTentata, int tempo) {
+    public RispostaGiocatoreDTO(String parolaTentata) {
         this.parolaTentata = parolaTentata;
-        this.tempo = tempo;
     }
 
     public String getParolaTentata() {
@@ -28,14 +25,4 @@ public class RispostaGiocatoreDTO implements Serializable{
         this.parolaTentata = parolaTentata;
     }
 
-    public int getTempo() {
-        return tempo;
-    }
-
-    public void setTempo(int tempo) {
-        this.tempo = tempo;
-    }
-    
-    
-    
 }

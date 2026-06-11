@@ -4,7 +4,7 @@
  */
 package shared.protocol.DTO;
 
-import server.logica.Domanda;
+import server.gameLogic.Domanda;
 
 import java.io.Serializable;
 import java.util.List;

@@ -8,14 +8,12 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import shared.gui.util.SceneManager;
+import shared.protocol.DTO.GameSearchDTO;
 import shared.protocol.DTO.GameStartDTO;
 import shared.protocol.Message;
 import shared.protocol.MessageType;
@@ -42,11 +40,18 @@ public class DashboardController {
     private Label welcomeLabel;
 
     @FXML
-    private ListView<String> listadash;
+    private ComboBox<String> difficultyComboBox;
+
+
 
 
     @FXML
     private void initialize(){
+        if (difficultyComboBox != null) {
+            difficultyComboBox.getItems().addAll("FACILE", "MEDIA", "DIFFICILE");
+            difficultyComboBox.getSelectionModel().select("MEDIA");
+        }
+
         String username = ClientApp.getInstance().getCurrentUser();
         if(username != null && !username.isEmpty()){
             welcomeLabel.setText("Ciao " + username + "!");
@@ -109,7 +114,7 @@ public class DashboardController {
         mainContent.setDisable(true); // Impedisce i click sui bottoni sottostanti
 
         try {
-            connectionHandler.sendMessage(new Message(MessageType.gameSearch,null));
+            connectionHandler.sendMessage(new Message(MessageType.gameSearch,new GameSearchDTO(difficultyComboBox.getSelectionModel().getSelectedItem())));
         } catch (IOException e) {
             e.printStackTrace();
             waitingOverlay.setVisible(false);

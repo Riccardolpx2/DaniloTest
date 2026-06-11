@@ -1,4 +1,4 @@
-package server.logica;
+package server.gameLogic;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -60,9 +60,9 @@ public class MatchManager {
         return domandaCorrente;
     }
 
-    public EsitoRoundDTO registraEsitoRound(RispostaGiocatoreDTO g1,RispostaGiocatoreDTO g2) throws SQLException {
+    public EsitoRoundDTO registraEsitoRound(RispostaGiocatoreDTO g1, int tempoG1, RispostaGiocatoreDTO g2, int tempoG2) throws SQLException {
 
-        UtenteEntity vincitore = determinaVincitore(g1.getParolaTentata(), g1.getTempo(),g2.getParolaTentata(), g2.getTempo());
+        UtenteEntity vincitore = determinaVincitore(g1.getParolaTentata(), tempoG1, g2.getParolaTentata(), tempoG2);
         if (vincitore != null) {
             if (vincitore.equals(giocatore1)) {
                 puntiG1++;
@@ -73,8 +73,8 @@ public class MatchManager {
             }
         }
 
-        roundCorrente.setSecondiRispostaG1(g1.getTempo());
-        roundCorrente.setSecondiRispostaG2(g2.getTempo());
+        roundCorrente.setSecondiRispostaG1(tempoG1);
+        roundCorrente.setSecondiRispostaG2(tempoG2);
         roundCorrente.setVincitore(vincitore);
 
         gameService.salvaPartita(roundCorrente);
