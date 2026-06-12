@@ -80,17 +80,4 @@ public class ServerLoginController {
         thread.start();
 
     }
-
-//    @FXML
-//    private void register(ActionEvent event){
-//        try {
-//            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/clientRegister.fxml"));
-//            Parent root = loader.load();
-//            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-//            Scene scene = new Scene(root);
-//            stage.setScene(scene);
-//        } catch(Exception e){
-//            e.printStackTrace();
-//        }
-//    }
 }

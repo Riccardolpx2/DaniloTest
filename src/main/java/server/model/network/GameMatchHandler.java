@@ -39,6 +39,7 @@ public class GameMatchHandler implements Runnable {
             this.matchManager = gameFactory.creaMatch(player1.getLoggedUser(), player2.getLoggedUser(),
                     difficolta, NUM_ROUNDS);
         } catch (SQLException e) {
+            System.out.println("Prova per vedere se è qua l'errore\n");
             disconnettiClient();
             throw new RuntimeException(e);
         }
