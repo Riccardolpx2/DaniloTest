@@ -3,7 +3,6 @@ package server.model.network;
 import server.model.database.entity.UtenteEntity;
 import server.model.network.state.AuthState;
 import server.model.network.state.ClientState;
-import server.gameLogic.GameMatchHandler;
 import shared.protocol.Message;
 
 import java.io.EOFException;

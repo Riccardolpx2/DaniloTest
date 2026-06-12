@@ -1,6 +1,5 @@
 package server.model.network;
 
-import server.gameLogic.GameMatchHandler;
 import java.util.HashMap;
 import java.util.Map;
 

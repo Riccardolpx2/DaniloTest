@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import server.model.database.entity.UtenteEntity;
+import shared.protocol.DTO.EsitoPartitaDTO;
 import shared.protocol.DTO.EsitoRoundDTO;
 import shared.protocol.DTO.RispostaGiocatoreDTO;
 
@@ -67,12 +68,14 @@ public class MatchManager {
      * * @param quitter L'utente che ha abbandonato la partita. Se viene passato 'null', significa che
      * la partita è giunta al termine naturalmente e il vincitore va calcolato in base ai punti.
      * @throws SQLException In caso di errori nell'aggiornamento delle statistiche sul Database.
+     * @return L'esito della partita.
      */
-    public void terminaPartita(UtenteEntity quitter) throws SQLException {
+    public EsitoPartitaDTO terminaPartita(UtenteEntity quitter) throws SQLException {
         // TODO:
         // 1. Se quitter == null -> Calcola il vincitore guardando chi ha più punti.
         // 2. Se quitter != null -> Assegna la vittoria a tavolino all'utente che NON ha abbandonato.
         // 3. Salva o Aggiorna le Statistiche (es. ratio vittorie/sconfitte) dei due utenti nel DB.
+        return null;
     }
 
     /**

@@ -1,14 +1,14 @@
-package server.gameLogic;
+package server.model.network;
 
-import server.model.network.ClientHandler;
+import server.gameLogic.Domanda;
+import server.gameLogic.GameFactory;
+import server.gameLogic.MatchManager;
+import server.model.database.entity.UtenteEntity;
 import server.model.network.state.DashboardState;
 import server.model.network.state.GameState;
-import shared.protocol.DTO.DomandaDTO;
-import shared.protocol.DTO.GameStartDTO;
+import shared.protocol.DTO.*;
 import shared.protocol.Message;
 import shared.protocol.MessageType;
-import shared.protocol.DTO.RispostaGiocatoreDTO;
-import shared.protocol.DTO.EsitoRoundDTO;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -64,23 +64,9 @@ public class GameMatchHandler implements Runnable {
             Domanda domandaCorrente = this.matchManager.iniziaNuovoRound();
 
             if(domandaCorrente == null) {
-                this.matchRunning = false;
-
-                // 1. FINE NATURALE: Riportiamo subito i client in Dashboard
-                riportaClientInDashboard();
-
-                try {
-                    matchManager.terminaPartita(null);
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-
-                int puntiP1 = matchManager.punteggioAttualeDi(player1.getLoggedUser());
-                int puntiP2 = matchManager.punteggioAttualeDi(player2.getLoggedUser());
-                String fineMsg = "Partita Terminata! " + puntiP1 + " - " + puntiP2;
-
-                inviaMessaggioEntrambi(new Message(MessageType.gameEnd, fineMsg));
-                break;
+                // Fine naturale: passiamo null. Il metodo gestirà sia il DTO che il reset in Dashboard
+                this.terminaPartita(null);
+                break; // Usciamo dal loop del thread
             }
 
             // Reset dello stato del thread per il nuovo round
@@ -147,37 +133,40 @@ public class GameMatchHandler implements Runnable {
     }
 
     public synchronized void disconnettiClient() {
-        if (!matchRunning) return; // Evita esecuzioni multiple se crashano insieme
-
-        this.matchRunning = false;
-
-        // 2. DISCONNESSIONE/CRASH: Riportiamo in Dashboard chiunque sia rimasto
-        riportaClientInDashboard();
-
-        this.notifyAll(); // Sblocca l'attesa in caso di disconnessione improvvisa
-        inviaMessaggioEntrambi(new Message(MessageType.gameError, "Errore durante la partita"));
-    }
-
-    public synchronized void abbandonaPartita(ClientHandler quitter) {
         if (!matchRunning) return;
-        this.matchRunning = false;
 
-        // 3. ABBANDONO VOLONTARIO: Ripristina gli stati di entrambi
+        this.matchRunning = false;
         riportaClientInDashboard();
 
         this.notifyAll();
+        inviaMessaggioEntrambi(new Message(MessageType.gameError, "Errore di rete improvviso. Ritorno alla dashboard."));
+    }
 
-        ClientHandler winner = (quitter == player1) ? player2 : player1;
+    /**
+     * Unico punto di uscita della partita (abbandono volontario o termine naturale).
+     * @param quitter Il client che ha abbandonato, oppure null se la partita è finita regolarmente.
+     */
+    public synchronized void terminaPartita(ClientHandler quitter) {
+        if (!matchRunning) return;
+        this.matchRunning = false;
+
+        // 1. Pulizia Thread e Stati
+        riportaClientInDashboard();
+        this.notifyAll();
+
+        // 2. Estrazione sicura dell'utente: se quitter è null, utenteQuitter sarà null
+        UtenteEntity utenteQuitter = (quitter != null) ? quitter.getLoggedUser() : null;
 
         try {
-            matchManager.terminaPartita(quitter.getLoggedUser());
+            // 3. Facciamo calcolare al Manager l'esito
+            EsitoPartitaDTO esitoPartitaDTO = matchManager.terminaPartita(utenteQuitter);
+
+            inviaMessaggioEntrambi(new Message(MessageType.gameEnd, esitoPartitaDTO));
+
         } catch (SQLException e) {
             e.printStackTrace();
+            inviaMessaggioEntrambi(new Message(MessageType.gameError, "Errore nel salvataggio delle statistiche"));
         }
-
-        // TODO: Da inserire il Payload corretto con punteggi ecc.
-        inviaMessaggioEntrambi(new Message(MessageType.gameEnd,
-                "Partita terminata: " + quitter.getLoggedUser().getUsername() + " ha abbandonato. Vince " + winner.getLoggedUser().getUsername() + "!"));
     }
 
     /**

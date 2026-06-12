@@ -19,7 +19,7 @@ public class GameState extends ClientState{
     @MessageHandler(MessageType.logout)
     private void logout(Message message, ClientHandler clientHandler) {
         try {
-            clientHandler.getCurrentMatch().abbandonaPartita(clientHandler);
+            clientHandler.getCurrentMatch().terminaPartita(clientHandler);
             if (clientHandler.getLoggedUser() != null) {
                 SessionManager.getInstance().logout(clientHandler.getLoggedUser().getUsername());
             }
