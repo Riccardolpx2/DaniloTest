@@ -44,7 +44,9 @@ public class GameMatchHandler implements Runnable {
         }
 
         player1.setCurrentState(new GameState());
+        player1.setCurrentMatch(this);
         player2.setCurrentState(new GameState());
+        player2.setCurrentMatch(this);
     }
 
     @Override
@@ -119,26 +121,35 @@ public class GameMatchHandler implements Runnable {
 
 
     public synchronized void registraRisposta(ClientHandler client, String parolaTentata) {
-        if (!matchRunning || roundConcluso) return; // Evita di registrare risposte fuori dal round
+        //if (!matchRunning || roundConcluso) return; // Evita di registrare risposte fuori dal round
 
-        int tempoImpiegato = (int) ((System.currentTimeMillis() - roundStartTime) / 1000);
-        RispostaGiocatoreDTO risposta = new RispostaGiocatoreDTO(parolaTentata);
+        // Per fare prova
+        EsitoRoundDTO esitoRoundDTO = new EsitoRoundDTO(player1.getLoggedUser().getUsername(), "Nerchia", 69, 90);
+        inviaMessaggioEntrambi(new Message(MessageType.gameResponse, esitoRoundDTO));
+        roundConcluso = true;
+        System.out.println("Ho inviato il messaggio di gameResponse");
+        this.notifyAll();
 
-        boolean isCorretta = this.domandaCorrente.getParoleSoluzioni().contains(parolaTentata.trim().toLowerCase());
+        // *************
 
-        if (client == player1 && rispostaP1 == null) {
-            rispostaP1 = risposta;
-            tempoP1 = tempoImpiegato;
-        } else if (client == player2 && rispostaP2 == null) {
-            rispostaP2 = risposta;
-            tempoP2 = tempoImpiegato;
-        }
-
-        // Se uno dei due dà la risposta corretta, o se entrambi hanno esaurito i loro tentativi, chiudiamo il round
-        if (isCorretta || (rispostaP1 != null && rispostaP2 != null)) {
-            roundConcluso = true;
-            this.notifyAll(); // Sblocca istantaneamente la wait(30000) nel run()
-        }
+//        int tempoImpiegato = (int) ((System.currentTimeMillis() - roundStartTime) / 1000);
+//        RispostaGiocatoreDTO risposta = new RispostaGiocatoreDTO(parolaTentata);
+//
+//        boolean isCorretta = this.domandaCorrente.getParoleSoluzioni().contains(parolaTentata.trim().toLowerCase());
+//
+//        if (client == player1 && rispostaP1 == null) {
+//            rispostaP1 = risposta;
+//            tempoP1 = tempoImpiegato;
+//        } else if (client == player2 && rispostaP2 == null) {
+//            rispostaP2 = risposta;
+//            tempoP2 = tempoImpiegato;
+//        }
+//
+//        // Se uno dei due dà la risposta corretta, o se entrambi hanno esaurito i loro tentativi, chiudiamo il round
+//        if (isCorretta || (rispostaP1 != null && rispostaP2 != null)) {
+//            roundConcluso = true;
+//            this.notifyAll(); // Sblocca istantaneamente la wait(30000) nel run()
+//        }
     }
 
     public synchronized void disconnettiClient() {
