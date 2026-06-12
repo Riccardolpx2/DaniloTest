@@ -15,9 +15,9 @@ public class MatchManager {
 
     /**
      * Costruttore: inizializza i giocatori, la difficoltà della partita e la lista delle domande.
-     * * @param p1 Il primo utente partecipante.
+     * @param p1 Il primo utente partecipante.
      * @param p2 Il secondo utente partecipante.
-     * @param difficolta La difficoltà scelta per la partita (es. "FACILE", "DIFFICILE").
+     * @param difficolta La difficoltà scelta per la partita ("FACILE", "MEDIA", "DIFFICILE").
      * @param domande La lista di domande caricate per questa partita.
      */
     public MatchManager(UtenteEntity p1, UtenteEntity p2, String difficolta, List<Domanda> domande) {

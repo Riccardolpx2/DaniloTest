@@ -1,6 +1,7 @@
 package server.gameLogic;
 
 import server.model.network.ClientHandler;
+import server.model.network.state.DashboardState;
 import server.model.network.state.GameState;
 import shared.protocol.DTO.DomandaDTO;
 import shared.protocol.DTO.GameStartDTO;
@@ -53,7 +54,7 @@ public class GameMatchHandler implements Runnable {
         inviaInizioPartita();
 
         try {
-            Thread.sleep(2000); // Pausa per permettere ai client di caricare la GUI del gioco
+            Thread.sleep(1000); // Pausa per permettere ai client di caricare la GUI del gioco
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
@@ -64,8 +65,11 @@ public class GameMatchHandler implements Runnable {
 
             if(domandaCorrente == null) {
                 this.matchRunning = false;
+
+                // 1. FINE NATURALE: Riportiamo subito i client in Dashboard
+                riportaClientInDashboard();
+
                 try {
-                    // Passiamo null per indicare la fine naturale della partita
                     matchManager.terminaPartita(null);
                 } catch (SQLException e) {
                     e.printStackTrace();
@@ -121,11 +125,10 @@ public class GameMatchHandler implements Runnable {
 
 
     public synchronized void registraRisposta(ClientHandler client, String parolaTentata) {
-        if (!matchRunning || roundConcluso) return; // Evita di registrare risposte fuori dal round
+        if (!matchRunning || roundConcluso) return;
 
         boolean isP1 = (client == player1);
 
-        // Impedisce allo stesso giocatore di spammare più risposte in un singolo round
         if (isP1 && haRispostoP1) return;
         if (!isP1 && haRispostoP2) return;
 
@@ -135,20 +138,58 @@ public class GameMatchHandler implements Runnable {
         int tempoImpiegato = (int) ((System.currentTimeMillis() - roundStartTime) / 1000);
         RispostaGiocatoreDTO risposta = new RispostaGiocatoreDTO(parolaTentata);
 
-        // Passiamo i dati puliti al MatchManager, che ci dirà se la risposta è corretta
         boolean isCorretta = matchManager.elaboraRisposta(client.getLoggedUser(), risposta, tempoImpiegato);
 
-        // Se uno dei due dà la risposta corretta, o se entrambi hanno esaurito i loro tentativi, sblocchiamo il round
         if (isCorretta || (haRispostoP1 && haRispostoP2)) {
             roundConcluso = true;
-            this.notifyAll(); // Sblocca istantaneamente la wait(30000) nel run()
+            this.notifyAll();
         }
     }
 
     public synchronized void disconnettiClient() {
+        if (!matchRunning) return; // Evita esecuzioni multiple se crashano insieme
+
         this.matchRunning = false;
+
+        // 2. DISCONNESSIONE/CRASH: Riportiamo in Dashboard chiunque sia rimasto
+        riportaClientInDashboard();
+
         this.notifyAll(); // Sblocca l'attesa in caso di disconnessione improvvisa
         inviaMessaggioEntrambi(new Message(MessageType.gameError, "Errore durante la partita"));
+    }
+
+    public synchronized void abbandonaPartita(ClientHandler quitter) {
+        if (!matchRunning) return;
+        this.matchRunning = false;
+
+        // 3. ABBANDONO VOLONTARIO: Ripristina gli stati di entrambi
+        riportaClientInDashboard();
+
+        this.notifyAll();
+
+        ClientHandler winner = (quitter == player1) ? player2 : player1;
+
+        try {
+            matchManager.terminaPartita(quitter.getLoggedUser());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        // TODO: Da inserire il Payload corretto con punteggi ecc.
+        inviaMessaggioEntrambi(new Message(MessageType.gameEnd,
+                "Partita terminata: " + quitter.getLoggedUser().getUsername() + " ha abbandonato. Vince " + winner.getLoggedUser().getUsername() + "!"));
+    }
+
+    /**
+     * Metodo Helper: ripristina in sicurezza lo stato di entrambi i client alla Dashboard
+     * e ripulisce il riferimento alla partita ormai conclusa.
+     */
+    private void riportaClientInDashboard() {
+        player1.setCurrentState(new DashboardState());
+        player1.setCurrentMatch(null);
+
+        player2.setCurrentState(new DashboardState());
+        player2.setCurrentMatch(null);
     }
 
     private void inviaInizioPartita(){
@@ -178,23 +219,5 @@ public class GameMatchHandler implements Runnable {
     private void inviaDomandaEntrambi(Domanda domanda){
         DomandaDTO domandaDTO = new DomandaDTO(domanda.getTestoCifrato(), domanda.getParoleSoluzioniCifrate());
         inviaMessaggioEntrambi(new Message(MessageType.gameQuestion, domandaDTO));
-    }
-
-    public synchronized void abbandonaPartita(ClientHandler quitter) {
-        if (!matchRunning) return;
-        this.matchRunning = false;
-        this.notifyAll();
-
-        ClientHandler winner = (quitter == player1) ? player2 : player1;
-
-        try {
-            // Passiamo l'entità utente del quitter al manager
-            matchManager.terminaPartita(quitter.getLoggedUser());
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        inviaMessaggioEntrambi(new Message(MessageType.gameEnd,
-                "Partita terminata: " + quitter.getLoggedUser().getUsername() + " ha abbandonato. Vince " + winner.getLoggedUser().getUsername() + "!"));
     }
 }

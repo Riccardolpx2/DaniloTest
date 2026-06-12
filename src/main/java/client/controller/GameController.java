@@ -73,19 +73,21 @@ public class GameController {
 
     private int timeRemaining = 30;
     private Thread timerThread;
-    private String usernameSfidante;
+    private String currentUser;
+    private String usernameAvversario;
 
     public void inizializzaDati(String messaggio) {
-        usernameSfidante = messaggio;
+        usernameAvversario = messaggio;
         Platform.runLater(() -> {
             if (sfidanteLabel != null) {
-                sfidanteLabel.setText("Partita contro " + usernameSfidante);
+                sfidanteLabel.setText("Partita contro " + usernameAvversario);
             }
         });
     }
 
     @FXML
     public void initialize() {
+        this.currentUser = ClientApp.getInstance().getCurrentUser();
         this.connectionHandler = ClientApp.getInstance().getConnectionHandler();
         this.connectionHandler.setCurrentListener(this::messageHandler);
     }
@@ -138,7 +140,6 @@ public class GameController {
         answerField.setDisable(true);
         submitButton.setDisable(true);
 
-        String currentUser = ClientApp.getInstance().getCurrentUser();
         String vincitore = esito.getUsernameVincitore();
 
         // 1. Esito del round
@@ -161,8 +162,8 @@ public class GameController {
         }
 
         // 3. Gestione Punteggi
-        int mioPunteggio = esito.getPunteggioAttualeG1();
-        int punteggioAvversario = esito.getPunteggioAttualeG2();
+        int mioPunteggio = esito.getPunteggi().get(currentUser);
+        int punteggioAvversario = esito.getPunteggi().get(usernameAvversario);
 
         if (myScoreLabel != null) {
             myScoreLabel.setText(String.valueOf(mioPunteggio));
