@@ -7,7 +7,6 @@ import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -49,7 +48,7 @@ public class GameController {
     @FXML
     private Label sfidanteLabel;
 
-    // Elementi dell'Overlay
+    // Elementi dell'Overlay dei Round
     @FXML
     private VBox resultOverlay;
 
@@ -64,6 +63,13 @@ public class GameController {
 
     @FXML
     private Label opponentScoreLabel;
+
+    // Elementi dell'Overlay di Fine Partita
+    @FXML
+    private VBox gameEndOverlay;
+
+    @FXML
+    private Label gameEndMessageLabel;
 
     private int timeRemaining = 30;
     private Thread timerThread;
@@ -133,17 +139,18 @@ public class GameController {
         submitButton.setDisable(true);
 
         String currentUser = ClientApp.getInstance().getCurrentUser();
+        String vincitore = esito.getUsernameVincitore();
 
         // 1. Esito del round
         if (roundResultLabel != null) {
-            if (esito.getUsernameVincitore() == null) {
-                roundResultLabel.setText("Nessun vincitore in questo round!");
-                roundResultLabel.setStyle("-fx-text-fill: #f1c40f; -fx-font-size: 32px; -fx-font-weight: bold;");
-            } else if (esito.getUsernameVincitore().equals(currentUser)) {
+            if (vincitore == null) {
+                roundResultLabel.setText("Nessuno ha indovinato! Pareggio");
+                roundResultLabel.setStyle("-fx-text-fill: #f39c12; -fx-font-size: 38px; -fx-font-weight: bold;");
+            } else if (vincitore.equals(currentUser)) {
                 roundResultLabel.setText("Hai vinto il round!");
                 roundResultLabel.setStyle("-fx-text-fill: #2ecc71; -fx-font-size: 38px; -fx-font-weight: bold;");
             } else {
-                roundResultLabel.setText("Ha vinto " + esito.getUsernameVincitore() + "!");
+                roundResultLabel.setText("Ha vinto " + vincitore + "!");
                 roundResultLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 38px; -fx-font-weight: bold;");
             }
         }
@@ -153,7 +160,7 @@ public class GameController {
             correctWordLabel.setText("La parola corretta era: " + esito.getParolaSoluzione());
         }
 
-        // TODO modificare G1 e G2 per avere un metodo che invia il punteggio passandogli l'utente
+        // 3. Gestione Punteggi
         int mioPunteggio = esito.getPunteggioAttualeG1();
         int punteggioAvversario = esito.getPunteggioAttualeG2();
 
@@ -176,20 +183,29 @@ public class GameController {
     }
 
     private void showGameEnd(String message) {
+        // Nascondi l'overlay del round se era ancora visibile
         if (resultOverlay != null) {
             resultOverlay.setVisible(false);
         }
-        statusLabel.setText(message);
-        statusLabel.setStyle("-fx-text-fill: gold;");
 
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Partita Terminata");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+        // Imposta il messaggio nell'etichetta dell'overlay di fine partita
+        if (gameEndMessageLabel != null) {
+            gameEndMessageLabel.setText(message);
+        }
 
-        if (textFlow.getScene() != null && textFlow.getScene().getWindow() != null) {
-            SceneManager.switchScene((javafx.stage.Stage) textFlow.getScene().getWindow(), "/fxml/client/clientDashboard.fxml");
+        // Mostra l'overlay di fine partita e portalo in primo piano
+        if (gameEndOverlay != null) {
+            gameEndOverlay.setVisible(true);
+            gameEndOverlay.toFront();
+        }
+    }
+
+    @FXML
+    void returnToDashboard(ActionEvent event) {
+        // Usa la scena attuale per tornare alla Dashboard
+
+        if (gameEndOverlay.getScene() != null && gameEndOverlay.getScene().getWindow() != null) {
+            SceneManager.switchScene((javafx.stage.Stage) gameEndOverlay.getScene().getWindow(), "/fxml/client/clientDashboard.fxml");
         }
     }
 

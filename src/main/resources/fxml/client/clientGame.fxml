@@ -112,5 +112,33 @@
             </HBox>
          </children>
       </VBox>
+
+      <VBox fx:id="gameEndOverlay" alignment="CENTER" spacing="40.0" style="-fx-background-color: rgba(20, 30, 48, 0.98);" visible="false">
+         <children>
+            <Label text="Partita Terminata" textFill="#f39c12">
+               <font>
+                  <Font name="System Bold" size="48.0" />
+               </font>
+            </Label>
+
+            <Label fx:id="gameEndMessageLabel" text="Messaggio del server..." textFill="WHITE" wrapText="true" textAlignment="CENTER">
+               <font>
+                  <Font size="28.0" />
+               </font>
+               <padding>
+                  <Insets left="20.0" right="20.0" />
+               </padding>
+            </Label>
+
+            <Button mnemonicParsing="false" onAction="#returnToDashboard" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand;" text="Torna alla Dashboard">
+               <font>
+                  <Font name="System Bold" size="18.0" />
+               </font>
+               <padding>
+                  <Insets bottom="15.0" left="30.0" right="30.0" top="15.0" />
+               </padding>
+            </Button>
+         </children>
+      </VBox>
    </children>
 </StackPane>
