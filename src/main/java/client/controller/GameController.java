@@ -136,12 +136,12 @@ public class GameController {
 
         // 1. Esito del round
         if (roundResultLabel != null) {
-            if (esito.getUsernameVincitore().equals(currentUser)) {
-                roundResultLabel.setText("Hai vinto il round!");
-                roundResultLabel.setStyle("-fx-text-fill: #2ecc71; -fx-font-size: 38px; -fx-font-weight: bold;");
-            } else if (esito.getUsernameVincitore().equals("Pareggio")) {
+            if (esito.getUsernameVincitore() == null) {
                 roundResultLabel.setText("Nessun vincitore in questo round!");
                 roundResultLabel.setStyle("-fx-text-fill: #f1c40f; -fx-font-size: 32px; -fx-font-weight: bold;");
+            } else if (esito.getUsernameVincitore().equals(currentUser)) {
+                roundResultLabel.setText("Hai vinto il round!");
+                roundResultLabel.setStyle("-fx-text-fill: #2ecc71; -fx-font-size: 38px; -fx-font-weight: bold;");
             } else {
                 roundResultLabel.setText("Ha vinto " + esito.getUsernameVincitore() + "!");
                 roundResultLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 38px; -fx-font-weight: bold;");

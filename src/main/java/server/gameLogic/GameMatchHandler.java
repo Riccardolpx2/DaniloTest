@@ -124,7 +124,7 @@ public class GameMatchHandler implements Runnable {
         //if (!matchRunning || roundConcluso) return; // Evita di registrare risposte fuori dal round
 
         // Per fare prova
-        EsitoRoundDTO esitoRoundDTO = new EsitoRoundDTO(player1.getLoggedUser().getUsername(), "Nerchia", 69, 90);
+        EsitoRoundDTO esitoRoundDTO = new EsitoRoundDTO(null, "Nerchia", 69, 90);
         inviaMessaggioEntrambi(new Message(MessageType.gameResponse, esitoRoundDTO));
         roundConcluso = true;
         System.out.println("Ho inviato il messaggio di gameResponse");
