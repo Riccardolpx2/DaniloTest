@@ -41,7 +41,7 @@ public class MatchmakingManager {
             lobbies.remove(keyToRemove);
             System.out.println("Client " + clientHandler.getLoggedUser().getUsername() + " ha lasciato la lobby " + keyToRemove);
         } else {
-            System.out.println("Errore nella lobby: il client non era in attesa di alcuna partita.");
+            System.out.println("Il client " + clientHandler.getLoggedUser().getUsername() + " non era in attesa di alcuna partita.");
         }
     }
 }

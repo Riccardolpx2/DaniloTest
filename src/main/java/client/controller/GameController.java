@@ -16,6 +16,7 @@ import javafx.scene.text.TextFlow;
 import javafx.util.Duration;
 import shared.protocol.DTO.DomandaDTO;
 import shared.protocol.DTO.EsitoRoundDTO;
+import shared.protocol.DTO.EsitoPartitaDTO;
 import shared.protocol.DTO.RispostaGiocatoreDTO;
 import shared.protocol.Message;
 import shared.protocol.MessageType;
@@ -69,7 +70,16 @@ public class GameController {
     private VBox gameEndOverlay;
 
     @FXML
-    private Label gameEndMessageLabel;
+    private Label gameEndTitleLabel;
+
+    @FXML
+    private Label gameEndReasonLabel;
+
+    @FXML
+    private Label gameEndMyScoreLabel;
+
+    @FXML
+    private Label gameEndOpponentScoreLabel;
 
     private int timeRemaining = 30;
     private Thread timerThread;
@@ -128,7 +138,9 @@ public class GameController {
                     if (timerThread != null) {
                         timerThread.interrupt();
                     }
-                    showGameEnd((String) message.getPayload());
+                    // Adesso riceve correttamente il DTO di fine partita
+                    EsitoPartitaDTO esitoPartita = (EsitoPartitaDTO) message.getPayload();
+                    showGameEnd(esitoPartita);
                 });
                 break;
             default:
@@ -162,8 +174,8 @@ public class GameController {
         }
 
         // 3. Gestione Punteggi
-        int mioPunteggio = esito.getPunteggi().get(currentUser);
-        int punteggioAvversario = esito.getPunteggi().get(usernameAvversario);
+        int mioPunteggio = esito.getPunteggi().getOrDefault(currentUser, 0);
+        int punteggioAvversario = esito.getPunteggi().getOrDefault(usernameAvversario, 0);
 
         if (myScoreLabel != null) {
             myScoreLabel.setText(String.valueOf(mioPunteggio));
@@ -183,18 +195,54 @@ public class GameController {
         }
     }
 
-    private void showGameEnd(String message) {
+    private void showGameEnd(EsitoPartitaDTO esito) {
         // Nascondi l'overlay del round se era ancora visibile
         if (resultOverlay != null) {
             resultOverlay.setVisible(false);
         }
 
-        // Imposta il messaggio nell'etichetta dell'overlay di fine partita
-        if (gameEndMessageLabel != null) {
-            gameEndMessageLabel.setText(message);
+        String vincitore = esito.getUsernameVincitore();
+        boolean abbandono = esito.isTerminataPerAbbandono();
+
+        // 1. Titolo dell'esito finale e colori
+        if (gameEndTitleLabel != null) {
+            if (vincitore == null) {
+                gameEndTitleLabel.setText("Partita Terminata: Pareggio!");
+                gameEndTitleLabel.setStyle("-fx-text-fill: #f39c12;"); // Arancione
+            } else if (vincitore.equals(currentUser)) {
+                gameEndTitleLabel.setText("Hai Vinto la Partita!");
+                gameEndTitleLabel.setStyle("-fx-text-fill: #2ecc71;"); // Verde
+            } else {
+                gameEndTitleLabel.setText("Hai Perso la Partita.");
+                gameEndTitleLabel.setStyle("-fx-text-fill: #e74c3c;"); // Rosso
+            }
         }
 
-        // Mostra l'overlay di fine partita e portalo in primo piano
+        // 2. Motivazione (Completamento o Abbandono)
+        if (gameEndReasonLabel != null) {
+            if (abbandono) {
+                if (vincitore != null && vincitore.equals(currentUser)) {
+                    gameEndReasonLabel.setText("Vittoria a tavolino: l'avversario ha abbandonato.");
+                } else {
+                    gameEndReasonLabel.setText("Hai abbandonato la partita.");
+                }
+            } else {
+                gameEndReasonLabel.setText("Tutti i round sono stati completati.");
+            }
+        }
+
+        // 3. Punteggi Finali
+        int mioPunteggio = esito.getPunteggiFinali().getOrDefault(currentUser, 0);
+        int punteggioAvversario = esito.getPunteggiFinali().getOrDefault(usernameAvversario, 0);
+
+        if (gameEndMyScoreLabel != null) {
+            gameEndMyScoreLabel.setText(String.valueOf(mioPunteggio));
+        }
+        if (gameEndOpponentScoreLabel != null) {
+            gameEndOpponentScoreLabel.setText(String.valueOf(punteggioAvversario));
+        }
+
+        // 4. Mostra l'overlay di fine partita
         if (gameEndOverlay != null) {
             gameEndOverlay.setVisible(true);
             gameEndOverlay.toFront();
@@ -203,8 +251,6 @@ public class GameController {
 
     @FXML
     void returnToDashboard(ActionEvent event) {
-        // Usa la scena attuale per tornare alla Dashboard
-
         if (gameEndOverlay.getScene() != null && gameEndOverlay.getScene().getWindow() != null) {
             SceneManager.switchScene((javafx.stage.Stage) gameEndOverlay.getScene().getWindow(), "/fxml/client/clientDashboard.fxml");
         }
