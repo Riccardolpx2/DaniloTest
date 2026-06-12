@@ -1,137 +1,87 @@
 package server.gameLogic;
 
 import java.sql.SQLException;
-import java.time.LocalDateTime;
 import java.util.List;
 
 import server.model.database.entity.UtenteEntity;
-import shared.game.Partita;
-import shared.game.SessioneDiGioco;
-import shared.game.Statistica;
 import shared.protocol.DTO.EsitoRoundDTO;
 import shared.protocol.DTO.RispostaGiocatoreDTO;
 
-
+/**
+ * Gestisce la logica di dominio di una partita in corso.
+ * Mantiene lo stato dei giocatori, il punteggio, le domande e gestisce l'evoluzione dei round.
+ */
 public class MatchManager {
 
-    private final UtenteEntity giocatore1;
-    private final UtenteEntity giocatore2;
-
-    private final List<Domanda> listaDomande;
-    private int indiceRound = 0;
-
-    private Domanda domandaCorrente;
-
-    private final SessioneDiGioco sessione;
-
-    private int puntiG1 = 0;
-    private int puntiG2 = 0;
-
-    private Partita roundCorrente;
-
-    private final String difficolta;
-
-    private final GameService gameService = new GameService();
-
-    public MatchManager(UtenteEntity p1,UtenteEntity p2,String difficolta,List<Domanda> domande) {
-
-        this.giocatore1 = p1;
-        this.giocatore2 = p2;
-        this.listaDomande = domande;
-        this.difficolta = difficolta;
-
-        this.sessione = new SessioneDiGioco( 0, 0, null, LocalDateTime.now(), 0, 0, null,p1, p2,"IN_CORSO");
+    /**
+     * Costruttore: inizializza i giocatori, la difficoltà della partita e la lista delle domande.
+     * * @param p1 Il primo utente partecipante.
+     * @param p2 Il secondo utente partecipante.
+     * @param difficolta La difficoltà scelta per la partita (es. "FACILE", "DIFFICILE").
+     * @param domande La lista di domande caricate per questa partita.
+     */
+    public MatchManager(UtenteEntity p1, UtenteEntity p2, String difficolta, List<Domanda> domande) {
+        // TODO: Implementare l'inizializzazione delle variabili interne
     }
 
-    public Domanda getDomanda() {
-
-        if (indiceRound >= listaDomande.size()) {
-            return null;
-        }
-        domandaCorrente = listaDomande.get(indiceRound);
-        indiceRound++;
-
-        roundCorrente = new Partita(0,sessione.getIdSessione(),0,0,0,domandaCorrente.getParoleSoluzioni().get(0),0,
-                0,difficolta, null,null);
-
-        return domandaCorrente;
+    /**
+     * Prepara e restituisce la nuova domanda per il round successivo.
+     * Si occupa anche di resettare le variabili temporanee del round precedente
+     * (es. imposta le risposte vuote e i timer a 30s di default per gestire eventuali timeout).
+     * * @return La nuova Domanda da sottoporre ai giocatori, oppure null se le domande sono finite.
+     */
+    public Domanda iniziaNuovoRound() {
+        // TODO: Implementare la logica di avanzamento e reset stato round
+        return null;
     }
 
-    public EsitoRoundDTO registraEsitoRound(RispostaGiocatoreDTO g1, int tempoG1, RispostaGiocatoreDTO g2, int tempoG2) throws SQLException {
-
-        UtenteEntity vincitore = determinaVincitore(g1.getParolaTentata(), tempoG1, g2.getParolaTentata(), tempoG2);
-        if (vincitore != null) {
-            if (vincitore.equals(giocatore1)) {
-                puntiG1++;
-                sessione.incrementaPunteggioG1(1);
-            } else {
-                puntiG2++;
-                sessione.incrementaPunteggioG2(1);
-            }
-        }
-
-        roundCorrente.setSecondiRispostaG1(tempoG1);
-        roundCorrente.setSecondiRispostaG2(tempoG2);
-        roundCorrente.setVincitore(vincitore);
-
-        gameService.salvaPartita(roundCorrente);
-        sessione.aggiungiPartita(roundCorrente);
-
-        String nomeVincitore =(vincitore != null) ? vincitore.getUsername() : "Pareggio";
-
-        return new EsitoRoundDTO( nomeVincitore, roundCorrente.getParolaSoluzione(),puntiG1,puntiG2 );
-    }
-    
-    private UtenteEntity determinaVincitore(String r1, int t1, String r2, int t2) {
-
-        boolean g1 = domandaCorrente.getParoleSoluzioni().contains(r1.trim().toLowerCase());
-
-        boolean g2 = domandaCorrente.getParoleSoluzioni().contains(r2.trim().toLowerCase());
-
-        if (!g1 && !g2) return null;
-        if (g1 && !g2) return giocatore1;
-        if (!g1 && g2) return giocatore2;
-
-        return (t1 < t2) ? giocatore1 : (t2 < t1) ? giocatore2 : null;
+    /**
+     * Registra la risposta fornita da un utente durante il round corrente e verifica se è la soluzione.
+     * * @param utente L'utente che ha inviato la risposta.
+     * @param risposta Il DTO contenente la parola tentata dal giocatore.
+     * @param tempo I secondi impiegati dal giocatore per rispondere.
+     * @return true se la risposta è corretta (utile al Thread per fermare l'attesa), false altrimenti.
+     */
+    public boolean elaboraRisposta(UtenteEntity utente, RispostaGiocatoreDTO risposta, int tempo) {
+        // TODO: Salvare localmente la risposta associata all'utente
+        // TODO: Confrontare la stringa contenuta nel DTO con le soluzioni della domanda corrente
+        return false;
     }
 
-    public void terminaSessione() throws SQLException {
-
-        sessione.setStato("TERMINATA");
-        UtenteEntity vincitore = null;
-
-        if (puntiG1 > puntiG2) vincitore = giocatore1;
-        else if (puntiG2 > puntiG1) vincitore = giocatore2;
-
-        sessione.setVincitore(vincitore);
-        gameService.salvaSessione(sessione);
-        aggiornaStatistiche();
+    /**
+     * Viene invocato alla fine del timer o non appena il round si sblocca (qualcuno ha indovinato o tutti hanno risposto).
+     * Valuta le risposte salvate in precedenza, determina il vincitore del singolo round, aggiorna i punti
+     * dei giocatori e prepara il risultato da inviare.
+     * * @return Il DTO con l'esito del round pronto per essere inviato ai client.
+     * @throws SQLException In caso di errori durante eventuali salvataggi a Database.
+     */
+    public EsitoRoundDTO chiudiRound() throws SQLException {
+        // TODO: Calcolare chi ha vinto il round (chi ha indovinato col tempo minore)
+        // TODO: Incrementare il punteggio del vincitore
+        // TODO: Costruire e restituire l'EsitoRoundDTO
+        return null;
     }
 
-    private void aggiornaStatistiche() throws SQLException {
-
-        aggiornaSingoloUtente(giocatore1, puntiG1 > puntiG2);
-        aggiornaSingoloUtente(giocatore2, puntiG2 > puntiG1);
+    /**
+     * Gestisce la fine definita della partita, sia essa naturale o per abbandono.
+     * * @param quitter L'utente che ha abbandonato la partita. Se viene passato 'null', significa che
+     * la partita è giunta al termine naturalmente e il vincitore va calcolato in base ai punti.
+     * @throws SQLException In caso di errori nell'aggiornamento delle statistiche sul Database.
+     */
+    public void terminaPartita(UtenteEntity quitter) throws SQLException {
+        // TODO:
+        // 1. Se quitter == null -> Calcola il vincitore guardando chi ha più punti.
+        // 2. Se quitter != null -> Assegna la vittoria a tavolino all'utente che NON ha abbandonato.
+        // 3. Salva o Aggiorna le Statistiche (es. ratio vittorie/sconfitte) dei due utenti nel DB.
     }
 
-    private void aggiornaSingoloUtente(UtenteEntity u, boolean haVinto) throws SQLException {
-
-        Statistica stat = gameService.getStatistica(u.getUsername());
-        if (stat == null) {
-            stat = new Statistica(u, 0, 0, 0, 0);
-            gameService.creaStatistica(stat);
-        }
-
-        if (haVinto) stat.setVittorie(stat.getVittorie() + 1);
-        else stat.setSconfitte(stat.getSconfitte() + 1);
-
-        int tot = stat.getVittorie() + stat.getSconfitte();
-        stat.setPercentualeVittorie((stat.getVittorie() * 100) / tot);
-        gameService.aggiornaStatistica(stat);
-    }
-
-
-    public SessioneDiGioco getSessione() {
-        return sessione;
+    /**
+     * Recupera il punteggio attuale totalizzato da uno specifico utente durante questa partita.
+     * * @param utente L'entità utente di cui si vuole conoscere il punteggio.
+     * @return Il punteggio attuale dell'utente. Restituisce 0 se l'utente non fa parte della partita.
+     */
+    public int punteggioAttualeDi(UtenteEntity utente) {
+        // TODO: Restituire i punti attuali associati all'utente passato come parametro
+        return 0;
     }
 }

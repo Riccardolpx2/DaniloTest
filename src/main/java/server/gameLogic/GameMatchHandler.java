@@ -18,17 +18,16 @@ public class GameMatchHandler implements Runnable {
     private final ClientHandler player2;
     private final MatchManager matchManager;
     private final String difficolta;
-    private Domanda domandaCorrente;
-
-    private RispostaGiocatoreDTO rispostaP1;
-    private RispostaGiocatoreDTO rispostaP2;
-    private int tempoP1;
-    private int tempoP2;
 
     private boolean matchRunning = true;
     private final int NUM_ROUNDS = 5;
+
     private long roundStartTime;
     private boolean roundConcluso = false;
+
+    // Variabili per tracciare chi ha già risposto in questo round ed evitare risposte multiple
+    private boolean haRispostoP1 = false;
+    private boolean haRispostoP2 = false;
 
     public GameMatchHandler(ClientHandler player1, ClientHandler player2, String difficolta) {
         this.player1 = player1;
@@ -54,35 +53,40 @@ public class GameMatchHandler implements Runnable {
         inviaInizioPartita();
 
         try {
-            Thread.sleep(2000); // Pausa di 2 secondi per permettere ai client di caricare la GUI del gioco
+            Thread.sleep(2000); // Pausa per permettere ai client di caricare la GUI del gioco
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
 
         while(matchRunning){
-            this.domandaCorrente = this.matchManager.getDomanda();
+            // Chiediamo al manager di preparare il round. Se ritorna null, la partita è finita
+            Domanda domandaCorrente = this.matchManager.iniziaNuovoRound();
+
             if(domandaCorrente == null) {
                 this.matchRunning = false;
                 try {
-                    matchManager.terminaSessione();
+                    // Passiamo null per indicare la fine naturale della partita
+                    matchManager.terminaPartita(null);
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
-                //String fineMsg = "Partita Terminata! " + matchManager.getPunteggioG1() + " - " + matchManager.getPunteggioG2();
-                String fineMsg = "";
+
+                int puntiP1 = matchManager.punteggioAttualeDi(player1.getLoggedUser());
+                int puntiP2 = matchManager.punteggioAttualeDi(player2.getLoggedUser());
+                String fineMsg = "Partita Terminata! " + puntiP1 + " - " + puntiP2;
+
                 inviaMessaggioEntrambi(new Message(MessageType.gameEnd, fineMsg));
                 break;
             }
 
-            this.rispostaP1 = null;
-            this.rispostaP2 = null;
-            this.tempoP1 = 30; // Tempo di default se non si risponde
-            this.tempoP2 = 30; // Tempo di default se non si risponde
+            // Reset dello stato del thread per il nuovo round
+            this.haRispostoP1 = false;
+            this.haRispostoP2 = false;
             this.roundConcluso = false;
             this.roundStartTime = System.currentTimeMillis();
 
-            inviaMessaggioEntrambi(new Message(MessageType.gameQuestion, new DomandaDTO(this.domandaCorrente)));
-            
+            inviaMessaggioEntrambi(new Message(MessageType.gameQuestion, new DomandaDTO(domandaCorrente)));
+
             synchronized (this) {
                 try {
                     this.wait(30000); // Attende per massimo 30 secondi
@@ -96,11 +100,8 @@ public class GameMatchHandler implements Runnable {
 
             EsitoRoundDTO esito = null;
             try {
-                // Se il tempo è scaduto o i giocatori non hanno risposto, crea risposte fittizie con 30 sec
-                if (rispostaP1 == null) rispostaP1 = new RispostaGiocatoreDTO("");
-                if (rispostaP2 == null) rispostaP2 = new RispostaGiocatoreDTO("");
-
-                esito = matchManager.registraEsitoRound(rispostaP1, tempoP1, rispostaP2, tempoP2);
+                // Il Manager sa già chi ha risposto e chi no, e genera l'esito
+                esito = matchManager.chiudiRound();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -110,50 +111,41 @@ public class GameMatchHandler implements Runnable {
             }
 
             try {
-                Thread.sleep(5000); // Pausa di 5 secondi per mostrare l'esito prima della prossima domanda
+                Thread.sleep(5000); // Pausa per mostrare l'esito prima della prossima domanda
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;
             }
         }
-
     }
 
 
     public synchronized void registraRisposta(ClientHandler client, String parolaTentata) {
-        //if (!matchRunning || roundConcluso) return; // Evita di registrare risposte fuori dal round
+        if (!matchRunning || roundConcluso) return; // Evita di registrare risposte fuori dal round
 
-        // Per fare prova
-        EsitoRoundDTO esitoRoundDTO = new EsitoRoundDTO(null, "Nerchia", 69, 90);
-        inviaMessaggioEntrambi(new Message(MessageType.gameResponse, esitoRoundDTO));
-        roundConcluso = true;
-        System.out.println("Ho inviato il messaggio di gameResponse");
-        this.notifyAll();
+        boolean isP1 = (client == player1);
 
-        // *************
+        // Impedisce allo stesso giocatore di spammare più risposte in un singolo round
+        if (isP1 && haRispostoP1) return;
+        if (!isP1 && haRispostoP2) return;
 
-//        int tempoImpiegato = (int) ((System.currentTimeMillis() - roundStartTime) / 1000);
-//        RispostaGiocatoreDTO risposta = new RispostaGiocatoreDTO(parolaTentata);
-//
-//        boolean isCorretta = this.domandaCorrente.getParoleSoluzioni().contains(parolaTentata.trim().toLowerCase());
-//
-//        if (client == player1 && rispostaP1 == null) {
-//            rispostaP1 = risposta;
-//            tempoP1 = tempoImpiegato;
-//        } else if (client == player2 && rispostaP2 == null) {
-//            rispostaP2 = risposta;
-//            tempoP2 = tempoImpiegato;
-//        }
-//
-//        // Se uno dei due dà la risposta corretta, o se entrambi hanno esaurito i loro tentativi, chiudiamo il round
-//        if (isCorretta || (rispostaP1 != null && rispostaP2 != null)) {
-//            roundConcluso = true;
-//            this.notifyAll(); // Sblocca istantaneamente la wait(30000) nel run()
-//        }
+        if (isP1) haRispostoP1 = true;
+        else haRispostoP2 = true;
+
+        int tempoImpiegato = (int) ((System.currentTimeMillis() - roundStartTime) / 1000);
+        RispostaGiocatoreDTO risposta = new RispostaGiocatoreDTO(parolaTentata);
+
+        // Passiamo i dati puliti al MatchManager, che ci dirà se la risposta è corretta
+        boolean isCorretta = matchManager.elaboraRisposta(client.getLoggedUser(), risposta, tempoImpiegato);
+
+        // Se uno dei due dà la risposta corretta, o se entrambi hanno esaurito i loro tentativi, sblocchiamo il round
+        if (isCorretta || (haRispostoP1 && haRispostoP2)) {
+            roundConcluso = true;
+            this.notifyAll(); // Sblocca istantaneamente la wait(30000) nel run()
+        }
     }
 
     public synchronized void disconnettiClient() {
-        // Mi assicuro di terminare il thread
         this.matchRunning = false;
         this.notifyAll(); // Sblocca l'attesa in caso di disconnessione improvvisa
         inviaMessaggioEntrambi(new Message(MessageType.gameError, "Errore durante la partita"));
@@ -169,7 +161,7 @@ public class GameMatchHandler implements Runnable {
                     new GameStartDTO(player1.getLoggedUser().getUsername(), difficolta)));
             player2.getOut().flush();
         } catch (Exception e) {
-            inviaMessaggioEntrambi(new Message(MessageType.gameError, "Errore"));
+            inviaMessaggioEntrambi(new Message(MessageType.gameError, "Errore di connessione"));
             disconnettiClient();
         }
     }
@@ -181,7 +173,6 @@ public class GameMatchHandler implements Runnable {
     private void inviaMessaggioEntrambi(Message msg) {
         inviaMessaggioClient(player1, msg);
         inviaMessaggioClient(player2, msg);
-
     }
 
     private void inviaDomandaEntrambi(Domanda domanda){
@@ -195,15 +186,15 @@ public class GameMatchHandler implements Runnable {
         this.notifyAll();
 
         ClientHandler winner = (quitter == player1) ? player2 : player1;
-        
+
         try {
-            matchManager.terminaSessione();
+            // Passiamo l'entità utente del quitter al manager
+            matchManager.terminaPartita(quitter.getLoggedUser());
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
-        inviaMessaggioEntrambi(new Message(MessageType.gameEnd, 
-            "Partita terminata: " + quitter.getLoggedUser().getUsername() + " ha abbandonato. Vince " + winner.getLoggedUser().getUsername() + "!"));
+        inviaMessaggioEntrambi(new Message(MessageType.gameEnd,
+                "Partita terminata: " + quitter.getLoggedUser().getUsername() + " ha abbandonato. Vince " + winner.getLoggedUser().getUsername() + "!"));
     }
-
 }
