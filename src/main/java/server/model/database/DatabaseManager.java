@@ -41,38 +41,31 @@ public class  DatabaseManager {
                 "nome TEXT NOT NULL, " +
                 "testo TEXT NOT NULL" +
                 ");";
- 
-    String creaTabellaSessioneDiGioco = "CREATE TABLE IF NOT EXISTS sessioni (" +
-            "idSessione INTEGER PRIMARY KEY AUTOINCREMENT," +
-            "utente1 TEXT NOT NULL," +
-            "utente2 TEXT NOT NULL," +
-            "vincitore TEXT,"+
-            "stato TEXT NOT NULL,"+
-            "data_ora TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
-            "durataSessione INTEGER DEFAULT 0," +
-            "punteggioG1 INTEGER DEFAULT 0," +
-            "punteggioG2 INTEGER DEFAULT 0," + 
-            "FOREIGN KEY (utente1) REFERENCES utenti(username) ON DELETE CASCADE," +
-            "FOREIGN KEY (utente2) REFERENCES utenti(username) ON DELETE CASCADE," +
-            "FOREIGN KEY (vincitore) REFERENCES utenti(username)" +
-            ");";        
+        
 
         String creaTabellaPartita = "CREATE TABLE IF NOT EXISTS partite (" +
-            "idPartita INTEGER PRIMARY KEY AUTOINCREMENT," +
-            "idSessione INTEGER NOT NULL," +
-            "idDocumento INTEGER NOT NULL, " +
-            "offsetIniziale INTEGER NOT NULL," +
-            "lunghezza INTEGER NOT NULL," +
-            "shiftCesare INTEGER NOT NULL," +
-            "parolaSoluzione TEXT NOT NULL," +
-            "secondiRispostaG1 INTEGER NOT NULL," + 
-            "secondiRispostaG2 INTEGER NOT NULL," + 
-            "difficolta TEXT NOT NULL," + 
-            "vincitore TEXT," +
-            "FOREIGN KEY (idSessione) REFERENCES sessioni(idSessione) ON DELETE CASCADE," +
-            "FOREIGN KEY (idDocumento) REFERENCES documenti(idDocumento) ON DELETE CASCADE," +
-            "FOREIGN KEY (vincitore) REFERENCES utenti(username)" +
-            ");";
+                "idPartita INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "dataInizio TIMESTAMP NOT NULL," +
+                "durataPartita INTEGER DEFAULT 0," +
+                "stato TEXT NOT NULL," +
+                "player1_username TEXT NOT NULL," +
+                "player2_username TEXT NOT NULL," +
+                "vincitore_username TEXT," +
+                "punteggioTotaleG1 INTEGER DEFAULT 0," + 
+                "punteggioTotaleG2 INTEGER DEFAULT 0," + 
+                "FOREIGN KEY (player1_username) REFERENCES utenti(username) ON DELETE CASCADE," +
+                "FOREIGN KEY (player2_username) REFERENCES utenti(username) ON DELETE CASCADE," +
+                "FOREIGN KEY (vincitore_username) REFERENCES utenti(username)" +
+                ");";
+        
+        String creaTabellaTempiRound = "CREATE TABLE IF NOT EXISTS partite_tempi_round (" +
+                "idPartita INTEGER NOT NULL," +
+                "numero_round INTEGER NOT NULL," +
+                "tempo_g1 INTEGER NOT NULL," +
+                "tempo_g2 INTEGER NOT NULL," +
+                "PRIMARY KEY (idPartita, numero_round)," +
+                "FOREIGN KEY (idPartita) REFERENCES partite(idPartita) ON DELETE CASCADE" +
+                ");";
         
         String creaTabellaStatistiche = "CREATE TABLE IF NOT EXISTS statistiche (" +
                 "username TEXT PRIMARY KEY, " + 
@@ -83,10 +76,17 @@ public class  DatabaseManager {
                 "FOREIGN KEY (username) REFERENCES utenti(username) ON DELETE CASCADE" +
                 ");";
         
-            String creaTabellaAnalisi = "CREATE TABLE IF NOT EXISTS analisi_testi (" +
+        String creaTabellaAnalisi = "CREATE TABLE IF NOT EXISTS analisi_testi (" +
                 "idDocumento INTEGER PRIMARY KEY," + 
-                "dati_serializzati BLOB NOT NULL," +
                 "FOREIGN KEY (idDocumento) REFERENCES documenti(idDocumento) ON DELETE CASCADE" +
+                ");";
+
+        String creaTabellaDettaglioParole = "CREATE TABLE IF NOT EXISTS analisi_parole (" +
+                "idDocumento INTEGER NOT NULL," +
+                "parola TEXT NOT NULL," +
+                "frequenza INTEGER NOT NULL," +
+                "PRIMARY KEY (idDocumento, parola)," +
+                "FOREIGN KEY (idDocumento) REFERENCES analisi_testi(idDocumento) ON DELETE CASCADE" +
                 ");";
         
         try (Connection conn = getConnection();
@@ -101,17 +101,20 @@ public class  DatabaseManager {
             stmt.execute(creaTabellaDocumenti);
             System.out.println("Tabella 'documenti' creata o già esistente.");
             
-            stmt.execute(creaTabellaSessioneDiGioco);
-            System.out.println("Tabella 'sessioni' creata o già esistente.");           
-            
             stmt.execute(creaTabellaPartita);
             System.out.println("Tabella 'partite' creata o già esistente.");
+            
+            stmt.execute(creaTabellaTempiRound);
+            System.out.println("Tabella 'partite_tempi_round' creata o già esistente.");
             
             stmt.execute(creaTabellaStatistiche);
             System.out.println("Tabella 'statistiche' creata o già esistente.");
             
             stmt.execute(creaTabellaAnalisi);
             System.out.println("Tabella 'analisi_testi' creata o già esistente.");
+            
+            stmt.execute(creaTabellaDettaglioParole);
+            System.out.println("Tabella 'analisi_parole' creata o già esistente.");
             
             System.out.println("-> Database inizializzato con successo!");
             

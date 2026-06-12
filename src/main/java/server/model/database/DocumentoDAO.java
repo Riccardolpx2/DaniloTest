@@ -115,6 +115,27 @@ public class DocumentoDAO implements DAO<Documento,Integer>{
         throw e;
     }
     return listaDocumenti;
-    }    
+    }  
+    
+    
+    public Documento estraiDocumentoCasuale() throws SQLException {
+    // Ordina i documenti in modo casuale direttamente lato DB (senza clausola LIMIT)
+    String sql = "SELECT * FROM documenti ORDER BY RANDOM();";
+    
+    try (Connection conn = DatabaseManager.getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql);
+         ResultSet rs = pstmt.executeQuery()) {
+        
+        // Spostiamo il cursore sul primo record rimescolato. 
+        // Java leggerà SOLO questa riga dal flusso di rete, ignorando il resto.
+        if (rs.next()) {
+            int id = rs.getInt("idDocumento");
+            String nome = rs.getString("nome");
+            String testo = rs.getString("testo");
+            return new Documento(id, nome, testo);
+        }
+    }
+    return null; // Restituisce null se la tabella documenti è vuota
+    }
     
 }

@@ -4,6 +4,9 @@
  */
 package server.gameUtil;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import server.model.database.entity.UtenteEntity;
 
 /**
@@ -12,36 +15,70 @@ a * @author Utente
  */
 public class Partita {
     private int idPartita;
-    private int idSessione;
-    private int offsetIniziale;
-    private int lunghezza;
-    private int shiftCesare;
-    private String parolaSoluzione;
-    private int secondiRispostaG1;
-    private int secondiRispostaG2;
-
-    private String difficolta;
+    private LocalDateTime dataInizio;
+    private int durataPartita;
+    private String stato;
+    
+    private UtenteEntity player1;
+    private UtenteEntity player2;
     private UtenteEntity vincitore;
-    private Documento documento;
+    
+    private int punteggioTotaleG1;
+    private int punteggioTotaleG2;
+    
+    private  List<Integer> tempiRispostaG1;
+    private  List<Integer> tempiRispostaG2;
 
-    public Partita(int idPartita, int idSessione, int offsetIniziale, int lunghezza, int shiftCesare, 
-            String parolaSoluzione, int secondiRispostaG1, int secondiRispostaG2, String difficolta, UtenteEntity vincitore, Documento documento) {
+    // COSTRUTTORE 1: Completo (utile al DAO per ricostruire l'oggetto quando fa la "cerca" sul DB)
+    public Partita(int idPartita, LocalDateTime dataInizio, int durataPartita, String stato, UtenteEntity player1,
+            UtenteEntity player2, UtenteEntity vincitore, int punteggioTotaleG1, int punteggioTotaleG2) {
         this.idPartita = idPartita;
-        this.idSessione = idSessione;
-        this.offsetIniziale = offsetIniziale;
-        this.lunghezza = lunghezza;
-        this.shiftCesare = shiftCesare;
-        this.parolaSoluzione = parolaSoluzione;
-        this.secondiRispostaG1 = secondiRispostaG1;
-        this.secondiRispostaG2 = secondiRispostaG2;
-
-        this.difficolta = difficolta;
+        this.dataInizio = dataInizio;
+        this.durataPartita = durataPartita;
+        this.stato = stato;
+        this.player1 = player1;
+        this.player2 = player2;
         this.vincitore = vincitore;
-        this.documento = documento;
+        this.punteggioTotaleG1 = punteggioTotaleG1;
+        this.punteggioTotaleG2 = punteggioTotaleG2;
+        this.tempiRispostaG1 = new ArrayList<>();
+        this.tempiRispostaG2 = new ArrayList<>();
+    }
+
+    // COSTRUTTORE 2: Snello (fondamentale per il MatchManager a inizio partita)
+    public Partita(UtenteEntity player1, UtenteEntity player2) {
+        this.player1 = player1;
+        this.player2 = player2;
+        this.dataInizio = LocalDateTime.now();
+        this.stato = "IN_CORSO";
+        this.durataPartita = 0;
+        this.punteggioTotaleG1 = 0;
+        this.punteggioTotaleG2 = 0;
+        this.vincitore = null;
+        this.tempiRispostaG1 = new ArrayList<>();
+        this.tempiRispostaG2 = new ArrayList<>();
+    }
+
+    // --- METODI DI LOGICA AGGIUNTI ---
+
+    /**
+     * Registra i tempi di risposta accumulati nel round corrente.
+     */
+    public void registraTempiRound(int tempoG1, int tempoG2) {
+        this.tempiRispostaG1.add(tempoG1);
+        this.tempiRispostaG2.add(tempoG2);
     }
     
-    
+    public List<Integer> getTempiRispostaG1() {
+        return tempiRispostaG1;
+    }
 
+    public List<Integer> getTempiRispostaG2() {
+        return tempiRispostaG2;
+    }
+
+    // --- GETTER E SETTER STANDARD (I tuoi originali) ---
+    
     public int getIdPartita() {
         return idPartita;
     }
@@ -50,68 +87,44 @@ public class Partita {
         this.idPartita = idPartita;
     }
 
-    public int getIdSessione() {
-        return idSessione;
+    public LocalDateTime getDataInizio() {
+        return dataInizio;
     }
 
-    public void setIdSessione(int idSessione) {
-        this.idSessione = idSessione;
+    public void setDataInizio(LocalDateTime dataInizio) {
+        this.dataInizio = dataInizio;
     }
 
-    public int getOffsetIniziale() {
-        return offsetIniziale;
+    public int getDurataPartita() {
+        return durataPartita;
     }
 
-    public void setOffsetIniziale(int offsetIniziale) {
-        this.offsetIniziale = offsetIniziale;
+    public void setDurataPartita(int durataPartita) {
+        this.durataPartita = durataPartita;
     }
 
-    public int getLunghezza() {
-        return lunghezza;
+    public String getStato() {
+        return stato;
     }
 
-    public void setLunghezza(int lunghezza) {
-        this.lunghezza = lunghezza;
+    public void setStato(String stato) {
+        this.stato = stato;
     }
 
-    public int getShiftCesare() {
-        return shiftCesare;
+    public UtenteEntity getPlayer1() {
+        return player1;
     }
 
-    public void setShiftCesare(int shiftCesare) {
-        this.shiftCesare = shiftCesare;
+    public void setPlayer1(UtenteEntity player1) {
+        this.player1 = player1;
     }
 
-    public String getParolaSoluzione() {
-        return parolaSoluzione;
+    public UtenteEntity getPlayer2() {
+        return player2;
     }
 
-    public void setParolaSoluzione(String parolaSoluzione) {
-        this.parolaSoluzione = parolaSoluzione;
-    }
-
-    public int getSecondiRispostaG1() {
-        return secondiRispostaG1;
-    }
-
-    public void setSecondiRispostaG1(int secondiRispostaG1) {
-        this.secondiRispostaG1 = secondiRispostaG1;
-    }
-
-    public int getSecondiRispostaG2() {
-        return secondiRispostaG2;
-    }
-
-    public void setSecondiRispostaG2(int secondiRispostaG2) {
-        this.secondiRispostaG2 = secondiRispostaG2;
-    }
-
-    public String getDifficolta() {
-        return difficolta;
-    }
-
-    public void setDifficolta(String difficolta) {
-        this.difficolta = difficolta;
+    public void setPlayer2(UtenteEntity player2) {
+        this.player2 = player2;
     }
 
     public UtenteEntity getVincitore() {
@@ -122,14 +135,29 @@ public class Partita {
         this.vincitore = vincitore;
     }
 
-    public Documento getDocumento() {
-        return documento;
+    public int getPunteggioTotaleG1() {
+        return punteggioTotaleG1;
     }
 
-    public void setDocumento(Documento documento) {
-        this.documento = documento;
+    public void setPunteggioTotaleG1(int punteggioTotaleG1) {
+        this.punteggioTotaleG1 = punteggioTotaleG1;
     }
 
+    public int getPunteggioTotaleG2() {
+        return punteggioTotaleG2;
+    }
+
+    public void setPunteggioTotaleG2(int punteggioTotaleG2) {
+        this.punteggioTotaleG2 = punteggioTotaleG2;
+    }
+
+    public void setTempiRispostaG1(List<Integer> tempiRispostaG1) {
+        this.tempiRispostaG1 = tempiRispostaG1;
+    }
+
+    public void setTempiRispostaG2(List<Integer> tempiRispostaG2) {
+        this.tempiRispostaG2 = tempiRispostaG2;
+    }
     
-            
+    
 }

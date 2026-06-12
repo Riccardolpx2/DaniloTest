@@ -24,22 +24,29 @@ public class GameFactory {
 
     public MatchManager creaMatch(UtenteEntity p1, UtenteEntity p2, String difficolta, int numDomande) throws SQLException {
 
-        //documento random (QUI è giusto farlo)
-        List<Documento> docs = documentoDAO.elencaTutti();
-        Documento doc = docs.get(new Random().nextInt(docs.size()));
+    Documento doc = documentoDAO.estraiDocumentoCasuale();
+        
+        if (doc == null) {
+            throw new SQLException("Impossibile avviare il match: non ci sono documenti caricati nel database.");
+        }
 
-        //analisi collegata al documento
-        AnalisiTesto analisi = analisiDAO.elencaTutti().stream().filter(a -> a.getIdDocumento() == doc.getIdDocumento())
-                .findFirst().orElse(null);
-
-        if (analisi == null) {
+    AnalisiTesto analisi = analisiDAO.cerca(String.valueOf(doc.getIdDocumento()));  
+    
+    
+    if (analisi == null) {
+            System.out.println("Analisi assente per il documento " + doc.getIdDocumento() + ". Generazione in corso...");
             analisi = new AnalisiTesto(doc.getIdDocumento());
             analisi.analizza(doc.getTesto());
+            analisiDAO.aggiungi(analisi); // Persistenza immediata sul DB relazionale
         }
 
         //genera domande
         List<Domanda> domande = generatoreDomanda.creaDomande(numDomande, difficolta, doc, analisi);
-
+        
+        if (domande == null || domande.isEmpty()) {
+         System.out.println("ERRORE: Il documento " + doc.getIdDocumento() + " non ha abbastanza parole per la difficoltà " + difficolta);
+         throw new SQLException("Generazione domande fallita per scarsità di lemmi nel testo.");
+        }
         //crea match
         return new MatchManager(p1, p2, difficolta, domande);
     }    

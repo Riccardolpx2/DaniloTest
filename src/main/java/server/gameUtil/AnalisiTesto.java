@@ -8,7 +8,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,16 +19,25 @@ import java.util.stream.Stream;
  *
  * @author Utente
  */
-public class AnalisiTesto implements Serializable{
-    private int idDocumento;
+public class AnalisiTesto{
+private int idDocumento;
     private Map<String, Integer> frequenzaParole; 
     private static final Set<String> stopWords = caricaStopWords();
 
     public AnalisiTesto(int idDocumento) {
-        this.idDocumento= idDocumento;
+        this.idDocumento = idDocumento;
         this.frequenzaParole = new HashMap<>();
     }
 
+    /**
+     * Permette di inserire una coppia parola-frequenza direttamente nella mappa.
+     * Utilizzato dall'AnalisiTestoDAO quando ricostruisce l'oggetto dal database.
+     */
+    public void aggiungiParolaFrequenza(String parola, int frequenza) {
+        this.frequenzaParole.put(parola, frequenza);
+    }
+
+    // --- GETTER E SETTER (I tuoi originali) ---
     public int getIdDocumento() {
         return idDocumento;
     }
@@ -46,13 +54,14 @@ public class AnalisiTesto implements Serializable{
         this.frequenzaParole = frequenzaParole;
     }
 
+    // --- LOGICA DI CARICAMENTO FILE (La tua originale) ---
     private static Set<String> caricaStopWords() {
         try {
             InputStream is = AnalisiTesto.class.getResourceAsStream("/txt/stop-words.txt");
             
             if (is == null) {
-                System.out.println("ERRORE: File stop_words_it.txt non trovato in resources!");
-                return null; 
+                System.out.println("ERRORE: File stop-words.txt non trovato in resources!");
+                return new java.util.HashSet<>(); // Evita il NullPointerException restituendo un set vuoto
             }
             
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
@@ -60,22 +69,21 @@ public class AnalisiTesto implements Serializable{
                 String linea;
             
                 while ((linea = reader.readLine()) != null) {
-                    linea = linea.trim();
-                    linea = linea.toLowerCase();
+                    linea = linea.trim().toLowerCase();
                 
-                if (!linea.isEmpty() && !linea.startsWith("#")) {
-                    risultato.add(linea);
+                    if (!linea.isEmpty() && !linea.startsWith("#")) {
+                        risultato.add(linea);
+                    }
                 }
-            }
-            return risultato;
+                return risultato;
             }
         } catch (IOException e) {
             System.out.println("Errore durante il caricamento delle stop words: " + e.getMessage());
-            return null;
+            return new java.util.HashSet<>();
         }
     }
 
-    
+    // --- LOGICA DI ANALISI STREAM (La tua originale) ---
     public void analizza(String testo) {
         if (testo == null || testo.trim().isEmpty()) return;
 
@@ -83,14 +91,12 @@ public class AnalisiTesto implements Serializable{
         this.frequenzaParole = Stream.of(testoPulito.split("\\s+"))
             .filter(parola -> !parola.isEmpty())  
             .filter(parola -> parola.length() > 3)
-            .filter(parola -> !stopWords.contains(parola)) 
+            .filter(parola -> stopWords != null && !stopWords.contains(parola)) 
             .collect(Collectors.toMap( 
                 parola -> parola,
                 parola -> 1,
                 Integer::sum 
             ));
     }
-    
-
     
 }

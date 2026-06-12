@@ -20,131 +20,185 @@ import server.gameUtil.Partita;
  */
 public class PartitaDAO implements DAO<Partita,Integer>{
     
-    
-    @Override
-    public void aggiungi(Partita p) throws SQLException{
-    String sql = "INSERT INTO partite (idSessione, offsetIniziale, lunghezza, shiftCesare, parolaSoluzione, secondiRispostaG1, "
-            + "secondiRispostaG2, difficolta, vincitore, idDocumento) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    
+@Override
+    public void aggiungi(Partita p) throws SQLException {
+        // Query principale: salva i dati generali della sfida
+        String sql = "INSERT INTO partite (dataInizio, durataPartita, stato, player1_username, player2_username, "
+                   + "vincitore_username, punteggioTotaleG1, punteggioTotaleG2) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
             
-            pstmt.setInt(1, p.getIdSessione());
-            pstmt.setInt(2, p.getOffsetIniziale());
-            pstmt.setInt(3, p.getLunghezza());
-            pstmt.setInt(4, p.getShiftCesare());
-            pstmt.setString(5, p.getParolaSoluzione());
-            pstmt.setInt(6, p.getSecondiRispostaG1());
-            pstmt.setInt(7, p.getSecondiRispostaG2());
-            pstmt.setString(8, p.getDifficolta());
+            pstmt.setTimestamp(1, java.sql.Timestamp.valueOf(p.getDataInizio()));
+            pstmt.setInt(2, p.getDurataPartita());
+            pstmt.setString(3, p.getStato());
+            pstmt.setString(4, p.getPlayer1().getUsername());
+            pstmt.setString(5, p.getPlayer2().getUsername());
             
-            if (p.getVincitore() != null) pstmt.setString(9, p.getVincitore().getUsername()); 
-            else pstmt.setNull(9, java.sql.Types.VARCHAR);
+            if (p.getVincitore() != null) {
+                pstmt.setString(6, p.getVincitore().getUsername());
+            } else {
+                pstmt.setNull(6, java.sql.Types.VARCHAR); // Gestione del pareggio
+            }
             
-            if (p.getDocumento() != null) pstmt.setInt(10, p.getDocumento().getIdDocumento());
-            else pstmt.setNull(10, java.sql.Types.INTEGER);
-            
-            
+            pstmt.setInt(7, p.getPunteggioTotaleG1());
+            pstmt.setInt(8, p.getPunteggioTotaleG2());
+
             pstmt.executeUpdate();
+
+            // Recuperiamo l'ID generato automaticamente dal Database per associarlo all'oggetto
             try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
-            if (generatedKeys.next()) {
-                p.setIdPartita(generatedKeys.getInt(1));
+                if (generatedKeys.next()) {
+                    p.setIdPartita(generatedKeys.getInt(1));
+                }
+            }
+            
+            System.out.println("Partita inserita nel DB con successo! ID assegnato: " + p.getIdPartita());
+
+            // --- SALVATAGGIO DEI TEMPI DI RISPOSTA DEI ROUND ---
+            // Sfruttiamo l'ID appena ottenuto per salvare tutti i tempi storici accumulati nelle liste
+            salvaTempiRound(conn, p);
+
+        } catch (SQLException e) {
+            System.err.println("Errore nell'inserimento della partita: " + e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * Metodo di supporto privato che effettua l'inserimento batch dei tempi dei singoli round 
+     * sfruttando la stessa connessione della transazione principale.
+     */
+    private void salvaTempiRound(Connection conn, Partita p) throws SQLException {
+        String sqlRound = "INSERT INTO partite_tempi_round (idPartita, numero_round, tempo_g1, tempo_g2) VALUES (?, ?, ?, ?)";
+        
+        List<Integer> tempiG1 = p.getTempiRispostaG1();
+        List<Integer> tempiG2 = p.getTempiRispostaG2();
+
+        try (PreparedStatement pstmtRound = conn.prepareStatement(sqlRound)) {
+            // Cicliamo sulla dimensione degli array dei tempi accumulati in RAM
+            for (int i = 0; i < tempiG1.size(); i++) {
+                pstmtRound.setInt(1, p.getIdPartita());
+                pstmtRound.setInt(2, i + 1); // Contatore del round (Round 1, Round 2, ecc.)
+                pstmtRound.setInt(3, tempiG1.get(i));
+                pstmtRound.setInt(4, tempiG2.get(i));
+                
+                pstmtRound.addBatch(); // Prepariamo l'inserimento in blocco (Batch)
+            }
+            
+            pstmtRound.executeBatch(); // Spediamo tutti i record dei round in un colpo solo
+            System.out.println("Salvati " + tempiG1.size() + " round nel database per la partita " + p.getIdPartita());
+        }
+    }
+
+    @Override
+    public void rimuovi(Partita p) throws SQLException {
+        throw new UnsupportedOperationException("Operazione di rimozione non supportata per la cronologia delle partite.");
+    }
+
+    @Override
+    public void aggiorna(Partita p) throws SQLException {
+        throw new UnsupportedOperationException("Operazione di aggiornamento non supportata. Le partite storiche sono immutabili.");
+    }
+
+    @Override
+    public Partita cerca(Integer key) throws SQLException {
+        String sql = "SELECT * FROM partite WHERE idPartita = ?";
+        Partita p = null;
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setInt(1, key);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    int id = rs.getInt("idPartita");
+                    java.time.LocalDateTime inizio = rs.getTimestamp("dataInizio").toLocalDateTime();
+                    int durata = rs.getInt("durataPartita");
+                    String stato = rs.getString("stato");
+                    int puntiG1 = rs.getInt("punteggioTotaleG1");
+                    int puntiG2 = rs.getInt("punteggioTotaleG2");
+                    
+                    UtenteEntity p1 = new UtenteEntity(rs.getString("player1_username"), null, null, null, null);
+                    UtenteEntity p2 = new UtenteEntity(rs.getString("player2_username"), null, null, null, null);
+                    
+                    UtenteEntity vincitore = null;
+                    String usernameVincitore = rs.getString("vincitore_username");
+                    if (usernameVincitore != null) {
+                        vincitore = new UtenteEntity(usernameVincitore, null, null, null, null);
+                    }
+
+                    // Utilizziamo il costruttore completo che hai scritto tu in Partita
+                    p = new Partita(id, inizio, durata, stato, p1, p2, vincitore, puntiG1, puntiG2);
+                    
+                    // Recuperiamo anche l'array dei tempi storici di questa specifica partita dal DB
+                    recuperaTempiRound(conn, p);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Errore nella ricerca della partita: " + e.getMessage());
+            throw e;
+        }
+        return p;
+    }
+
+    /**
+     * Metodo di supporto privato che ripopola gli array di tempi rispostaG1 e rispostaG2 
+     * quando viene estratta una partita passata.
+     */
+    private void recuperaTempiRound(Connection conn, Partita p) throws SQLException {
+        String sql = "SELECT tempo_g1, tempo_g2 FROM partite_tempi_round WHERE idPartita = ? ORDER BY numero_round ASC";
+        
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, p.getIdPartita());
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    // Ripopoliamo le liste native richiamando il metodo che hai inserito in Partita
+                    p.registraTempiRound(rs.getInt("tempo_g1"), rs.getInt("tempo_g2"));
+                }
             }
         }
-        System.out.println("Partita inserita con successo con ID: " + p.getIdPartita());
-        } catch (SQLException e) {
-        System.out.println(e.getMessage());
-        throw e;
-        }       
-        
-    
     }
 
     @Override
-    public void rimuovi(Partita p) throws SQLException{
-    throw new UnsupportedOperationException("Operazione di rimozione non supportata per la cronologia delle partite.");
-    }
+    public List<Partita> elencaTutti() throws SQLException {
+        String sql = "SELECT * FROM partite";
+        List<Partita> listaPartite = new ArrayList<>();
 
-    @Override
-    public void aggiorna(Partita p) throws SQLException{
-    throw new UnsupportedOperationException("Operazione di aggiornamento non supportata. Le partite sono immutabili.");
-    }
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
 
-    @Override
-    public Partita cerca(Integer key) throws SQLException{
-    String sqlPar= "SELECT * FROM partite WHERE idPartita = ?;";
-    Partita p = null;
-    try (Connection conn = DatabaseManager.getConnection();
-        PreparedStatement pstmtDoc = conn.prepareStatement(sqlPar)) {      
-        pstmtDoc.setInt(1, key); 
-        
-        try (ResultSet rsP = pstmtDoc.executeQuery()) {
-            if (rsP.next()) {
-                int id = rsP.getInt("idPartita");
-                int idSessione = rsP.getInt("idSessione");
-                int offset = rsP.getInt("offsetIniziale");
-                int lunghezza = rsP.getInt("lunghezza");
-                int shift = rsP.getInt("shiftCesare");
-                String soluzione = rsP.getString("parolaSoluzione");
-                int secondiG1 = rsP.getInt("secondiRispostaG1");
-                int secondiG2 = rsP.getInt("secondiRispostaG2");
-                String difficolta = rsP.getString("difficolta");
+            while (rs.next()) {
+                int id = rs.getInt("idPartita");
+                java.time.LocalDateTime inizio = rs.getTimestamp("dataInizio").toLocalDateTime();
+                int durata = rs.getInt("durataPartita");
+                String stato = rs.getString("stato");
+                int puntiG1 = rs.getInt("punteggioTotaleG1");
+                int puntiG2 = rs.getInt("punteggioTotaleG2");
+                
+                UtenteEntity p1 = new UtenteEntity(rs.getString("player1_username"), null, null, null, null);
+                UtenteEntity p2 = new UtenteEntity(rs.getString("player2_username"), null, null, null, null);
                 
                 UtenteEntity vincitore = null;
-                String usernameVincitore = rsP.getString("vincitore");
-                if (usernameVincitore != null) vincitore = new UtenteEntity(usernameVincitore, null, null, null, null);
+                String usernameVincitore = rs.getString("vincitore_username");
+                if (usernameVincitore != null) {
+                    vincitore = new UtenteEntity(usernameVincitore, null, null, null, null);
+                }
+
+                Partita p = new Partita(id, inizio, durata, stato, p1, p2, vincitore, puntiG1, puntiG2);
                 
-                Documento documento = null;
-                int idDoc = rsP.getInt("idDocumento");
-                if (idDoc > 0) documento = new Documento(idDoc, null, null);                  
-                p = new Partita(id, idSessione,offset,lunghezza,shift,soluzione, secondiG1,secondiG2,difficolta,vincitore,documento);
-                        
+                // Opzionale: se volete che l'elenco completo si tiri dietro anche tutti gli array di tempi:
+                // recuperaTempiRound(conn, p);
+                
+                listaPartite.add(p);
             }
+        } catch (SQLException e) {
+            System.err.println("Errore nell'elencare le partite: " + e.getMessage());
+            throw e;
         }
-    } catch (SQLException e) {
-        System.out.println(e.getMessage());
-        throw e;
-    }
-    return p;
-    }
-   
-    @Override
-    public List<Partita> elencaTutti() throws SQLException{
-    String sql = "SELECT * FROM partite;";
-    List<Partita> listaPartite = new ArrayList<>();
-
-    try (Connection conn = DatabaseManager.getConnection();
-         PreparedStatement pstmt = conn.prepareStatement(sql);
-         ResultSet rsP = pstmt.executeQuery()) {
-
-        while (rsP.next()) {
-            int id = rsP.getInt("idPartita");
-            int idSessione = rsP.getInt("idSessione");
-            int offset = rsP.getInt("offsetIniziale");
-            int lunghezza = rsP.getInt("lunghezza");
-            int shift = rsP.getInt("shiftCesare");
-            String soluzione = rsP.getString("parolaSoluzione");
-            int secondiG1 = rsP.getInt("secondiRispostaG1");
-            int secondiG2 = rsP.getInt("secondiRispostaG2");
-            String difficolta = rsP.getString("difficolta");
-            
-            UtenteEntity vincitore = null;
-            String usernameVincitore = rsP.getString("vincitore");
-            if (usernameVincitore != null) vincitore = new UtenteEntity(usernameVincitore, null, null, null, null);
-                
-            Documento documento = null;
-            int idDoc = rsP.getInt("idDocumento");
-            if (idDoc > 0) documento = new Documento(idDoc, null, null);   
-            
-            Partita p = new Partita(id,idSessione,offset,lunghezza,shift,soluzione,secondiG1,secondiG2,difficolta,vincitore,documento);
-                 
-            listaPartite.add(p);
-        }
-    } catch (SQLException e) {
-        System.out.println(e.getMessage());
-        throw e;
-    }
-    return listaPartite;
-    }
-    
+        return listaPartite;
+    }   
 }
