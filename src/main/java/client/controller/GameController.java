@@ -2,6 +2,7 @@ package client.controller;
 
 import client.ClientApp;
 import client.network.ConnectionHandler;
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -13,6 +14,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import javafx.util.Duration;
 import shared.protocol.DTO.DomandaDTO;
 import shared.protocol.DTO.EsitoRoundDTO;
 import shared.protocol.DTO.RispostaGiocatoreDTO;
@@ -33,7 +35,7 @@ public class GameController {
     private Label timerLabel;
 
     @FXML
-    private TextFlow textFlow; // Preso dal File 1 per formattazione avanzata
+    private TextFlow textFlow;
 
     @FXML
     private TextField answerField;
@@ -47,25 +49,26 @@ public class GameController {
     @FXML
     private Label sfidanteLabel;
 
+    // Elementi dell'Overlay
     @FXML
-    private VBox resultOverlay; // Dal File 2
+    private VBox resultOverlay;
 
     @FXML
-    private Label roundResultLabel; // Dal File 2
+    private Label roundResultLabel;
 
     @FXML
-    private Label correctWordLabel; // Dal File 2
+    private Label correctWordLabel;
 
     @FXML
-    private Label scoresLabel; // Dal File 2
+    private Label myScoreLabel;
+
+    @FXML
+    private Label opponentScoreLabel;
 
     private int timeRemaining = 30;
     private Thread timerThread;
     private String usernameSfidante;
 
-    /*
-    metodo per scambiare info sfidante dalla dashboard
-     */
     public void inizializzaDati(String messaggio) {
         usernameSfidante = messaggio;
         Platform.runLater(() -> {
@@ -93,7 +96,6 @@ public class GameController {
                     answerField.clear();
                     statusLabel.setText("");
 
-                    // Aggiorna il TextFlow con il payload della domanda
                     DomandaDTO domanda = (DomandaDTO) message.getPayload();
                     updateTextFlow(domanda.getTestoCifrato(), domanda.getParoleCifrate());
 
@@ -132,35 +134,51 @@ public class GameController {
 
         String currentUser = ClientApp.getInstance().getCurrentUser();
 
+        // 1. Esito del round
         if (roundResultLabel != null) {
             if (esito.getUsernameVincitore().equals(currentUser)) {
                 roundResultLabel.setText("Hai vinto il round!");
-                roundResultLabel.setStyle("-fx-text-fill: lightgreen; -fx-font-size: 24px; -fx-font-weight: bold;");
+                roundResultLabel.setStyle("-fx-text-fill: #2ecc71; -fx-font-size: 38px; -fx-font-weight: bold;");
             } else if (esito.getUsernameVincitore().equals("Pareggio")) {
                 roundResultLabel.setText("Nessun vincitore in questo round!");
-                roundResultLabel.setStyle("-fx-text-fill: yellow; -fx-font-size: 24px; -fx-font-weight: bold;");
+                roundResultLabel.setStyle("-fx-text-fill: #f1c40f; -fx-font-size: 32px; -fx-font-weight: bold;");
             } else {
                 roundResultLabel.setText("Ha vinto " + esito.getUsernameVincitore() + "!");
-                roundResultLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 24px; -fx-font-weight: bold;");
+                roundResultLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 38px; -fx-font-weight: bold;");
             }
         }
 
+        // 2. Parola corretta
         if (correctWordLabel != null) {
             correctWordLabel.setText("La parola corretta era: " + esito.getParolaSoluzione());
-            correctWordLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
-        }
-        if (scoresLabel != null) {
-            scoresLabel.setText("Punteggi (G1 - G2): " + esito.getPunteggioAttualeG1() + " - " + esito.getPunteggioAttualeG2());
-            scoresLabel.setStyle("-fx-text-fill: #3498db; -fx-font-size: 18px; -fx-font-weight: bold;");
         }
 
+        // TODO modificare G1 e G2 per avere un metodo che invia il punteggio passandogli l'utente
+        int mioPunteggio = esito.getPunteggioAttualeG1();
+        int punteggioAvversario = esito.getPunteggioAttualeG2();
+
+        if (myScoreLabel != null) {
+            myScoreLabel.setText(String.valueOf(mioPunteggio));
+        }
+        if (opponentScoreLabel != null) {
+            opponentScoreLabel.setText(String.valueOf(punteggioAvversario));
+        }
+
+        // 4. Mostra l'overlay per 5 secondi
         if (resultOverlay != null) {
             resultOverlay.setVisible(true);
-            resultOverlay.toFront(); // Pone l'overlay in primo piano sopra tutti i contenuti
+            resultOverlay.toFront();
+
+            PauseTransition pause = new PauseTransition(Duration.seconds(5));
+            pause.setOnFinished(e -> resultOverlay.setVisible(false));
+            pause.play();
         }
     }
 
     private void showGameEnd(String message) {
+        if (resultOverlay != null) {
+            resultOverlay.setVisible(false);
+        }
         statusLabel.setText(message);
         statusLabel.setStyle("-fx-text-fill: gold;");
 
@@ -170,7 +188,6 @@ public class GameController {
         alert.setContentText(message);
         alert.showAndWait();
 
-        // Ritorna alla Dashboard al termine della partita (uso textFlow per recuperare la Scene)
         if (textFlow.getScene() != null && textFlow.getScene().getWindow() != null) {
             SceneManager.switchScene((javafx.stage.Stage) textFlow.getScene().getWindow(), "/fxml/client/clientDashboard.fxml");
         }
@@ -242,7 +259,6 @@ public class GameController {
             return;
         }
 
-        // Qui inviare la risposta al server tramite socket
         this.connectionHandler.sendMessage(new Message(MessageType.gameAnswer, new RispostaGiocatoreDTO(answer)));
 
         System.out.println("Risposta inviata: " + answer);
