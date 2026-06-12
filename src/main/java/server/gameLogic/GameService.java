@@ -8,9 +8,9 @@ import java.sql.SQLException;
 import server.model.database.PartitaDAO;
 import server.model.database.SessioneDiGiocoDAO;
 import server.model.database.StatisticaDAO;
-import shared.game.Partita;
-import shared.game.SessioneDiGioco;
-import shared.game.Statistica;
+import server.gameUtil.Partita;
+import server.gameUtil.SessioneDiGioco;
+import server.gameUtil.Statistica;
 
 /**
  *

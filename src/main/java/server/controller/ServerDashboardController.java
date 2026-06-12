@@ -11,9 +11,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.stage.Window;
 import server.model.service.ServerDashboardService;
-import shared.game.Statistica;
+import server.gameUtil.Statistica;
 import shared.gui.util.SceneManager;
 
 import java.io.*;

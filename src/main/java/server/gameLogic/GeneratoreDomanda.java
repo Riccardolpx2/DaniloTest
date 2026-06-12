@@ -1,7 +1,7 @@
 package server.gameLogic;
 
-import shared.game.AnalisiTesto;
-import shared.game.Documento;
+import server.gameUtil.AnalisiTesto;
+import server.gameUtil.Documento;
 
 import java.io.BufferedReader;
 import java.io.IOException;

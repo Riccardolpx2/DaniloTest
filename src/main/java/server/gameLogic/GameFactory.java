@@ -10,8 +10,8 @@ import java.util.Random;
 import server.model.database.AnalisiTestoDAO;
 import server.model.database.DocumentoDAO;
 import server.model.database.entity.UtenteEntity;
-import shared.game.AnalisiTesto;
-import shared.game.Documento;
+import server.gameUtil.AnalisiTesto;
+import server.gameUtil.Documento;
 
 /**
  *

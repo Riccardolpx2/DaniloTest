@@ -1,9 +1,7 @@
 package server.model.service;
 
-import server.model.database.DatabaseManager;
 import server.model.database.StatisticaDAO;
-import server.model.database.UtenteDAO;
-import shared.game.Statistica;
+import server.gameUtil.Statistica;
 import shared.protocol.DTO.StatDTO;
 
 public class DashboardService {

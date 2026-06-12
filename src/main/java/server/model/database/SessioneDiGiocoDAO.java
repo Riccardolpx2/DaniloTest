@@ -12,9 +12,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import server.model.database.entity.UtenteEntity;
-import shared.game.Documento;
-import shared.game.Partita;
-import shared.game.SessioneDiGioco;
+import server.gameUtil.Documento;
+import server.gameUtil.Partita;
+import server.gameUtil.SessioneDiGioco;
 
 /**
  *

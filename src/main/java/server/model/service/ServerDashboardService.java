@@ -2,9 +2,9 @@ package server.model.service;
 
 import server.model.database.*;
 import server.model.database.entity.UtenteEntity;
-import shared.game.AnalisiTesto;
-import shared.game.Documento;
-import shared.game.Statistica;
+import server.gameUtil.AnalisiTesto;
+import server.gameUtil.Documento;
+import server.gameUtil.Statistica;
 
 import java.io.File;
 import java.nio.file.Files;
