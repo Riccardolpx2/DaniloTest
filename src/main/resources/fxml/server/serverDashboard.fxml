@@ -107,6 +107,8 @@
                                         <Font name="System Bold" size="16.0" />
                                     </font>
                                 </Label>
+
+                                <TextField fx:id="searchUserField" promptText="Cerca utente per username..." style="-fx-font-size: 14px; -fx-background-radius: 5; -fx-border-color: #bdc3c7; -fx-border-radius: 5;" />
                                 <ListView fx:id="listUsers" style="-fx-font-size: 14px; -fx-background-radius: 5; -fx-border-radius: 5; -fx-border-color: #bdc3c7;" VBox.vgrow="ALWAYS" />
                                 <HBox alignment="CENTER_RIGHT" spacing="15.0">
                                     <children>

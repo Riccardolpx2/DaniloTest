@@ -21,16 +21,24 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Gestisce la schermata principale di amministrazione del server.
+ * Permette all'amministratore di caricare e analizzare nuovi documenti,
+ * gestire gli utenti registrati, visualizzare le classifiche e fare copie di sicurezza dei dati.
+ */
 public class ServerDashboardController {
+
+    @FXML
+    private Label serverStatusLabel;
 
     @FXML
     private TextField searchDocumentField;
 
     @FXML
-    private ListView<String> listDocuments;
+    private Button deleteTextButton;
 
     @FXML
-    private Button deleteTextButton;
+    private ListView<String> listDocuments;
 
     @FXML
     private ListView<String> listNewDocuments;
@@ -42,10 +50,16 @@ public class ServerDashboardController {
     private Button analyzeTextButton;
 
     @FXML
-    private Button backupButton;
+    private TextField searchUserField;
 
     @FXML
-    private Button restoreButton;
+    private ListView<String> listUsers;
+
+    @FXML
+    private Button deleteUserButton;
+
+    @FXML
+    private Button refreshUserButton;
 
     @FXML
     private TextField searchStatsField;
@@ -69,22 +83,24 @@ public class ServerDashboardController {
     private Button refreshStatsButton;
 
     @FXML
-    private Label serverStatusLabel;
+    private Button backupButton;
 
     @FXML
-    private ListView<String> listUsers;
-
-    @FXML
-    private Button deleteUserButton;
-
-    @FXML
-    private Button refreshUserButton;
+    private Button restoreButton;
 
     private List<File> filesSelected = new ArrayList<>();
+
+    private List<String> allUsersList = new ArrayList<>();
     private List<String> allDocumentsList = new ArrayList<>();
     private List<Statistica> allStatsList = new ArrayList<>();
+
     private final ServerDashboardService serverService = new ServerDashboardService();
 
+    /**
+     * Prepara la schermata all'avvio del programma.
+     * Configura le tabelle, abilita la selezione multipla sulle liste e avvia
+     * il caricamento iniziale dei dati dal database per mostrarli a schermo.
+     */
     @FXML
     public void initialize(){
         configureStatsTable();
@@ -92,30 +108,12 @@ public class ServerDashboardController {
 
         analyzeTextButton.setDisable(true);
 
-        if(listDocuments != null){
-            listDocuments.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        if(listDocuments != null) listDocuments.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
-        }
+        if(listUsers != null) listUsers.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
-        if(listUsers != null){
-            listUsers.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        }
+        if(listNewDocuments != null) listNewDocuments.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
-        if(listNewDocuments != null){
-            listNewDocuments.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        }
-
-        if(searchDocumentField != null){
-            searchDocumentField.textProperty().addListener((observable, oldValue, newValue) -> {
-                filtraDocumenti(newValue);
-            });
-        }
-
-        if(searchStatsField != null){
-            searchStatsField.textProperty().addListener((observable, oldValue, newValue) -> {
-                filtraStatistiche(newValue);
-            });
-        }
 
         if(deleteTextButton != null) {
             deleteTextButton.disableProperty().bind(
@@ -129,10 +127,38 @@ public class ServerDashboardController {
             );
         }
 
+        setupSearchField();
+
         aggiornaDocumenti();
         aggiornaUtenti();
     }
 
+    /**
+     * Attiva le barre di ricerca per permettere di filtrare documenti, statistiche
+     * e utenti istantaneamente, man mano che si digita il testo.
+     */
+    private void setupSearchField(){
+        if(searchDocumentField != null){
+            searchDocumentField.textProperty().addListener((observable, oldValue, newValue) -> {
+                filtraDocumenti(newValue);
+            });
+        }
+
+        if(searchStatsField != null){
+            searchStatsField.textProperty().addListener((observable, oldValue, newValue) -> {
+                filtraStatistiche(newValue);
+            });
+        }
+
+        if(searchUserField != null){
+            searchUserField.textProperty().addListener((observable, oldValue, newValue) -> filtraUtenti(newValue));
+        }
+    }
+
+    /**
+     * Aggiorna la schermata dei documenti analizzati mostrando solo quelli il cui nome contiene il testo cercato.
+     * @param filtro La parola o le lettere da cercare.
+     */
     private void filtraDocumenti(String filtro){
         if(filtro == null || filtro.trim().isEmpty()){
             listDocuments.getItems().setAll(allDocumentsList);
@@ -144,6 +170,10 @@ public class ServerDashboardController {
         }
     }
 
+    /**
+     * Aggiorna la schermata delle statistiche mostrando solo quelle dei giocatori il cui nome contiene il testo cercato.
+     * @param filtro La parola o le lettere da cercare.
+     */
     private void filtraStatistiche(String filtro){
         if(filtro == null || filtro.trim().isEmpty()){
             statsTableView.getItems().setAll(allStatsList);
@@ -151,9 +181,28 @@ public class ServerDashboardController {
             List<Statistica> filtrati = allStatsList.stream()
                     .filter(stat -> stat.getPlayer().getUsername().toLowerCase().contains(filtro.toLowerCase()))
                     .collect(Collectors.toList());
+            statsTableView.getItems().setAll(filtrati);
         }
     }
 
+    /**
+     * Aggiorna la schermata degli utenti registrati mostrando solo gli utenti il cui nome contiene il testo cercato.
+     * @param filtro La parola o le lettere da cercare.
+     */
+    private void filtraUtenti(String filtro){
+        if(filtro == null || filtro.trim().isEmpty()){
+            listUsers.getItems().setAll(allUsersList);
+        } else {
+            List<String> filtrati = allUsersList.stream()
+                    .filter(user -> user.toLowerCase().contains(filtro.toLowerCase()))
+                    .collect(Collectors.toList());
+            listUsers.getItems().setAll(filtrati);
+        }
+    }
+
+    /**
+     * Scarica l'elenco aggiornato dei documenti salvati nel database e lo mostra a schermo.
+     */
     private void aggiornaDocumenti(){
         aggiornaStato("Sincronizzazione con il Database in corso...");
         Task<List<String>> loadTask = new Task<List<String> >() {
@@ -165,23 +214,20 @@ public class ServerDashboardController {
 
         loadTask.setOnSucceeded(event -> {
             allDocumentsList = loadTask.getValue();
-
             filtraDocumenti(searchDocumentField != null ? searchDocumentField.getText() : "");
             aggiornaStato("Elenco documenti sincronizzato.");
         });
 
-        loadTask.setOnFailed(event -> {
-            aggiornaStato("Errore caricamento documenti: " + loadTask.getException().getMessage());
-        });
-
+        loadTask.setOnFailed(event -> aggiornaStato("Errore caricamento documenti: " + loadTask.getException().getMessage()));
         startTask(loadTask);
     }
 
+    /**
+     * Scarica l'elenco aggiornato degli utenti registrati nel database e lo mostra a schermo.
+     */
     @FXML
     private void aggiornaUtenti(){
-        if(refreshUserButton != null){
-            refreshUserButton.setDisable(true);
-        }
+        if(refreshUserButton != null) refreshUserButton.setDisable(true);
 
         Task<List<String>> loadUsersTask = new Task<List<String>>() {
             @Override
@@ -191,14 +237,9 @@ public class ServerDashboardController {
         };
 
         loadUsersTask.setOnSucceeded(e->{
-            List<String> users = loadUsersTask.getValue();
-            if(users != null && !users.isEmpty()){
-                listUsers.getItems().setAll(users);
-                aggiornaStato("Lista utenti aggiornata con successo");
-            } else {
-                listUsers.getItems().clear();
-                aggiornaStato("Nessuna utente presente nel DB");
-            }
+            allUsersList = loadUsersTask.getValue();
+            filtraUtenti(searchUserField != null ? searchUserField.getText() : "");
+            aggiornaStato("Lista utenti aggiornata con successo");
 
             if(refreshUserButton != null) refreshUserButton.setDisable(false);
         });
@@ -207,11 +248,61 @@ public class ServerDashboardController {
             aggiornaStato("Errore nel caricamento degli utenti dal Database: " + loadUsersTask.getException().getMessage());
             if(refreshUserButton != null) refreshUserButton.setDisable(false);
         });
-
         startTask(loadUsersTask);
     }
 
+    /**
+     * Scarica la classifica e i punteggi aggiornati dal database e li inserisce nella tabella delle statistiche.
+     */
+    @FXML
+    private void aggiornaStatistiche(){
 
+        if(refreshStatsButton!=null) refreshStatsButton.setDisable(true);
+
+        aggiornaStato("Estrazione statistiche dal DB in corso...");
+
+        Task<List<Statistica>> loadStatsTask = new Task<List<Statistica>>() {
+            @Override
+            protected List<Statistica> call() throws Exception {
+                return serverService.getClassifica();
+            }
+        };
+
+        loadStatsTask.setOnSucceeded(e->{
+            allStatsList = loadStatsTask.getValue();
+            filtraStatistiche(searchStatsField != null ? searchStatsField.getText() : "");
+            aggiornaStato("Statistiche aggiornate con successo");
+            if(refreshStatsButton != null) refreshStatsButton.setDisable(false);
+        });
+
+        loadStatsTask.setOnFailed(e->{
+            aggiornaStato("Errore nel caricamento delle statistiche del Database: " +loadStatsTask.getException().getMessage());
+            if(refreshStatsButton != null) refreshStatsButton.setDisable(false);
+        });
+        startTask(loadStatsTask);
+    }
+
+    /**
+     * Configura le colonne della tabella delle statistiche in modo che sappiano
+     * quali dati mostrare (nome giocatore, vittorie, totale partite giocate e tempo medio).
+     */
+    @FXML
+    private void configureStatsTable(){
+        userCol.setCellValueFactory(cellData->new SimpleStringProperty(cellData.getValue().getPlayer().getUsername()));
+        winsCol.setCellValueFactory(cellData->new SimpleIntegerProperty(cellData.getValue().getVittorie()).asObject());
+        matchesCol.setCellValueFactory(cellData->{
+            int totali = cellData.getValue().getVittorie() + cellData.getValue().getSconfitte();
+            return new SimpleIntegerProperty(totali).asObject();
+        });
+        avgTimeCol.setCellValueFactory(cellData->new SimpleDoubleProperty(cellData.getValue().getMediaRisposta()).asObject());
+        aggiornaStatistiche();
+    }
+
+    /**
+     * Apre una finestra per far scegliere all'amministratore i documenti di testo da caricare.
+     * I file selezionati vengono aggiunti alla schermata in attesa di essere analizzati.
+     * @param event L'evento generato dal click sul bottone.
+     */
     @FXML
     private void loadFileText(ActionEvent event) {
         FileChooser fc = new FileChooser();
@@ -230,6 +321,10 @@ public class ServerDashboardController {
         }
     }
 
+    /**
+     * Avvia il processo di analisi dei documenti caricati.
+     * Mostra una finestra di attesa che impedisce di usare il programma finché l'analisi non è terminata.
+     */
     @FXML
     private void avviaAnalisiTask(){
         if(filesSelected.isEmpty()) return;
@@ -265,7 +360,6 @@ public class ServerDashboardController {
             loadTextButton.setDisable(false);
 
             aggiornaDocumenti();
-
             showAlert(Alert.AlertType.INFORMATION, "Analisi Completata", "I file selezionati sono stati analizzati con successo");
         });
 
@@ -283,6 +377,108 @@ public class ServerDashboardController {
         startTask(taskAnalisi);
     }
 
+    /**
+     * Cancella definitivamente dal sistema i documenti selezionati.
+     * L'operazione elimina anche i dati delle partite basate su quei documenti.
+     * @param event L'evento generato dal click sul bottone.
+     */
+    @FXML
+    private void eliminaDocumenti(ActionEvent event){
+        List<String> filesSelected = new ArrayList<>(listDocuments.getSelectionModel().getSelectedItems());
+        if(filesSelected.isEmpty()) return;
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Conferma Eliminazione");
+        alert.setContentText("Sei sicuro di voler eliminare definitivamente questi documenti? \n\n" +
+                "ATTENZIONE: Questa operazione eliminerà anche le analisi e la cronologia delle partite associate a questi file");
+        alert.setHeaderText(null);
+
+        Optional<ButtonType> risultato = alert.showAndWait();
+
+        if(risultato.isPresent() && risultato.get() == ButtonType.OK){
+            aggiornaStato("Eliminazione dal database in corso...");
+
+            Task<Void> deleteTask = new Task<Void>() {
+                @Override
+                protected Void call() throws Exception {
+                    serverService.eliminaDocumenti(filesSelected);
+                    return null;
+                }
+            };
+
+            deleteTask.setOnSucceeded(e->{
+
+                allDocumentsList.removeAll(filesSelected);
+                listDocuments.getItems().removeAll(filesSelected);
+
+                aggiornaStato("Documenti rimossi con successo");
+                showAlert(Alert.AlertType.INFORMATION, "Eliminazione Completata", "I documenti sono stati rimossi con successo");
+                aggiornaStatistiche();
+            });
+
+            deleteTask.setOnFailed(e->{
+                aggiornaStato("Errore durante l'eliminazione");
+                showAlert(Alert.AlertType.ERROR, "Errore", "Impossibile completare l'operazione: " + deleteTask.getException().getMessage());
+            });
+            startTask(deleteTask);
+        }
+    }
+
+    /**
+     * Cancella definitivamente dal sistema gli account degli utenti selezionati.
+     * Verranno rimosse anche tutte le loro statistiche e partite giocate.
+     * @param event L'evento generato dal click sul bottone.
+     */
+    @FXML
+    private void eliminaUtentiSelezionati(ActionEvent event){
+        List<String> utentiSelected = new ArrayList<>(listUsers.getSelectionModel().getSelectedItems());
+        if(utentiSelected.isEmpty()) return;
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Conferma Eliminazione Utenti");
+        alert.setContentText("Sei sicuro di voler elimiare definitivamente gli utenti selezionati?\n\n" +
+                "Verranno rimosse anche tutte le loro statistiche e cronologie di gioco associate.");
+        alert.setHeaderText(null);
+
+        Optional<ButtonType> risultato = alert.showAndWait();
+
+        if(risultato.isPresent() && risultato.get() == ButtonType.OK){
+            aggiornaStato("Eliminazione account utenti in corso...");
+
+            Task<Void> deleteUsersTask = new Task<Void>() {
+                @Override
+                protected Void call() throws Exception {
+                    for(String username : utentiSelected){
+                        serverService.eliminaUtente(username);
+                    }
+                    return null;
+                }
+            };
+
+            deleteUsersTask.setOnSucceeded(e->{
+                allUsersList.removeAll(utentiSelected);
+                listUsers.getItems().removeAll(utentiSelected);
+
+                aggiornaStato("Account utenti rimossi con successo");
+                aggiornaStatistiche();
+                showAlert(Alert.AlertType.INFORMATION, "Eliminazione Completata", "Gli utenti selezionati sono stati rimossi con successo");
+            });
+
+            deleteUsersTask.setOnFailed(e->{
+                aggiornaStato("Errore durante l'eliminazione degli utenti");
+                showAlert(Alert.AlertType.ERROR, "Errore", "Impossibile completare l'operazione");
+            });
+
+            startTask(deleteUsersTask);
+        }
+    }
+
+
+    /**
+     * Permette all'amministratore di salvare una copia completa del database
+     * in un file sul proprio computer.
+     * @param event L'evento generato dal click sul bottone.
+     */
     @FXML
     private void eseguiBackup(ActionEvent event){
         FileChooser fc = new FileChooser();
@@ -321,6 +517,11 @@ public class ServerDashboardController {
         }
     }
 
+    /**
+     * Permette all'amministratore di selezionare un file di salvataggio per ripristinare
+     * il database. Sostituisce tutti i dati attuali con quelli contenuti nel file scelto.
+     * @param event L'evento generato dal click sul bottone.
+     */
     @FXML
     private void restoreBackup(ActionEvent event){
         FileChooser fc = new FileChooser();
@@ -363,139 +564,12 @@ public class ServerDashboardController {
         }
     }
 
-    @FXML
-    private void eliminaDocumenti(ActionEvent event){
-        List<String> filesSelected = new ArrayList<>(listDocuments.getSelectionModel().getSelectedItems());
-        if(filesSelected.isEmpty()){
-            return;
-        }
-
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Conferma Eliminazione");
-        alert.setContentText("Sei sicuro di voler eliminare definitivamente questi documenti? \n\n" +
-                "ATTENZIONE: Questa operazione eliminerà anche le analisi e la cronologia delle partite associate a questi file");
-        alert.setHeaderText(null);
-        Optional<ButtonType> risultato = alert.showAndWait();
-
-        if(risultato.isPresent() && risultato.get() == ButtonType.OK){
-            aggiornaStato("Eliminazione dal database in corso...");
-
-            Task<Void> deleteTask = new Task<Void>() {
-                @Override
-                protected Void call() throws Exception {
-                    serverService.eliminaDocumenti(filesSelected);
-                    return null;
-                }
-            };
-
-            deleteTask.setOnSucceeded(e->{
-                listDocuments.getItems().removeAll(filesSelected);
-                aggiornaStato("Documenti rimossi con successo");
-                showAlert(Alert.AlertType.INFORMATION, "Eliminazione Completata", "I documenti sono stati rimossi con successo");
-                aggiornaStatistiche();
-            });
-
-            deleteTask.setOnFailed(e->{
-                aggiornaStato("Errore durante l'eliminazione");
-                showAlert(Alert.AlertType.ERROR, "Errore", "Impossibile completare l'operazione: " + deleteTask.getException().getMessage());
-            });
-
-            startTask(deleteTask);
-        }
-    }
-
-    @FXML
-    private void eliminaUtentiSelezionati(ActionEvent event){
-        List<String> utentiSelected = new ArrayList<>(listUsers.getSelectionModel().getSelectedItems());
-        if(utentiSelected.isEmpty()) return;
-
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Conferma Eliminazione Utenti");
-        alert.setContentText("Sei sicuro di voler elimiare definitivamente gli utenti selezionati?\n\n" +
-                "Verranno rimosse anche tutte le loro statistiche e cronologie di gioco associate.");
-        alert.setHeaderText(null);
-
-        Optional<ButtonType> risultato = alert.showAndWait();
-
-        if(risultato.isPresent() && risultato.get() == ButtonType.OK){
-            aggiornaStato("Eliminazione account utenti in corso...");
-
-            Task<Void> deleteUsersTask = new Task<Void>() {
-                @Override
-                protected Void call() throws Exception {
-                    for(String username : utentiSelected){
-                        serverService.eliminaUtente(username);
-                    }
-                    return null;
-                }
-            };
-
-            deleteUsersTask.setOnSucceeded(e->{
-                aggiornaStato("Account utenti rimossi con successo");
-                listUsers.getItems().removeAll(utentiSelected);
-                aggiornaStatistiche();
-                showAlert(Alert.AlertType.INFORMATION, "Eliminazione Completata", "Gli utenti selezionati sono stati rimossi con successo");
-            });
-
-            deleteUsersTask.setOnFailed(e->{
-                aggiornaStato("Errore durante l'eliminazione degli utenti");
-                showAlert(Alert.AlertType.ERROR, "Errore", "Impossibile completare l'operazione");
-            });
-
-            startTask(deleteUsersTask);
-        }
-    }
-
-    @FXML
-    private void configureStatsTable(){
-        userCol.setCellValueFactory(cellData->new SimpleStringProperty(cellData.getValue().getPlayer().getUsername()));
-        winsCol.setCellValueFactory(cellData->new SimpleIntegerProperty(cellData.getValue().getVittorie()).asObject());
-        matchesCol.setCellValueFactory(cellData->{
-            int totali = cellData.getValue().getVittorie() + cellData.getValue().getSconfitte();
-            return new SimpleIntegerProperty(totali).asObject();
-        });
-        avgTimeCol.setCellValueFactory(cellData->new SimpleDoubleProperty(cellData.getValue().getMediaRisposta()).asObject());
-        aggiornaStatistiche();
-    }
-
-    @FXML
-    private void aggiornaStatistiche(){
-
-        if(refreshStatsButton!=null){
-            refreshStatsButton.setDisable(true);
-        }
-
-        serverStatusLabel.setText("Estrazione statistiche dal DB in corso...");
-
-        Task<List<Statistica>> loadStatsTask = new Task<List<Statistica>>() {
-            @Override
-            protected List<Statistica> call() throws Exception {
-                return serverService.getClassifica();
-            }
-        };
-
-        loadStatsTask.setOnSucceeded(e->{
-            allStatsList = loadStatsTask.getValue();
-
-            filtraStatistiche(searchStatsField != null ? searchStatsField.getText() : "");
-            aggiornaStato("Statistiche aggiornate con successo");
-
-            if(refreshStatsButton != null){
-                refreshStatsButton.setDisable(false);
-            }
-        });
-
-        loadStatsTask.setOnFailed(e->{
-            aggiornaStato("Errore nel caricamento delle statistiche del Database: " +loadStatsTask.getException().getMessage());
-            if(refreshStatsButton != null){
-                refreshStatsButton.setDisable(false);
-            }
-        });
-
-        startTask(loadStatsTask);
-    }
-
-
+    /**
+     * Mostra un piccolo avviso a schermo con un messaggio per l'utente.
+     * @param tipo Indica se l'avviso è un errore o un'informazione.
+     * @param titolo Il titolo della finestra di avviso.
+     * @param messaggio Il testo mostrato all'interno della finestra.
+     */
     private void showAlert(Alert.AlertType tipo, String titolo, String messaggio) {
         Alert alert = new Alert(tipo);
         alert.setTitle(titolo);
@@ -504,18 +578,23 @@ public class ServerDashboardController {
         alert.showAndWait();
     }
 
+    /**
+     * Avvia un'operazione in background, in modo che l'interfaccia grafica
+     * non si blocchi mentre il server sta lavorando.
+     * @param task Il lavoro che il server deve svolgere.
+     */
     private void startTask(Task<?> task){
         Thread thread = new Thread(task);
         thread.setDaemon(true);
         thread.start();
     }
-    
+
+    /**
+     * Cambia il testo mostrato nella barra di stato in basso nella schermata.
+     * @param messaggio Il nuovo stato da visualizzare.
+     */
     private void aggiornaStato(String messaggio){
-        Platform.runLater(()->{
-            serverStatusLabel.setText("Stato: " + messaggio);
-        });
+        Platform.runLater(()-> serverStatusLabel.setText("Stato: " + messaggio));
     }
-
-
 }
 

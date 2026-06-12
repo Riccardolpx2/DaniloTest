@@ -14,6 +14,11 @@ import server.model.database.entity.AmministratoreEntity;
 import server.model.service.AuthService;
 import shared.gui.util.SceneManager;
 
+/**
+ * Gestisce la schermata iniziale di accesso (login) al server.
+ * Si occupa di controllare le credenziali dell'amministratore per garantire
+ * che solo il personale autorizzato possa accedere al pannello di controllo.
+ */
 public class ServerLoginController {
 
     @FXML
@@ -27,6 +32,11 @@ public class ServerLoginController {
 
     private AuthService authService;
 
+    /**
+     * Prepara la schermata non appena viene aperta.
+     * Imposta i collegamenti iniziali e si assicura che il pulsante di accesso
+     * rimanga bloccato finché non vengono inseriti sia il nome utente che la password.
+     */
     @FXML
     private void initialize(){
         this.authService = new AuthService();
@@ -39,6 +49,12 @@ public class ServerLoginController {
     }
 
 
+    /**
+     * Raccoglie i dati inseriti nei campi di testo e verifica se corrispondono a un
+     * amministratore registrato. Se i dati sono corretti, sblocca il sistema e apre
+     * il pannello di controllo; altrimenti mostra un avviso di errore a schermo.
+     * @param event L'evento scatenato dalla pressione del pulsante di accesso.
+     */
     @FXML
     private void login(ActionEvent event){
         String username = usernameField.getText();
