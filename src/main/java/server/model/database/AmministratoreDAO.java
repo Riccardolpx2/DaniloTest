@@ -30,7 +30,7 @@ public class AmministratoreDAO implements DAO<AmministratoreEntity, String> {
 
     @Override
     public void rimuovi(AmministratoreEntity el) throws SQLException {
-        String sql = "DELETE FROM amministratori WHERE usernam = ?";
+        String sql = "DELETE FROM amministratori WHERE username = ?";
         try (
                 Connection conn = DatabaseManager.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -88,7 +88,7 @@ public class AmministratoreDAO implements DAO<AmministratoreEntity, String> {
     @Override
     public List<AmministratoreEntity> elencaTutti() throws SQLException {
         List<AmministratoreEntity> amministratori = new ArrayList<>();
-        String sql = "SELECT FROM * amministratori";
+        String sql = "SELECT * FROM amministratori";
 
         try (
                 Connection conn = DatabaseManager.getConnection();
