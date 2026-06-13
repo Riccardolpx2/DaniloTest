@@ -63,7 +63,7 @@ public class DashboardController {
     
     private void handleMessage(Message message){
         switch(message.getMsgType()){
-            case gameStart:
+            case GAME_START:
                 Platform.runLater(() -> {
                     waitingOverlay.setVisible(false);
                     mainContent.setDisable(false);
@@ -87,7 +87,7 @@ public class DashboardController {
                 });
                 break;
                 
-            case gameSearchError:
+            case GAME_SEARCH_ERROR:
                 Platform.runLater(() -> {
                     waitingOverlay.setVisible(false);
                     mainContent.setDisable(false);
@@ -114,7 +114,7 @@ public class DashboardController {
         mainContent.setDisable(true); // Impedisce i click sui bottoni sottostanti
 
         try {
-            connectionHandler.sendMessage(new Message(MessageType.gameSearch,new GameSearchDTO(difficultyComboBox.getSelectionModel().getSelectedItem())));
+            connectionHandler.sendMessage(new Message(MessageType.GAME_SEARCH_REQUEST,new GameSearchDTO(difficultyComboBox.getSelectionModel().getSelectedItem())));
         } catch (IOException e) {
             e.printStackTrace();
             waitingOverlay.setVisible(false);
@@ -131,7 +131,7 @@ public class DashboardController {
         mainContent.setDisable(false);
 
         try {
-            connectionHandler.sendMessage(new Message(MessageType.gameSearchCancel, null));
+            connectionHandler.sendMessage(new Message(MessageType.GAME_SEARCH_CANCEL, null));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -148,7 +148,7 @@ public class DashboardController {
     @FXML
     private void logout(ActionEvent event){
         try {
-            ClientApp.getInstance().getConnectionHandler().sendMessage(new Message(MessageType.logout, null));
+            ClientApp.getInstance().getConnectionHandler().sendMessage(new Message(MessageType.LOGOUT_REQUEST, null));
             ClientApp.getInstance().setCurrentUser(null);
         } catch (Exception e) {
             e.printStackTrace();

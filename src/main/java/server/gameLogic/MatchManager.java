@@ -146,7 +146,7 @@ public class MatchManager {
         // Registriamo i tempi di questo round nell'oggetto Partita per il DB
         partitaInCorso.registraTempiRound(this.tempoG1, this.tempoG2);
 
-        String usernameVincitoreRound = "NESSUNO (PAREGGIO)";
+        String usernameVincitoreRound = null;
 
         // VALUTAZIONE DEL VINCITORE DEL ROUND
         if (haIndovinatoG1 && haIndovinatoG2) {
@@ -158,7 +158,6 @@ public class MatchManager {
                 punteggioG2++;
             } else {
                 // Pareggio perfetto nel tempo di risposta: un punto a testa
-                usernameVincitoreRound = "PAREGGIO PERFETTO"; 
                 punteggioG1++;
                 punteggioG2++;
             }

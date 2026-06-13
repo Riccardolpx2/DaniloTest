@@ -41,12 +41,12 @@ public class StatisticheController {
     public void initialize() throws IOException {
         this.connectionHandler = ClientApp.getInstance().getConnectionHandler();
         this.connectionHandler.setCurrentListener(this::handleMessage);
-        connectionHandler.sendMessage(new Message(MessageType.stats, null));
+        connectionHandler.sendMessage(new Message(MessageType.STATS_REQUEST, null));
     }
 
     private void handleMessage(Message message) {
         switch (message.getMsgType()) {
-            case statsInfo:
+            case STATS_RESPONSE:
                 Platform.runLater(() -> {
                     String username = ClientApp.getInstance().getCurrentUser();
                     StatDTO stat = (StatDTO) message.getPayload();
@@ -56,7 +56,7 @@ public class StatisticheController {
                     setStatistiche(username, stat);
                 });
                 break;
-            case generalError:
+            case GENERAL_ERROR:
                 Platform.runLater(() -> {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Errore ottenimento Statistiche");

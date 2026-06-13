@@ -100,7 +100,7 @@ public class ClientApp extends Application {
 
         if (connectionHandler != null) {
             try {
-                connectionHandler.sendMessage(new Message(MessageType.logout, null));
+                connectionHandler.sendMessage(new Message(MessageType.LOGOUT_REQUEST, null));
             } catch (Exception e) {
                 System.out.println("Impossibile contattare il server per il logout (connessione già interrotta).");
             }

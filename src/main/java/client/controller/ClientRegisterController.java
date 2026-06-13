@@ -64,7 +64,7 @@ public class ClientRegisterController {
 
     private void handleMessage(Message message){
         switch(message.getMsgType()){
-            case registerSuccess:
+            case REGISTER_SUCCESS:
                 Platform.runLater(() -> {
                     Alert alert = new Alert(Alert.AlertType.INFORMATION);
                     alert.setTitle("Registrazione Completata");
@@ -77,7 +77,7 @@ public class ClientRegisterController {
                     SceneManager.switchScene(stage, "/fxml/client/clientLogin.fxml");
                 });
                 break;
-            case registerFailure:
+            case REGISTER_FAILURE:
                 Platform.runLater(() -> {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Errore di Registrazione");
@@ -99,7 +99,7 @@ public class ClientRegisterController {
         LocalDate dataNascita = birthdate.getValue();
 
         RegisterDTO registerPayload = new RegisterDTO(username, password, nome, cognome, dataNascita.toString());
-        Message msg = new Message(MessageType.register, registerPayload);
+        Message msg = new Message(MessageType.REGISTER_REQUEST, registerPayload);
 
 
         Task<Void> task = new Task<Void>(){

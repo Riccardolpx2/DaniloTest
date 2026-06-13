@@ -12,6 +12,12 @@ import java.io.ObjectOutputStream;
 import java.net.SocketException;
 import java.net.Socket;
 
+/**
+ * Gestisce la comunicazione di rete con un singolo client connesso.
+ * Implementa {@link Runnable} per essere eseguito in un thread dedicato.
+ * Mantiene lo stato corrente del client (Pattern State), i riferimenti agli stream
+ * di I/O, l'utente autenticato e l'eventuale partita in corso.
+ */
 public class ClientHandler implements Runnable{
 
     private final Socket socket;
@@ -21,6 +27,11 @@ public class ClientHandler implements Runnable{
     private UtenteEntity loggedUser;
     private GameMatchHandler currentMatch;
 
+    /**
+     * Costruisce un nuovo handler per il client connesso.
+     *
+     * @param socket Il socket generato dall'accettazione della connessione.
+     */
     public ClientHandler(Socket socket) {
         this.socket = socket;
         // Il primo stato è sempre quello di autorizzazione
@@ -36,6 +47,10 @@ public class ClientHandler implements Runnable{
         }
     }
 
+    /**
+     * Ciclo di vita principale del thread. Resta in ascolto di nuovi messaggi in ingresso
+     * dal client e li inoltra allo stato corrente per la corretta gestione.
+     */
     @Override
     public void run() {
         try {
@@ -55,6 +70,11 @@ public class ClientHandler implements Runnable{
         }
     }
 
+    /**
+     * Effettua la pulizia delle risorse al momento della disconnessione del client.
+     * Disconnette l'utente se loggato, avvisa lo stato e la partita corrente della
+     * disconnessione e chiude in sicurezza gli stream e il socket.
+     */
     private void cleanClient() {
         // Se l'utente era loggato e la connessione cade, lo liberiamo!
         if (loggedUser != null) {

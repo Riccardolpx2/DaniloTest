@@ -2,6 +2,10 @@ package shared.protocol.DTO;
 
 import java.io.Serializable;
 
+/**
+ * Data Transfer Object (DTO) inviato dal Server in risposta ad una richiesta
+ * di statistiche dello storico personale del giocatore.
+ */
 public class StatDTO implements Serializable {
     private String username;
 
@@ -10,6 +14,14 @@ public class StatDTO implements Serializable {
     private int percentualeVittorie;
     private double mediaRisposta;
 
+    /**
+     * Costruisce le statistiche storiche di un utente.
+     * @param username L'identificativo del giocatore.
+     * @param vittorie Numero totale di match vinti.
+     * @param sconfitte Numero totale di match persi.
+     * @param percentualeVittorie Calcolo intero indicante la W/L ratio percentuale.
+     * @param mediaRisposta Il tempo medio impiegato a rispondere (in secondi).
+     */
     public StatDTO(String username, int vittorie, int sconfitte, int percentualeVittorie, double mediaRisposta) {
         this.username = username;
         this.vittorie = vittorie;

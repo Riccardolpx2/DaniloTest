@@ -11,6 +11,13 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.function.Consumer;
 
+/**
+ * Gestisce la connessione di rete lato client verso il server.
+ * Implementa {@link Runnable} per eseguire in un thread dedicato il ciclo di ascolto
+ * continuo dei messaggi in ingresso. Si occupa inoltre di instaurare la connessione
+ * (con una logica di retry automatico) e di fornire i metodi per l'invio e la
+ * ricezione dei messaggi ({@link Message}).
+ */
 public class ConnectionHandler implements Runnable {
 
     private Socket socket;
@@ -24,15 +31,33 @@ public class ConnectionHandler implements Runnable {
     private volatile boolean running = true;
 
 
+    /**
+     * Costruisce il gestore della connessione memorizzando i parametri di rete.
+     * La connessione vera e propria verrà avviata chiamando il metodo {@link #run()}
+     * (eseguito da un Thread).
+     *
+     * @param port La porta su cui il server è in ascolto.
+     * @param ipAddress L'indirizzo IP del server.
+     */
     public ConnectionHandler(int port, String ipAddress) {
         this.port = port;
         this.ipAddress = ipAddress;
     }
 
+    /**
+     * Imposta il listener (callback) che verrà invocato alla ricezione di ogni nuovo messaggio dal server.
+     * @param currentListener Una funzione (Consumer) che definisce come elaborare il {@link Message} ricevuto.
+     */
     public void setCurrentListener(Consumer<Message> currentListener) {
         this.currentListener = currentListener;
     }
 
+    /**
+     * Il ciclo di vita principale del thread di rete. 
+     * Si divide in due fasi:
+     * 1. Tentativi multipli (massimo 5) di stabilire una connessione con il server.
+     * 2. Se connesso, ciclo infinito di attesa e lettura dei messaggi in ingresso dal server.
+     */
     @Override
     public void run() {
         boolean connected = false;
@@ -95,16 +120,31 @@ public class ConnectionHandler implements Runnable {
         }
     }
 
+    /**
+     * Metodo di appoggio per delegare l'elaborazione del messaggio in ingresso al listener attuale.
+     *
+     * @param message Il messaggio appena letto dallo stream di rete.
+     */
     private void handleMessage(Message message) {
         currentListener.accept(message);
     }
 
+    /**
+     * Invia un messaggio al server scrivendolo in modo sincrono sull'{@link ObjectOutputStream}.
+     *
+     * @param message L'oggetto di tipo {@link Message} da inviare.
+     * @throws IOException In caso di problemi di scrittura sul socket (es. server disconnesso).
+     */
     public void sendMessage(Message message) throws IOException {
         out.writeObject(message);
         out.flush();
     }
 
 
+    /**
+     * Richiede la chiusura pulita e sicura della connessione di rete.
+     * Ferma il thread di ascolto, chiude gli stream I/O e infine chiude il socket.
+     */
     public void closeConnection() {
         this.running = false;
         try {

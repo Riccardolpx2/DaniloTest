@@ -7,12 +7,17 @@ package shared.protocol.DTO;
 import java.io.Serializable;
 
 /**
- *
- * @author Utente
+ * Data Transfer Object (DTO) inviato dal Client al Server.
+ * Contiene il tentativo logico (parola in chiaro) effettuato dal giocatore
+ * nel tentativo di vincere il round corrente.
  */
 public class RispostaGiocatoreDTO implements Serializable{
     
     private String parolaTentata;
+    
+    /**
+     * @param parolaTentata La decodifica supposta dal giocatore.
+     */
     public RispostaGiocatoreDTO(String parolaTentata) {
         this.parolaTentata = parolaTentata;
     }

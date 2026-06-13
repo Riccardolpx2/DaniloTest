@@ -4,7 +4,8 @@ import java.io.Serializable;
 import java.util.Map;
 
 /**
- * DTO che incapsula il recap finale della partita.
+ * Data Transfer Object (DTO) che incapsula il riepilogo finale della partita.
+ * Indica l'esito della sfida (vincitore, parità) e le cause di eventuale interruzione.
  */
 public class EsitoPartitaDTO implements Serializable {
 
@@ -12,6 +13,13 @@ public class EsitoPartitaDTO implements Serializable {
     private Map<String, Integer> punteggiFinali;
     private boolean terminataPerAbbandono;  // // serve perché il vincitore potrebbe avere meno punti se l'altro ha abbandonato
 
+    /**
+     * Inizializza l'esito di fine partita.
+     *
+     * @param usernameVincitore L'username di chi ha vinto, oppure {@code null} in caso di pareggio.
+     * @param punteggiFinali Mappa riepilogativa dei punteggi conseguiti da ciascun giocatore.
+     * @param terminataPerAbbandono {@code true} se un giocatore ha abbandonato prematuramente.
+     */
     public EsitoPartitaDTO(String usernameVincitore, Map<String, Integer> punteggiFinali,
                            boolean terminataPerAbbandono) {
         this.usernameVincitore = usernameVincitore;
