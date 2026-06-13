@@ -34,7 +34,7 @@ public class DashboardState extends ClientState{
      * @param message Il messaggio in ingresso (nessun payload strettamente necessario).
      * @param clientHandler L'handler del client.
      */
-    @MessageHandler(MessageType.stats)
+    @MessageHandler(MessageType.STATS_REQUEST)
     private void stats(Message message, ClientHandler clientHandler) {
 
         String username = clientHandler.getLoggedUser().getUsername();
@@ -43,17 +43,17 @@ public class DashboardState extends ClientState{
             if(statDTO!=null){
                 System.out.println("statistiche trovate" + statDTO.toString());
                 // lato client gestire se non ci sono statistiche
-                clientHandler.getOut().writeObject(new Message(MessageType.statsInfo, statDTO));
+                clientHandler.getOut().writeObject(new Message(MessageType.STATS_RESPONSE, statDTO));
             }else{
                 System.out.println("statistiche non trovate");
-                clientHandler.getOut().writeObject(new Message(MessageType.statsInfo, null));
+                clientHandler.getOut().writeObject(new Message(MessageType.STATS_RESPONSE, null));
             }
 
 
 
         } catch (SQLException e) {
             try {
-                clientHandler.getOut().writeObject(new Message(MessageType.generalError, "Errore lato server, riprova riprova più tardi"));
+                clientHandler.getOut().writeObject(new Message(MessageType.GENERAL_ERROR, "Errore lato server, riprova riprova più tardi"));
             } catch (IOException ex) {
                 System.out.println("Client disconnesso");
             }
@@ -71,7 +71,7 @@ public class DashboardState extends ClientState{
      * @param message Il messaggio di logout.
      * @param clientHandler L'handler del client.
      */
-    @MessageHandler(MessageType.logout)
+    @MessageHandler(MessageType.LOGOUT_REQUEST)
     private void logout(Message message, ClientHandler clientHandler) {
         try {
             if (clientHandler.getLoggedUser() != null) {
@@ -91,7 +91,7 @@ public class DashboardState extends ClientState{
      * @param message Il messaggio contenente la difficoltà richiesta (GameSearchDTO).
      * @param clientHandler L'handler del client.
      */
-    @MessageHandler(MessageType.gameSearch)
+    @MessageHandler(MessageType.GAME_SEARCH_REQUEST)
     private void searchGame(Message message, ClientHandler clientHandler){
         MatchmakingManager.enterLobby(clientHandler, ((GameSearchDTO) message.getPayload()).getDifficoltaPartita());
     }
@@ -101,7 +101,7 @@ public class DashboardState extends ClientState{
      * @param message Il messaggio di cancellazione.
      * @param clientHandler L'handler del client.
      */
-    @MessageHandler(MessageType.gameSearchCancel)
+    @MessageHandler(MessageType.GAME_SEARCH_CANCEL)
     private void cancelSearchGame(Message message, ClientHandler clientHandler){
         MatchmakingManager.exitLobby(clientHandler);
     }

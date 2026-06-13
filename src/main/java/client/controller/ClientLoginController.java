@@ -48,13 +48,13 @@ public class ClientLoginController {
 
     private void handleMessage(Message message) {
         switch (message.getMsgType()) {
-            case loginSuccess:
+            case LOGIN_SUCCESS:
                 Platform.runLater(() -> {
                     Stage stage = (Stage) loginButton.getScene().getWindow();
                     SceneManager.switchScene(stage, "/fxml/client/clientDashboard.fxml");
                 });
                 break;
-            case loginFailure:
+            case LOGIN_FAILURE:
                 Platform.runLater(() -> {
                     Alert alert = new Alert(Alert.AlertType.INFORMATION);
                     alert.setTitle("Login fallito");
@@ -80,7 +80,7 @@ public class ClientLoginController {
         Task<Void> task = new Task<Void>() {
             @Override
             protected Void call() throws Exception{
-                connectionHandler.sendMessage(new Message(MessageType.login, new LoginDTO(username, password)));
+                connectionHandler.sendMessage(new Message(MessageType.LOGIN_REQUEST, new LoginDTO(username, password)));
                 return null;
             }
         };

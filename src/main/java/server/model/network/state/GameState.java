@@ -18,7 +18,7 @@ public class GameState extends ClientState{
      * @param message Il messaggio contenente la parola tentata.
      * @param clientHandler L'handler del client che ha risposto.
      */
-    @MessageHandler(MessageType.gameAnswer)
+    @MessageHandler(MessageType.GAME_ANSWER_SUBMIT)
     private void answer(Message message, ClientHandler clientHandler){
         if (clientHandler.getCurrentMatch() != null) {
             RispostaGiocatoreDTO risposta = (RispostaGiocatoreDTO) message.getPayload();
@@ -31,7 +31,7 @@ public class GameState extends ClientState{
      * @param message Il messaggio di richiesta logout.
      * @param clientHandler Il client che effettua il logout.
      */
-    @MessageHandler(MessageType.logout)
+    @MessageHandler(MessageType.LOGOUT_REQUEST)
     private void logout(Message message, ClientHandler clientHandler) {
         try {
             clientHandler.getCurrentMatch().terminaPartita(clientHandler);

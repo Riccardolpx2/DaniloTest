@@ -8,51 +8,144 @@ import java.io.Serializable;
  * per la loro gestione sia sul Client che sul Server.
  */
 public enum MessageType implements Serializable {
-    // -------- Messaggi di Autenticazione --------
 
-    login,
-    loginSuccess,
-    loginFailure,
+    // ==========================================
+    //         MESSAGGI DI AUTENTICAZIONE
+    // ==========================================
 
-    register,
-    registerSuccess,
-    registerFailure,
+    /**
+     * [Client -> Server]
+     * Richiesta di accesso. Il payload contiene le credenziali (es. username e password).
+     */
+    LOGIN_REQUEST,
+
+    /**
+     * [Server -> Client]
+     * Risposta positiva al login. Indica che l'autenticazione è andata a buon fine.
+     */
+    LOGIN_SUCCESS,
+
+    /**
+     * [Server -> Client]
+     * Risposta negativa al login. Il payload contiene i dettagli dell'errore.
+     */
+    LOGIN_FAILURE,
+
+    /**
+     * [Client -> Server]
+     * Richiesta di registrazione di un nuovo account. Il payload contiene i dati dell'utente.
+     */
+    REGISTER_REQUEST,
+
+    /**
+     * [Server -> Client]
+     * Risposta positiva alla registrazione. L'account è stato creato con successo.
+     */
+    REGISTER_SUCCESS,
+
+    /**
+     * [Server -> Client]
+     * Risposta negativa alla registrazione (es. username già in uso, password debole).
+     */
+    REGISTER_FAILURE,
 
 
-    // --------- Messaggi di Dashboard ---------
+    // ==========================================
+    //           MESSAGGI DI DASHBOARD
+    // ==========================================
 
-    // Il client lo invia quando cerca una partita
-    gameSearch,
-    // Il client lo invia per annullare la ricerca in corso
-    gameSearchCancel,
-    // Il server lo invia con le informazioni dello sfidante, la modalità di difficoltà ecc.
-    gameStart,
-    // Il server lo invia per segnalare un errore nella ricerca partita
-    gameSearchError,
+    /**
+     * [Client -> Server]
+     * Richiesta di inserimento nella coda di matchmaking per cercare una partita.
+     */
+    GAME_SEARCH_REQUEST,
 
-    // Il client invia una richiesta per vedere le proprie statistiche
-    stats,
-    // Il server invia le informazioni associate all'utente
-    statsInfo,
-    logout,
+    /**
+     * [Client -> Server]
+     * Richiesta di annullamento della ricerca partita attualmente in corso.
+     */
+    GAME_SEARCH_CANCEL,
+
+    /**
+     * [Server -> Client]
+     * Segnala l'inizio della partita. Il payload contiene le informazioni iniziali (es. sfidante, difficoltà).
+     */
+    GAME_START,
+
+    /**
+     * [Server -> Client]
+     * Segnala un errore verificatosi durante la ricerca della partita.
+     */
+    GAME_SEARCH_ERROR,
+
+    /**
+     * [Client -> Server]
+     * Richiesta per ottenere le statistiche di gioco dell'utente (partite vinte, perse, ecc.).
+     */
+    STATS_REQUEST,
+
+    /**
+     * [Server -> Client]
+     * Risposta contenente i dati e le statistiche dell'utente richiesti.
+     */
+    STATS_RESPONSE,
+
+    /**
+     * [Client -> Server]
+     * Richiesta di disconnessione e invalidazione della sessione corrente.
+     */
+    LOGOUT_REQUEST,
 
 
-    // --------- Messaggi di Partita ---------
+    // ==========================================
+    //             MESSAGGI DI PARTITA
+    // ==========================================
 
-    // Il server invia ai client la domanda con annesso payload
-    gameQuestion,
-    // Il client invia le risposte alla domanda
-    gameAnswer,
-    // Il server invia al client il risultato della risposta data, con annesso payload
-    gameResponse,
-    // Il server invia il timeout al client
-    gameTimeOut,
-    // Il server invia ai client la fine della partita con il riepilogo (vincitore, punti, ecc.)
-    gameEnd,
 
-    gameError,
+    /**
+     * [Server -> Client]
+     * Invia al client una nuova domanda della partita con le relative opzioni.
+     */
+    GAME_QUESTION,
 
-    // ----------- Errori ----------
-    // Errore generale non ancora definito
-    generalError,
+    /**
+     * [Client -> Server]
+     * Invia al server la risposta selezionata o digitata dall'utente.
+     */
+    GAME_ANSWER_SUBMIT,
+
+    /**
+     * [Server -> Client]
+     * Comunica l'esito della risposta appena data (es. corretta/sbagliata, punti ottenuti).
+     */
+    GAME_ANSWER_RESULT,
+
+    /**
+     * [Server -> Client]
+     * Segnala che il tempo a disposizione per rispondere alla domanda attuale è scaduto.
+     */
+    GAME_TIMEOUT,
+
+    /**
+     * [Server -> Client]
+     * Indica la fine della partita. Il payload contiene il riepilogo (vincitore, punti finali, ecc.).
+     */
+    GAME_END,
+
+    /**
+     * [Server -> Client]
+     * Segnala un errore specifico avvenuto durante la partita (es. disconnessione dell'avversario).
+     */
+    GAME_ERROR,
+
+
+    // ==========================================
+    //                 ERRORI
+    // ==========================================
+
+    /**
+     * [Server -> Client / Client -> Server]
+     * Errore generico o di sistema non classificabile nelle categorie precedenti.
+     */
+    GENERAL_ERROR
 }

@@ -1,6 +1,5 @@
 package server.model.network.state;
 
-import server.model.database.UtenteDAO;
 import server.model.database.entity.UtenteEntity;
 import server.model.network.ClientHandler;
 import server.model.network.SessionManager;
@@ -36,7 +35,7 @@ public class AuthState extends ClientState{
      * @param message Il messaggio contenente il payload del login (LoginDTO).
      * @param clientHandler Il client che ha richiesto il login.
      */
-    @MessageHandler(MessageType.login)
+    @MessageHandler(MessageType.LOGIN_REQUEST)
     private void login(Message message, ClientHandler clientHandler){
         LoginDTO payload = (LoginDTO) message.getPayload();
 
@@ -49,7 +48,7 @@ public class AuthState extends ClientState{
 
                 // Controlliamo se l'utente ha già una sessione attiva
                 if (!SessionManager.getInstance().login(username, clientHandler)) {
-                    clientHandler.getOut().writeObject(new Message(MessageType.loginFailure, "Utente già connesso."));
+                    clientHandler.getOut().writeObject(new Message(MessageType.LOGIN_FAILURE, "Utente già connesso."));
                     return;
                 }
 
@@ -57,13 +56,13 @@ public class AuthState extends ClientState{
                 clientHandler.setLoggedUser(utenteEntity);
                 // Serve per cambiare lo stato
                 clientHandler.setCurrentState(new DashboardState());
-                clientHandler.getOut().writeObject(new Message(MessageType.loginSuccess, null));
+                clientHandler.getOut().writeObject(new Message(MessageType.LOGIN_SUCCESS, null));
             } else {
-                clientHandler.getOut().writeObject(new Message(MessageType.loginFailure, "Username o Password errati"));
+                clientHandler.getOut().writeObject(new Message(MessageType.LOGIN_FAILURE, "Username o Password errati"));
             }
         } catch(SQLException e){
             try {
-                clientHandler.getOut().writeObject(new Message(MessageType.generalError, "Errore lato server, riprova riprova più tardi"));
+                clientHandler.getOut().writeObject(new Message(MessageType.GENERAL_ERROR, "Errore lato server, riprova riprova più tardi"));
             } catch (IOException ex) {
                 System.out.println("Client disconnesso");
             }
@@ -81,7 +80,7 @@ public class AuthState extends ClientState{
      * @param message Il messaggio contenente il payload della registrazione (RegisterDTO).
      * @param clientHandler Il client che richiede la registrazione.
      */
-    @MessageHandler(MessageType.register)
+    @MessageHandler(MessageType.REGISTER_REQUEST)
     private void register(Message message, ClientHandler clientHandler){
         RegisterDTO payload = (RegisterDTO) message.getPayload();
 
@@ -93,13 +92,13 @@ public class AuthState extends ClientState{
 
         try {
             if (authService.register(username, password, nome, cognome, dataNascita)){
-                clientHandler.getOut().writeObject(new Message(MessageType.registerSuccess, null));
+                clientHandler.getOut().writeObject(new Message(MessageType.REGISTER_SUCCESS, null));
             } else{
-                clientHandler.getOut().writeObject(new Message(MessageType.registerFailure, "Utente già registrato"));
+                clientHandler.getOut().writeObject(new Message(MessageType.REGISTER_FAILURE, "Utente già registrato"));
             }
         } catch (SQLException e){
             try{
-                clientHandler.getOut().writeObject(new Message(MessageType.generalError, "Errore lato server, riprova più tardi"));
+                clientHandler.getOut().writeObject(new Message(MessageType.GENERAL_ERROR, "Errore lato server, riprova più tardi"));
             } catch (IOException ex) {
                 System.out.println("Client disconnesso");
             }

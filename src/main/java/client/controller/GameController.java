@@ -6,7 +6,6 @@ import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -106,7 +105,7 @@ public class GameController {
 
     private void messageHandler(Message message){
         switch(message.getMsgType()){
-            case gameQuestion:
+            case GAME_QUESTION:
                 Platform.runLater(() -> {
                     if (resultOverlay != null) {
                         resultOverlay.setVisible(false);
@@ -126,7 +125,7 @@ public class GameController {
                     startTimer();
                 });
                 break;
-            case gameResponse:
+            case GAME_ANSWER_RESULT:
                 Platform.runLater(() -> {
                     if (timeline != null) {
                         timeline.stop();
@@ -135,7 +134,7 @@ public class GameController {
                     showRoundResult(esito);
                 });
                 break;
-            case gameEnd:
+            case GAME_END:
                 Platform.runLater(() -> {
                     if (timeline != null) {
                         timeline.stop();
@@ -312,7 +311,7 @@ public class GameController {
             return;
         }
 
-        this.connectionHandler.sendMessage(new Message(MessageType.gameAnswer, new RispostaGiocatoreDTO(answer)));
+        this.connectionHandler.sendMessage(new Message(MessageType.GAME_ANSWER_SUBMIT, new RispostaGiocatoreDTO(answer)));
 
         System.out.println("Risposta inviata: " + answer);
         statusLabel.setText("Risposta inviata, in attesa di verifica...");

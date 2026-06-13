@@ -93,7 +93,7 @@ public class GameMatchHandler implements Runnable {
             this.roundConcluso = false;
             this.roundStartTime = System.currentTimeMillis();
 
-            inviaMessaggioEntrambi(new Message(MessageType.gameQuestion, new DomandaDTO(domandaCorrente)));
+            inviaMessaggioEntrambi(new Message(MessageType.GAME_QUESTION, new DomandaDTO(domandaCorrente)));
 
             synchronized (this) {
                 try {
@@ -115,7 +115,7 @@ public class GameMatchHandler implements Runnable {
             }
 
             if (esito != null) {
-                inviaMessaggioEntrambi(new Message(MessageType.gameResponse, esito));
+                inviaMessaggioEntrambi(new Message(MessageType.GAME_ANSWER_RESULT, esito));
             }
 
             try {
@@ -169,7 +169,7 @@ public class GameMatchHandler implements Runnable {
         riportaClientInDashboard();
 
         this.notifyAll();
-        inviaMessaggioEntrambi(new Message(MessageType.gameError, "Errore di rete improvviso. Ritorno alla dashboard."));
+        inviaMessaggioEntrambi(new Message(MessageType.GAME_ERROR, "Errore di rete improvviso. Ritorno alla dashboard."));
     }
 
     /**
@@ -192,11 +192,11 @@ public class GameMatchHandler implements Runnable {
             // 3. Facciamo calcolare al Manager l'esito
             EsitoPartitaDTO esitoPartitaDTO = matchManager.terminaPartita(utenteQuitter);
 
-            inviaMessaggioEntrambi(new Message(MessageType.gameEnd, esitoPartitaDTO));
+            inviaMessaggioEntrambi(new Message(MessageType.GAME_END, esitoPartitaDTO));
 
         } catch (SQLException e) {
             e.printStackTrace();
-            inviaMessaggioEntrambi(new Message(MessageType.gameError, "Errore nel salvataggio delle statistiche"));
+            inviaMessaggioEntrambi(new Message(MessageType.GAME_ERROR, "Errore nel salvataggio delle statistiche"));
         }
     }
 
@@ -214,15 +214,15 @@ public class GameMatchHandler implements Runnable {
 
     private void inviaInizioPartita(){
         try {
-            player1.getOut().writeObject(new Message(MessageType.gameStart,
+            player1.getOut().writeObject(new Message(MessageType.GAME_START,
                     new GameStartDTO(player2.getLoggedUser().getUsername(), difficolta)));
             player1.getOut().flush();
 
-            player2.getOut().writeObject(new Message(MessageType.gameStart,
+            player2.getOut().writeObject(new Message(MessageType.GAME_START,
                     new GameStartDTO(player1.getLoggedUser().getUsername(), difficolta)));
             player2.getOut().flush();
         } catch (Exception e) {
-            inviaMessaggioEntrambi(new Message(MessageType.gameError, "Errore di connessione"));
+            inviaMessaggioEntrambi(new Message(MessageType.GAME_ERROR, "Errore di connessione"));
             disconnettiClient();
         }
     }
@@ -238,6 +238,6 @@ public class GameMatchHandler implements Runnable {
 
     private void inviaDomandaEntrambi(Domanda domanda){
         DomandaDTO domandaDTO = new DomandaDTO(domanda.getTestoCifrato(), domanda.getParoleSoluzioniCifrate());
-        inviaMessaggioEntrambi(new Message(MessageType.gameQuestion, domandaDTO));
+        inviaMessaggioEntrambi(new Message(MessageType.GAME_QUESTION, domandaDTO));
     }
 }
