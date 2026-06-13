@@ -13,6 +13,11 @@ import shared.protocol.MessageType;
 import java.io.IOException;
 import java.sql.SQLException;
 
+/**
+ * Gestisce il ciclo di vita di una singola partita tra due giocatori.
+ * Implementa {@link Runnable} in modo da eseguire le fasi del gioco
+ * (invio domande, attesa risposte, esiti) in un thread separato.
+ */
 public class GameMatchHandler implements Runnable {
 
     private final ClientHandler player1;
@@ -30,6 +35,14 @@ public class GameMatchHandler implements Runnable {
     private boolean haRispostoP1 = false;
     private boolean haRispostoP2 = false;
 
+    /**
+     * Inizializza una nuova partita tra due sfidanti impostando il loro stato su {@link GameState}.
+     * Crea il modello logico della partita tramite la {@link GameFactory}.
+     *
+     * @param player1 Il client handler del primo giocatore.
+     * @param player2 Il client handler del secondo giocatore.
+     * @param difficolta Il livello di difficoltà scelto per la partita.
+     */
     public GameMatchHandler(ClientHandler player1, ClientHandler player2, String difficolta) {
         this.player1 = player1;
         this.player2 = player2;
@@ -50,6 +63,10 @@ public class GameMatchHandler implements Runnable {
         player2.setCurrentMatch(this);
     }
 
+    /**
+     * Avvia il flusso principale della partita. Gestisce la generazione dei round,
+     * l'invio delle domande, l'attesa del timer (massimo 30s) e l'invio dell'esito parziale e finale.
+     */
     @Override
     public void run() {
         inviaInizioPartita();
@@ -111,6 +128,13 @@ public class GameMatchHandler implements Runnable {
     }
 
 
+    /**
+     * Registra il tentativo di risposta inviato da uno dei giocatori e valuta
+     * se chiudere anticipatamente il round.
+     *
+     * @param client L'handler del giocatore che ha inviato la risposta.
+     * @param parolaTentata La parola in chiaro tentata dal giocatore.
+     */
     public synchronized void registraRisposta(ClientHandler client, String parolaTentata) {
         if (!matchRunning || roundConcluso) return;
 
@@ -133,6 +157,11 @@ public class GameMatchHandler implements Runnable {
         }
     }
 
+    /**
+     * Viene invocato in caso di errore di rete improvviso di uno dei client.
+     * Forza l'interruzione della partita, riporta i client rimanenti alla dashboard
+     * e notifica l'errore.
+     */
     public synchronized void disconnettiClient() {
         if (!matchRunning) return;
 
@@ -145,6 +174,7 @@ public class GameMatchHandler implements Runnable {
 
     /**
      * Unico punto di uscita della partita (abbandono volontario o termine naturale).
+     * Genera e invia le statistiche finali di gioco ai partecipanti e salva sul database.
      * @param quitter Il client che ha abbandonato, oppure null se la partita è finita regolarmente.
      */
     public synchronized void terminaPartita(ClientHandler quitter) {

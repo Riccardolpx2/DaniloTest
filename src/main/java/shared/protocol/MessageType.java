@@ -2,7 +2,11 @@ package shared.protocol;
 
 import java.io.Serializable;
 
-
+/**
+ * Enumera tutti i possibili tipi di messaggi scambiati attraverso i Socket.
+ * Permette un corretto instradamento logico dei messaggi ai metodi preposti 
+ * per la loro gestione sia sul Client che sul Server.
+ */
 public enum MessageType implements Serializable {
     // -------- Messaggi di Autenticazione --------
 

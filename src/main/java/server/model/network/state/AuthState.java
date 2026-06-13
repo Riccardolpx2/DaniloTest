@@ -13,15 +13,29 @@ import shared.protocol.DTO.LoginDTO;
 import java.io.IOException;
 import java.sql.SQLException;
 
+/**
+ * Stato iniziale del client. Gestisce le operazioni di autenticazione e registrazione.
+ * Quando l'utente effettua il login con successo, lo stato del client transita verso
+ * {@link DashboardState}.
+ */
 public class AuthState extends ClientState{
 
     private final AuthService authService;
 
+    /**
+     * Costruisce lo stato di autenticazione inizializzando i servizi necessari.
+     */
     public AuthState(){
         this.authService = new AuthService();
     }
 
-    // TODO: documentazione
+    /**
+     * Gestisce la richiesta di login di un utente. Controlla le credenziali tramite database
+     * e previene il doppio accesso usando il {@link SessionManager}.
+     *
+     * @param message Il messaggio contenente il payload del login (LoginDTO).
+     * @param clientHandler Il client che ha richiesto il login.
+     */
     @MessageHandler(MessageType.login)
     private void login(Message message, ClientHandler clientHandler){
         LoginDTO payload = (LoginDTO) message.getPayload();
@@ -60,7 +74,13 @@ public class AuthState extends ClientState{
         }
     }
 
-
+    /**
+     * Gestisce la richiesta di registrazione di un nuovo utente. Verifica che
+     * l'utente non esista già e tenta il salvataggio sul database.
+     *
+     * @param message Il messaggio contenente il payload della registrazione (RegisterDTO).
+     * @param clientHandler Il client che richiede la registrazione.
+     */
     @MessageHandler(MessageType.register)
     private void register(Message message, ClientHandler clientHandler){
         RegisterDTO payload = (RegisterDTO) message.getPayload();
