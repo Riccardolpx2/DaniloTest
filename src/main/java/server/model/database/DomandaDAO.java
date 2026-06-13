@@ -76,31 +76,32 @@ public class DomandaDAO implements DAO<Domanda,Integer>{
         throw new UnsupportedOperationException("Usa il metodo estraiDomandeCasuali filtrato per match.");
     }
     
-public List<Domanda> estraiDomandeCasuali(int idDocumento, String difficolta, int quantita) throws SQLException {
+    public List<Domanda> estraiDomandeCasuali(int idDocumento, String difficolta, int quantita) throws SQLException {
         List<Domanda> domande = new ArrayList<>();
+
+        // Rimosso il LIMIT ?, ora ci sono esattamente DUE punti interrogativi
         String sql = "SELECT idDomanda, testoCifrato, paroleSoluzioni, paroleCifrate FROM domande " +
                      "WHERE idDocumento = ? AND difficolta = ? ORDER BY RANDOM();";
 
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
+
+            // Impostiamo solo i 2 parametri della clausola WHERE
             pstmt.setInt(1, idDocumento);
             pstmt.setString(2, difficolta.toUpperCase());
-            pstmt.setInt(3, quantita);
 
             try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
+                // Usiamo il ciclo while ma aggiungiamo un controllo sulla dimensione della lista
+                while (rs.next() && domande.size() < quantita) {
                     int idDomanda = rs.getInt("idDomanda");
                     String testoCifrato = rs.getString("testoCifrato");
-                    
-                    // Ricostruiamo le liste originarie splittando sulla virgola
+
                     List<String> soluzioni = Arrays.asList(rs.getString("paroleSoluzioni").split(","));
                     List<String> cifrate = Arrays.asList(rs.getString("paroleCifrate").split(","));
 
-                    // Usiamo il tuo costruttore: (idDomanda, idDocumento, testoCifrato, paroleSoluzioni, paroleSoluzioniCifrate, difficolta)
                     Domanda d = new Domanda(idDomanda, idDocumento, testoCifrato, soluzioni, cifrate, difficolta);
-                    
-                    domande.add(d);
+
+                    domande.add(d); // Appena la lista raggiunge la dimensione di 'quantita', il ciclo si interrompe
                 }
             }
         } catch (SQLException e) {

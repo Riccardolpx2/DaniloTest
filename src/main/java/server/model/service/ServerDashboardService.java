@@ -69,12 +69,12 @@ public class ServerDashboardService {
             analisiTesto.analizza(testo);
             analisiTestoDAO.aggiungi(analisiTesto);
             
-            int domandePerDifficolta = 5; 
+            int domandePerDifficolta = 10; 
             
             List<String> difficoltaDisponibili = Arrays.asList("FACILE", "MEDIA", "DIFFICILE");
             GeneratoreDomanda generatoreDomanda = new GeneratoreDomanda();
 
-            // Il ciclo genera 20 domande per Facile, 20 per Media, 20 per Difficile (60 totali per libro)
+            // Il ciclo genera 10 domande per Facile, 20 per Media, 20 per Difficile (60 totali per libro)
             for (String diff : difficoltaDisponibili) {
                 
                 // Richiama l'algoritmo crittografico passandogli il set di lemmi appena calcolato
