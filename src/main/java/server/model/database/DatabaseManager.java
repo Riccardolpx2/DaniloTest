@@ -76,17 +76,23 @@ public class  DatabaseManager {
                 "FOREIGN KEY (username) REFERENCES utenti(username) ON DELETE CASCADE" +
                 ");";
         
-        String creaTabellaAnalisi = "CREATE TABLE IF NOT EXISTS analisi_testi (" +
-                "idDocumento INTEGER PRIMARY KEY," + 
+
+        String creaTabellaDomande = "CREATE TABLE IF NOT EXISTS domande (" +
+                "idDomanda INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "idDocumento INTEGER NOT NULL, " +
+                "difficolta TEXT NOT NULL, " +
+                "testoCifrato TEXT NOT NULL, " +
+                "paroleSoluzioni TEXT NOT NULL, " + // Conterrà le parole in chiaro separate da virgola
+                "paroleCifrate TEXT NOT NULL, " +   // Conterrà le parole cifrate separate da virgola
                 "FOREIGN KEY (idDocumento) REFERENCES documenti(idDocumento) ON DELETE CASCADE" +
                 ");";
-
-        String creaTabellaDettaglioParole = "CREATE TABLE IF NOT EXISTS analisi_parole (" +
+                
+                String creaTabellaDettaglioParole = "CREATE TABLE IF NOT EXISTS analisi_parole (" +
                 "idDocumento INTEGER NOT NULL," +
                 "parola TEXT NOT NULL," +
                 "frequenza INTEGER NOT NULL," +
                 "PRIMARY KEY (idDocumento, parola)," +
-                "FOREIGN KEY (idDocumento) REFERENCES analisi_testi(idDocumento) ON DELETE CASCADE" +
+                "FOREIGN KEY (idDocumento) REFERENCES documenti(idDocumento) ON DELETE CASCADE" +
                 ");";
         
         try (Connection conn = getConnection();
@@ -110,9 +116,9 @@ public class  DatabaseManager {
             stmt.execute(creaTabellaStatistiche);
             System.out.println("Tabella 'statistiche' creata o già esistente.");
             
-            stmt.execute(creaTabellaAnalisi);
-            System.out.println("Tabella 'analisi_testi' creata o già esistente.");
-            
+            stmt.execute(creaTabellaDomande);
+            System.out.println("Tabella 'domande' creata o già esistente.");
+ 
             stmt.execute(creaTabellaDettaglioParole);
             System.out.println("Tabella 'analisi_parole' creata o già esistente.");
             

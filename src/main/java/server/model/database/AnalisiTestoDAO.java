@@ -21,46 +21,28 @@ import server.gameUtil.AnalisiTesto;
 public class AnalisiTestoDAO implements DAO<AnalisiTesto,String>{
     
 @Override
-    public void aggiungi(AnalisiTesto analisi) throws SQLException {
-        String sqlAnalisi = "INSERT INTO analisi_testi (idDocumento) VALUES (?);";
-        String sqlParole = "INSERT INTO analisi_parole (idDocumento, parola, frequenza) VALUES (?, ?, ?);";
+public void aggiungi(AnalisiTesto analisi) throws SQLException {
+    String sqlParole = "INSERT INTO analisi_parole (idDocumento, parola, frequenza) VALUES (?, ?, ?);";
 
-        try (Connection conn = DatabaseManager.getConnection()) {
-            // Disabilitiamo l'autocommit per eseguire l'operazione in un'unica transazione sicura
-            conn.setAutoCommit(false);
-
-            try {
-                // 1. Inseriamo il record principale dell'analisi
-                try (PreparedStatement pstmtA = conn.prepareStatement(sqlAnalisi)) {
-                    pstmtA.setInt(1, analisi.getIdDocumento());
-                    pstmtA.executeUpdate();
-                }
-
-                // 2. Inseriamo la mappa delle parole in blocco (Batch processing)
-                try (PreparedStatement pstmtP = conn.prepareStatement(sqlParole)) {
-                    Map<String, Integer> mappaFrequenze = analisi.getFrequenzaParole();
-                    
-                    for (Map.Entry<String, Integer> entry : mappaFrequenze.entrySet()) {
-                        pstmtP.setInt(1, analisi.getIdDocumento());
-                        pstmtP.setString(2, entry.getKey());
-                        pstmtP.setInt(3, entry.getValue());
-                        pstmtP.addBatch(); // Prepariamo il record per l'invio in blocco
-                    }
-                    
-                    pstmtP.executeBatch(); // Inviamo tutte le parole insieme
-                }
-
-                // Se tutto è andato a buon fine, salviamo sul DB
-                conn.commit();
-                System.out.println("AnalisiTesto relazionale per il documento ID: " + analisi.getIdDocumento() + " salvata con successo.");
-            } catch (SQLException e) {
-                conn.rollback(); // In caso di errore annulliamo tutto
-                throw e;
-            } finally {
-                conn.setAutoCommit(true);
-            }
+    try (Connection conn = DatabaseManager.getConnection();
+         PreparedStatement pstmtP = conn.prepareStatement(sqlParole)) {
+        
+        Map<String, Integer> mappaFrequenze = analisi.getFrequenzaParole();
+        
+        // Prepariamo la lista di tutte le parole
+        for (Map.Entry<String, Integer> entry : mappaFrequenze.entrySet()) {
+            pstmtP.setInt(1, analisi.getIdDocumento());
+            pstmtP.setString(2, entry.getKey());
+            pstmtP.setInt(3, entry.getValue());
+            pstmtP.addBatch(); // Accumula la parola nel buffer in memoria
         }
+        
+        // Invia tutto il blocco al database in un'unica operazione atomica
+        pstmtP.executeBatch(); 
+        
+        System.out.println("Analisi parole per il documento ID: " + analisi.getIdDocumento() + " salvata con successo (senza auto-commit manuale).");
     }
+}
     
     @Override 
     public void rimuovi(AnalisiTesto analisi) throws SQLException {
@@ -109,7 +91,7 @@ public class AnalisiTestoDAO implements DAO<AnalisiTesto,String>{
     @Override
     public List<AnalisiTesto> elencaTutti() throws SQLException {
         // Estraiamo tutti gli ID documento che possiedono un'analisi
-        String sqlId = "SELECT idDocumento FROM analisi_testi;";
+        String sqlId = "SELECT DISTINCT idDocumento FROM analisi_parole;";
         List<AnalisiTesto> listaAnalisi = new ArrayList<>();
 
         try (Connection conn = DatabaseManager.getConnection();

@@ -9,18 +9,22 @@ import server.gameUtil.Statistica;
 import java.io.File;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import server.gameLogic.GeneratoreDomanda;
+import server.gameUtil.Domanda;
 
 public class ServerDashboardService {
 
     private final DocumentoDAO documentoDAO;
     private final AnalisiTestoDAO analisiTestoDAO;
     private final StatisticaDAO statisticaDAO;
-
+    private final DomandaDAO domandaDAO;
     public ServerDashboardService() {
         this.documentoDAO = new DocumentoDAO();
         this.analisiTestoDAO = new AnalisiTestoDAO();
         this.statisticaDAO = new StatisticaDAO();
+        this.domandaDAO = new DomandaDAO();
     }
 
     public List<String> getNomiDocumenti() throws Exception {
@@ -42,6 +46,25 @@ public class ServerDashboardService {
             AnalisiTesto analisiTesto = new AnalisiTesto(documento.getIdDocumento());
             analisiTesto.analizza(testo);
             analisiTestoDAO.aggiungi(analisiTesto);
+            
+            int domandePerDifficolta = 5; 
+            
+            List<String> difficoltaDisponibili = Arrays.asList("FACILE", "MEDIA", "DIFFICILE");
+            GeneratoreDomanda generatoreDomanda = new GeneratoreDomanda();
+
+            // Il ciclo genera 20 domande per Facile, 20 per Media, 20 per Difficile (60 totali per libro)
+            for (String diff : difficoltaDisponibili) {
+                
+                // Richiama l'algoritmo crittografico passandogli il set di lemmi appena calcolato
+                List<Domanda> domandeGenerate = generatoreDomanda.creaDomande(domandePerDifficolta, diff, documento, analisiTesto);
+                
+                // Salva le domande una a una nel database per renderle pronte all'uso futuro
+                if (domandeGenerate != null) {
+                    for (Domanda d : domandeGenerate) {
+                        domandaDAO.aggiungi(d);
+                    }
+                }
+            }
         }
     }
 

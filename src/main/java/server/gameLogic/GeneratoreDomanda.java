@@ -1,5 +1,6 @@
 package server.gameLogic;
 
+import server.gameUtil.Domanda;
 import server.gameUtil.AnalisiTesto;
 import server.gameUtil.Documento;
 
@@ -103,7 +104,7 @@ public class GeneratoreDomanda {
             }
             
             // crea domanda finale
-            domande.add(new Domanda(testoCifrato,paroleDaCifrare,paroleCifrate,difficolta)
+            domande.add(new Domanda(0,documento.getIdDocumento(), testoCifrato,paroleDaCifrare,paroleCifrate,difficolta)
             );
             generate++;
         }

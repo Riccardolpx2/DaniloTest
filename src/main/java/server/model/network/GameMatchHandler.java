@@ -1,6 +1,6 @@
 package server.model.network;
 
-import server.gameLogic.Domanda;
+import server.gameUtil.Domanda;
 import server.gameLogic.GameFactory;
 import server.gameLogic.MatchManager;
 import server.model.database.entity.UtenteEntity;
@@ -21,7 +21,7 @@ public class GameMatchHandler implements Runnable {
     private final String difficolta;
 
     private boolean matchRunning = true;
-    private final int NUM_ROUNDS = 5;
+    private final int NUM_ROUNDS = 2;
 
     private long roundStartTime;
     private boolean roundConcluso = false;
