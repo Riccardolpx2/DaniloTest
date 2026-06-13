@@ -8,7 +8,7 @@ import java.util.List;
  * (Create, Read, Update, Delete) verso il Database relazionale.
  * Segue il Data Access Object (DAO) Pattern per separare la logica di business 
  * del server dallo strato di persistenza dei dati.
- * @param <T> Il tipo dell'Oggetto di Dominio / Entity gestito dal DAO (es. UtenteEntity, Partita).
+ * @param <T> Il tipo dell'Oggetto di Dominio / Entity gestito dal DAO (es. UtenteEntity, PartitaEntity).
  * @param <K> Il tipo della Chiave Primaria utilizzata per identificare l'entità nel DB (es. String per username, Integer per ID).
  * @author Utente
  */

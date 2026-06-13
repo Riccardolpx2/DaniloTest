@@ -1,8 +1,7 @@
 package server.gameLogic;
 
-import server.gameUtil.Domanda;
-import server.gameUtil.AnalisiTesto;
-import server.gameUtil.Documento;
+import server.model.database.entity.DocumentoEntity;
+import server.model.database.entity.DomandaEntity;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -36,13 +35,13 @@ public class GeneratoreDomanda {
      * che tutte le sue varianti flessive (stesso lemma) trovate nel medesimo frammento.
      * @param quantita   Il numero di domande da generare [fisso per difficoltà].
      * @param difficolta Il livello di difficoltà richiesto ("FACILE", "MEDIA", "DIFFICILE").
-     * @param documento  Il {@link Documento} contenente il testo letterale di partenza.
+     * @param documento  Il {@link DocumentoEntity} contenente il testo letterale di partenza.
      * @param analisi    L'oggetto {@link AnalisiTesto} contenente la mappa delle frequenze delle parole.
-     * @return Una {@link List} di oggetti {@link Domanda} pronti per essere somministrati o salvati.
+     * @return Una {@link List} di oggetti {@link DomandaEntity} pronti per essere somministrati o salvati.
      */
-    public List<Domanda> creaDomande(int quantita, String difficolta, Documento documento, AnalisiTesto analisi) {
+    public List<DomandaEntity> creaDomande(int quantita, String difficolta, DocumentoEntity documento, AnalisiTesto analisi) {
 
-        List<Domanda> domande = new ArrayList<>();
+        List<DomandaEntity> domande = new ArrayList<>();
 
         Map<String, Integer> frequenze = analisi.getFrequenzaParole();
         String testo = documento.getTesto();
@@ -122,7 +121,7 @@ public class GeneratoreDomanda {
                 testoCifrato = testoCifrato.replaceAll("(?i)\\b" + v + "\\b",cifrata);
             }          
             // crea domanda finale
-            domande.add(new Domanda(0,documento.getIdDocumento(), testoCifrato,paroleDaCifrare,paroleCifrate,difficolta)
+            domande.add(new DomandaEntity(0, documento.getIdDocumento(), testoCifrato,paroleDaCifrare,paroleCifrate,difficolta)
             );
             generate++;
         }

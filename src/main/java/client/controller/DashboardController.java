@@ -93,7 +93,7 @@ public class DashboardController {
                     mainContent.setDisable(false);
                     
                     Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("Errore Ricerca Partita");
+                    alert.setTitle("Errore Ricerca PartitaEntity");
                     alert.setHeaderText(null);
                     alert.setContentText("Impossibile trovare una partita al momento. Riprova tra poco.");
                     alert.showAndWait();

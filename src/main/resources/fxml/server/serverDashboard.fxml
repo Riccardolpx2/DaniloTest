@@ -48,7 +48,7 @@
                                     </font>
                                 </Label>
 
-                                <TextField fx:id="searchDocumentField" promptText="Inserisci il nome del documento..." style="-fx-font-size: 14px; -fx-background-radius: 5; -fx-border-color: #bdc3c7; -fx-border-radius: 5;" />
+                                <TextField fx:id="searchDocumentField" promptText="Inserisci il nome del documentoEntity..." style="-fx-font-size: 14px; -fx-background-radius: 5; -fx-border-color: #bdc3c7; -fx-border-radius: 5;" />
 
                                 <ListView fx:id="listDocuments" style="-fx-font-size: 14px; -fx-background-radius: 5; -fx-border-radius: 5; -fx-border-color: #bdc3c7;" VBox.vgrow="ALWAYS" />
 

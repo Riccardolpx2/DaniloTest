@@ -2,12 +2,11 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package server.gameUtil;
+package server.model.database.entity;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import server.model.database.entity.UtenteEntity;
 
 /**
  * Rappresenta l'entità e lo stato di una partita nel sistema.
@@ -15,7 +14,7 @@ import server.model.database.entity.UtenteEntity;
  * sia come Oggetto di Dominio per il salvataggio e recupero dal Database (DAO).
  *  author Utente
  */
-public class Partita {
+public class PartitaEntity {
     private int idPartita;
     private LocalDateTime dataInizio;
     private int durataPartita;
@@ -45,8 +44,8 @@ public class Partita {
      * @param punteggioTotaleG1 Punteggio finale accumulato dal Giocatore 1.
      * @param punteggioTotaleG2 Punteggio finale accumulato dal Giocatore 2.
      */
-    public Partita(int idPartita, LocalDateTime dataInizio, int durataPartita, String stato, UtenteEntity player1,
-            UtenteEntity player2, UtenteEntity vincitore, int punteggioTotaleG1, int punteggioTotaleG2) {
+    public PartitaEntity(int idPartita, LocalDateTime dataInizio, int durataPartita, String stato, UtenteEntity player1,
+                         UtenteEntity player2, UtenteEntity vincitore, int punteggioTotaleG1, int punteggioTotaleG2) {
         this.idPartita = idPartita;
         this.dataInizio = dataInizio;
         this.durataPartita = durataPartita;
@@ -67,7 +66,7 @@ public class Partita {
      * @param player1 Il primo utente (es. il creatore della stanza).
      * @param player2 Il secondo utente (es. chi si è aggiunto).
      */
-    public Partita(UtenteEntity player1, UtenteEntity player2) {
+    public PartitaEntity(UtenteEntity player1, UtenteEntity player2) {
         this.player1 = player1;
         this.player2 = player2;
         this.dataInizio = LocalDateTime.now();

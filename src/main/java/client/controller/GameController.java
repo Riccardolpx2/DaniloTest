@@ -66,7 +66,7 @@ public class GameController {
     @FXML
     private Label opponentScoreLabel;
 
-    // Elementi dell'Overlay di Fine Partita
+    // Elementi dell'Overlay di Fine PartitaEntity
     @FXML
     private VBox gameEndOverlay;
 
@@ -91,7 +91,7 @@ public class GameController {
         usernameAvversario = messaggio;
         Platform.runLater(() -> {
             if (sfidanteLabel != null) {
-                sfidanteLabel.setText("Partita contro " + usernameAvversario);
+                sfidanteLabel.setText("PartitaEntity contro " + usernameAvversario);
             }
         });
     }
@@ -208,13 +208,13 @@ public class GameController {
         // 1. Titolo dell'esito finale e colori
         if (gameEndTitleLabel != null) {
             if (vincitore == null) {
-                gameEndTitleLabel.setText("Partita Terminata: Pareggio!");
+                gameEndTitleLabel.setText("PartitaEntity Terminata: Pareggio!");
                 gameEndTitleLabel.setStyle("-fx-text-fill: #f39c12;"); // Arancione
             } else if (vincitore.equals(currentUser)) {
-                gameEndTitleLabel.setText("Hai Vinto la Partita!");
+                gameEndTitleLabel.setText("Hai Vinto la PartitaEntity!");
                 gameEndTitleLabel.setStyle("-fx-text-fill: #2ecc71;"); // Verde
             } else {
-                gameEndTitleLabel.setText("Hai Perso la Partita.");
+                gameEndTitleLabel.setText("Hai Perso la PartitaEntity.");
                 gameEndTitleLabel.setStyle("-fx-text-fill: #e74c3c;"); // Rosso
             }
         }

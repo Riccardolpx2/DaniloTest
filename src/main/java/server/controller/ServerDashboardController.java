@@ -11,8 +11,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import server.model.database.entity.StatisticaEntity;
 import server.model.service.ServerDashboardService;
-import server.gameUtil.Statistica;
 import shared.gui.util.SceneManager;
 
 import java.io.*;
@@ -65,19 +65,19 @@ public class ServerDashboardController {
     private TextField searchStatsField;
 
     @FXML
-    private TableView<Statistica> statsTableView;
+    private TableView<StatisticaEntity> statsTableView;
 
     @FXML
-    private TableColumn<Statistica, String> userCol;
+    private TableColumn<StatisticaEntity, String> userCol;
 
     @FXML
-    private TableColumn<Statistica, Integer> winsCol;
+    private TableColumn<StatisticaEntity, Integer> winsCol;
 
     @FXML
-    private TableColumn<Statistica, Integer> matchesCol;
+    private TableColumn<StatisticaEntity, Integer> matchesCol;
 
     @FXML
-    private TableColumn<Statistica, Double> avgTimeCol;
+    private TableColumn<StatisticaEntity, Double> avgTimeCol;
 
     @FXML
     private Button refreshStatsButton;
@@ -92,7 +92,7 @@ public class ServerDashboardController {
 
     private List<String> allUsersList = new ArrayList<>();
     private List<String> allDocumentsList = new ArrayList<>();
-    private List<Statistica> allStatsList = new ArrayList<>();
+    private List<StatisticaEntity> allStatsList = new ArrayList<>();
 
     private final ServerDashboardService serverService = new ServerDashboardService();
 
@@ -178,7 +178,7 @@ public class ServerDashboardController {
         if(filtro == null || filtro.trim().isEmpty()){
             statsTableView.getItems().setAll(allStatsList);
         } else {
-            List<Statistica> filtrati = allStatsList.stream()
+            List<StatisticaEntity> filtrati = allStatsList.stream()
                     .filter(stat -> stat.getPlayer().getUsername().toLowerCase().contains(filtro.toLowerCase()))
                     .collect(Collectors.toList());
             statsTableView.getItems().setAll(filtrati);
@@ -261,9 +261,9 @@ public class ServerDashboardController {
 
         aggiornaStato("Estrazione statistiche dal DB in corso...");
 
-        Task<List<Statistica>> loadStatsTask = new Task<List<Statistica>>() {
+        Task<List<StatisticaEntity>> loadStatsTask = new Task<List<StatisticaEntity>>() {
             @Override
-            protected List<Statistica> call() throws Exception {
+            protected List<StatisticaEntity> call() throws Exception {
                 return serverService.getClassifica();
             }
         };

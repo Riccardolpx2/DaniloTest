@@ -2,16 +2,14 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package server.gameUtil;
-
-import server.model.database.entity.UtenteEntity;
+package server.model.database.entity;
 
 /**
  * Rappresenta il riepilogo delle statistiche di gioco storiche di uno specifico utente.
  * Viene utilizzata per tracciare le performance (vittorie, sconfitte, tempi medi) 
  * @author Utente
  */
-public class Statistica {
+public class StatisticaEntity {
     private UtenteEntity player;
     private int vittorie;
     private int sconfitte;
@@ -27,7 +25,7 @@ public class Statistica {
      * @param percentualeVittorie La percentuale di successo (vittorie rispetto al totale dei match).
      * @param mediaRisposta Il tempo medio di risposta del giocatore espresso in secondi.
      */
-    public Statistica(UtenteEntity player, int vittorie, int sconfitte, int percentualeVittorie, double mediaRisposta) {
+    public StatisticaEntity(UtenteEntity player, int vittorie, int sconfitte, int percentualeVittorie, double mediaRisposta) {
         this.player = player;
         this.vittorie = vittorie;
         this.sconfitte = sconfitte;

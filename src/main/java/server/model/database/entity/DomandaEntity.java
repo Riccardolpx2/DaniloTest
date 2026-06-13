@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package server.gameUtil;
+package server.model.database.entity;
 
 import java.util.List;
 
@@ -12,7 +12,7 @@ import java.util.List;
  * (per la verifica delle risposte) sia cifrate ( necessarie alla logica di gioco).
  *  @author Utente
  */
-public class Domanda {
+public class DomandaEntity {
     private int idDomanda;
     private int idDocumento;
     private String testoCifrato;
@@ -30,7 +30,7 @@ public class Domanda {
      * @param paroleSoluzioniCifrate La lista delle risposte corrette in formato cifrato.
      * @param difficolta Il livello di difficoltà associato (es. "FACILE", "MEDIA", "DIFFICILE").
      */
-    public Domanda(int idDomanda,int idDocumento,String testoCifrato, List<String> paroleSoluzioni, List<String> paroleSoluzioniCifrate, String difficolta) {
+    public DomandaEntity(int idDomanda, int idDocumento, String testoCifrato, List<String> paroleSoluzioni, List<String> paroleSoluzioniCifrate, String difficolta) {
         this.idDomanda=idDomanda;
         this.idDocumento=idDocumento;
         this.testoCifrato = testoCifrato;

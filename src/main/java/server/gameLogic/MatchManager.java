@@ -1,11 +1,12 @@
 package server.gameLogic;
 
-import server.gameUtil.Domanda;
+import server.model.database.entity.DomandaEntity;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import server.gameUtil.Partita;
+
+import server.model.database.entity.PartitaEntity;
 
 import server.model.database.entity.UtenteEntity;
 import shared.protocol.DTO.EsitoPartitaDTO;
@@ -22,13 +23,13 @@ public class MatchManager {
     private final GameService gameService = new GameService();
 
     // Dati generali del match in corso
-    private final Partita partitaInCorso;
-    private final List<Domanda> domande;
+    private final PartitaEntity partitaEntityInCorso;
+    private final List<DomandaEntity> domande;
     private final String difficolta;
 
     // Stato di avanzamento della partita
     private int indiceRoundCorrente;
-    private Domanda domandaCorrente;
+    private DomandaEntity domandaEntityCorrente;
 
     // Riferimenti ai due giocatori
     private final UtenteEntity p1;
@@ -53,7 +54,7 @@ public class MatchManager {
      * @param difficolta La difficoltà scelta per la partita ("FACILE", "MEDIA", "DIFFICILE").
      * @param domande La lista di domande caricate per questa partita.
      */
-    public MatchManager(UtenteEntity p1, UtenteEntity p2, String difficolta, List<Domanda> domande) {
+    public MatchManager(UtenteEntity p1, UtenteEntity p2, String difficolta, List<DomandaEntity> domande) {
         this.p1 = p1;
         this.p2 = p2;
         this.difficolta = difficolta;
@@ -64,26 +65,26 @@ public class MatchManager {
         this.punteggioG1 = 0;
         this.punteggioG2 = 0;
 
-        // Creazione dell'oggetto Partita per lo storico a DB (Costruttore Snello)
-        this.partitaInCorso = new Partita(p1, p2);
+        // Creazione dell'oggetto PartitaEntity per lo storico a DB (Costruttore Snello)
+        this.partitaEntityInCorso = new PartitaEntity(p1, p2);
     }
 
     /**
      * Prepara e restituisce la nuova domanda per il round successivo.
      * Si occupa anche di resettare le variabili temporanee del round precedente
      * (es. imposta le risposte vuote e i timer a 30s di default per gestire eventuali timeout).
-     * * @return La nuova Domanda da sottoporre ai giocatori, oppure null se le domande sono finite.
+     * * @return La nuova DomandaEntity da sottoporre ai giocatori, oppure null se le domande sono finite.
      */
-    public Domanda iniziaNuovoRound() {
+    public DomandaEntity iniziaNuovoRound() {
     indiceRoundCorrente++;
         
         // Se abbiamo esaurito le domande, la partita è finita naturalmente
         if (indiceRoundCorrente >= domande.size()) {
-            this.domandaCorrente = null;
+            this.domandaEntityCorrente = null;
             return null;
         }
 
-        this.domandaCorrente = domande.get(indiceRoundCorrente);
+        this.domandaEntityCorrente = domande.get(indiceRoundCorrente);
 
         // Reset dello stato del round per ciascun giocatore (Default a 30s per i timeout)
         this.ultimaRispostaG1 = "";
@@ -93,7 +94,7 @@ public class MatchManager {
         this.haIndovinatoG1 = false;
         this.haIndovinatoG2 = false;
 
-        return this.domandaCorrente;
+        return this.domandaEntityCorrente;
     }
 
     /**
@@ -104,7 +105,7 @@ public class MatchManager {
      * @return true se la risposta è corretta (utile al Thread per fermare l'attesa), false altrimenti.
      */
     public boolean elaboraRisposta(UtenteEntity utente, RispostaGiocatoreDTO risposta, int tempo) {
-        if (domandaCorrente == null) {
+        if (domandaEntityCorrente == null) {
             return false;
         }
 
@@ -112,7 +113,7 @@ public class MatchManager {
         boolean esatta = false;
 
         //Scansiona tutte le varianti cifrate per verificare il tentativo
-        for (String soluzioneValida : domandaCorrente.getParoleSoluzioni()) {
+        for (String soluzioneValida : domandaEntityCorrente.getParoleSoluzioni()) {
             if (soluzioneValida.equalsIgnoreCase(tentativo)) {
                 esatta = true;
                 break; // Trovata la corrispondenza, possiamo fermare il ciclo
@@ -143,10 +144,10 @@ public class MatchManager {
      * @throws SQLException In caso di errori durante eventuali salvataggi a Database.
      */
     public EsitoRoundDTO chiudiRound() throws SQLException {
-        if (domandaCorrente == null) return null;
+        if (domandaEntityCorrente == null) return null;
 
-        // Registriamo i tempi di questo round nell'oggetto Partita per il DB
-        partitaInCorso.registraTempiRound(this.tempoG1, this.tempoG2);
+        // Registriamo i tempi di questo round nell'oggetto PartitaEntity per il DB
+        partitaEntityInCorso.registraTempiRound(this.tempoG1, this.tempoG2);
 
         String usernameVincitoreRound = null;
 
@@ -176,7 +177,7 @@ public class MatchManager {
         punteggiAttuali.put(p1.getUsername(), punteggioG1);
         punteggiAttuali.put(p2.getUsername(), punteggioG2);
 
-        String soluzioneUfficiale = domandaCorrente.getParoleSoluzioni().get(0);
+        String soluzioneUfficiale = domandaEntityCorrente.getParoleSoluzioni().get(0);
 
         return new EsitoRoundDTO(usernameVincitoreRound, soluzioneUfficiale, punteggiAttuali);
     }
@@ -208,14 +209,14 @@ public class MatchManager {
             }
         }
 
-        // Impostiamo i dati finali accumulati nell'oggetto Partita prima di passarlo al DB
-        partitaInCorso.setVincitore(vincitoreMatch);
-        partitaInCorso.setPunteggioTotaleG1(punteggioG1);
-        partitaInCorso.setPunteggioTotaleG2(punteggioG2);
-        partitaInCorso.setStato(perAbbandono ? "TERMINATA_ABBANDONO" : "TERMINATA");
+        // Impostiamo i dati finali accumulati nell'oggetto PartitaEntity prima di passarlo al DB
+        partitaEntityInCorso.setVincitore(vincitoreMatch);
+        partitaEntityInCorso.setPunteggioTotaleG1(punteggioG1);
+        partitaEntityInCorso.setPunteggioTotaleG2(punteggioG2);
+        partitaEntityInCorso.setStato(perAbbandono ? "TERMINATA_ABBANDONO" : "TERMINATA");
 
         // Salvataggio sul DB (Salva il match e aggiorna le statistiche globali)
-        gameService.terminaESalvaPartita(partitaInCorso);
+        gameService.terminaESalvaPartita(partitaEntityInCorso);
 
         // Prepariamo la mappa dei punteggi finali
         Map<String, Integer> punteggiFinali = new HashMap<>();

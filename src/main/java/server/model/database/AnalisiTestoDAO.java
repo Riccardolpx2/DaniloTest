@@ -12,7 +12,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import server.gameUtil.AnalisiTesto;
+import server.gameLogic.AnalisiTesto;
 
 /**
  * Gestione della persistenza dei report di analisi testuale.

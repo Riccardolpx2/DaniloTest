@@ -1,7 +1,7 @@
 package server.model.service;
 
 import server.model.database.StatisticaDAO;
-import server.gameUtil.Statistica;
+import server.model.database.entity.StatisticaEntity;
 import shared.protocol.DTO.StatDTO;
 
 import java.sql.SQLException;
@@ -23,7 +23,7 @@ public class DashboardService {
      */
     public StatDTO getStatistiche(String username) throws SQLException {
         StatisticaDAO sd = new StatisticaDAO();
-        Statistica s =sd.cerca(username);
+        StatisticaEntity s =sd.cerca(username);
         if(s==null){
             return null;
         }

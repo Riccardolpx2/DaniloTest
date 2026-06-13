@@ -1,6 +1,6 @@
 package server.model.network;
 
-import server.gameUtil.Domanda;
+import server.model.database.entity.DomandaEntity;
 import server.gameLogic.GameFactory;
 import server.gameLogic.MatchManager;
 import server.model.database.entity.UtenteEntity;
@@ -79,9 +79,9 @@ public class GameMatchHandler implements Runnable {
 
         while(matchRunning){
             // Chiediamo al manager di preparare il round. Se ritorna null, la partita è finita
-            Domanda domandaCorrente = this.matchManager.iniziaNuovoRound();
+            DomandaEntity domandaEntityCorrente = this.matchManager.iniziaNuovoRound();
 
-            if(domandaCorrente == null) {
+            if(domandaEntityCorrente == null) {
                 // Fine naturale: passiamo null. Il metodo gestirà sia il DTO che il reset in Dashboard
                 this.terminaPartita(null);
                 break; // Usciamo dal loop del thread
@@ -93,7 +93,7 @@ public class GameMatchHandler implements Runnable {
             this.roundConcluso = false;
             this.roundStartTime = System.currentTimeMillis();
 
-            inviaMessaggioEntrambi(new Message(MessageType.GAME_QUESTION, new DomandaDTO(domandaCorrente)));
+            inviaMessaggioEntrambi(new Message(MessageType.GAME_QUESTION, new DomandaDTO(domandaEntityCorrente)));
 
             synchronized (this) {
                 try {
@@ -236,7 +236,7 @@ public class GameMatchHandler implements Runnable {
         inviaMessaggioClient(player2, msg);
     }
 
-    private void inviaDomandaEntrambi(Domanda domanda){
+    private void inviaDomandaEntrambi(DomandaEntity domanda){
         DomandaDTO domandaDTO = new DomandaDTO(domanda.getTestoCifrato(), domanda.getParoleSoluzioniCifrate());
         inviaMessaggioEntrambi(new Message(MessageType.GAME_QUESTION, domandaDTO));
     }

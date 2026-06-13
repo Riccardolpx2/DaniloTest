@@ -4,7 +4,7 @@
  */
 package shared.protocol.DTO;
 
-import server.gameUtil.Domanda;
+import server.model.database.entity.DomandaEntity;
 
 import java.io.Serializable;
 import java.util.List;
@@ -31,11 +31,11 @@ public class DomandaDTO implements Serializable{
     }
 
     /**
-     * Costruisce il DTO estrapolando i dati dall'oggetto logico {@link Domanda}.
-     * @param domanda L'oggetto di dominio contenente le specifiche del round.
+     * Costruisce il DTO estrapolando i dati dall'oggetto logico {@link DomandaEntity}.
+     * @param domandaEntity L'oggetto di dominio contenente le specifiche del round.
      */
-    public DomandaDTO(Domanda domanda){
-        this(domanda.getTestoCifrato(), domanda.getParoleSoluzioniCifrate());
+    public DomandaDTO(DomandaEntity domandaEntity){
+        this(domandaEntity.getTestoCifrato(), domandaEntity.getParoleSoluzioniCifrate());
     }
     
  

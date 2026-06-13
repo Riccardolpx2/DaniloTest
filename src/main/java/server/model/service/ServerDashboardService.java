@@ -1,10 +1,11 @@
 package server.model.service;
 
 import server.model.database.*;
+import server.model.database.entity.DocumentoEntity;
+import server.model.database.entity.DomandaEntity;
 import server.model.database.entity.UtenteEntity;
-import server.gameUtil.AnalisiTesto;
-import server.gameUtil.Documento;
-import server.gameUtil.Statistica;
+import server.gameLogic.AnalisiTesto;
+import server.model.database.entity.StatisticaEntity;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -12,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import server.gameLogic.GeneratoreDomanda;
-import server.gameUtil.Domanda;
 
 /**
  * Gestisce le operazioni principali della dashboard del server.
@@ -44,9 +44,9 @@ public class ServerDashboardService {
      * @throws Exception In caso di problemi di comunicazione con il database.
      */
     public List<String> getNomiDocumenti() throws Exception {
-        List<Documento> documenti = documentoDAO.elencaTutti();
+        List<DocumentoEntity> documenti = documentoDAO.elencaTutti();
         List<String> nomi = new ArrayList<>();
-        for (Documento doc : documenti) {
+        for (DocumentoEntity doc : documenti) {
             nomi.add(doc.getNome() + " (Analizzato)");
         }
         return nomi;
@@ -62,10 +62,10 @@ public class ServerDashboardService {
         for (File file : files) {
             String testo = new String(Files.readAllBytes(file.toPath()), "UTF-8");
 
-            Documento documento = new Documento(0, file.getName(), testo);
-            documentoDAO.aggiungi(documento);
+            DocumentoEntity documentoEntity = new DocumentoEntity(0, file.getName(), testo);
+            documentoDAO.aggiungi(documentoEntity);
 
-            AnalisiTesto analisiTesto = new AnalisiTesto(documento.getIdDocumento());
+            AnalisiTesto analisiTesto = new AnalisiTesto(documentoEntity.getIdDocumento());
             analisiTesto.analizza(testo);
             analisiTestoDAO.aggiungi(analisiTesto);
             
@@ -78,11 +78,11 @@ public class ServerDashboardService {
             for (String diff : difficoltaDisponibili) {
                 
                 // Richiama l'algoritmo crittografico passandogli il set di lemmi appena calcolato
-                List<Domanda> domandeGenerate = generatoreDomanda.creaDomande(domandePerDifficolta, diff, documento, analisiTesto);
+                List<DomandaEntity> domandeGenerate = generatoreDomanda.creaDomande(domandePerDifficolta, diff, documentoEntity, analisiTesto);
                 
                 // Salva le domande una a una nel database per renderle pronte all'uso futuro
                 if (domandeGenerate != null) {
-                    for (Domanda d : domandeGenerate) {
+                    for (DomandaEntity d : domandeGenerate) {
                         domandaDAO.aggiungi(d);
                     }
                 }
@@ -96,10 +96,10 @@ public class ServerDashboardService {
      * @throws Exception In caso di problemi durante l'eliminazione.
      */
     public void eliminaDocumenti(List<String> filesSelected) throws Exception {
-        List<Documento> tuttiIDocumenti = documentoDAO.elencaTutti();
+        List<DocumentoEntity> tuttiIDocumenti = documentoDAO.elencaTutti();
 
         for (String stringaSelezionata : filesSelected) {
-            for (Documento doc : tuttiIDocumenti) {
+            for (DocumentoEntity doc : tuttiIDocumenti) {
                 String formatoStandard = doc.getNome() + " (Analizzato)";
                 String formatoBackup = "Doc ID: " + doc.getIdDocumento() + " (Ripristinato da file)";
 
@@ -117,7 +117,7 @@ public class ServerDashboardService {
      * @return La lista contenente le statistiche di tutti i giocatori.
      * @throws Exception In caso di problemi di comunicazione con il database.
      */
-    public List<Statistica> getClassifica() throws Exception {
+    public List<StatisticaEntity> getClassifica() throws Exception {
         return statisticaDAO.elencaTutti();
     }
 

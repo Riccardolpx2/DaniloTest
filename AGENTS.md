@@ -74,7 +74,7 @@ Persistenza:
 • all’avvio del server è possibile ricaricarli evitando di rifare l’analisi
 Preparazione della sfida
 • Il server:
-1. seleziona un documento analizzato;
+1. seleziona un documentoEntity analizzato;
 2. estrae un breve estratto testuale;
 3. sceglie una o più parole da nascondere*;
 4. applica un cifrario di Cesare con shift casuale;

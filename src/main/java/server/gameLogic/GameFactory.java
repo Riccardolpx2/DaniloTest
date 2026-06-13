@@ -4,13 +4,13 @@
  */
 package server.gameLogic;
 
-import server.gameUtil.Domanda;
+import server.model.database.entity.DocumentoEntity;
+import server.model.database.entity.DomandaEntity;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import server.model.database.DocumentoDAO;
 import server.model.database.entity.UtenteEntity;
-import server.gameUtil.Documento;
 import server.model.database.DomandaDAO;
 
 /**
@@ -40,10 +40,10 @@ public class GameFactory {
      */
     public MatchManager creaMatch(UtenteEntity p1, UtenteEntity p2, String difficolta, int numDomande) throws SQLException {
         
-        List<Domanda> domandeMischiate = new ArrayList<>();
+        List<DomandaEntity> domandeMischiate = new ArrayList<>();
         for (int i = 0; i < numDomande; i++) {
         //  Estrae un documento casuale 
-        Documento doc = documentoDAO.estraiDocumentoCasuale();
+        DocumentoEntity doc = documentoDAO.estraiDocumentoCasuale();
         
         if (doc == null) {
             throw new SQLException("Impossibile avviare il match: non ci sono documenti caricati nel database.");
@@ -51,13 +51,13 @@ public class GameFactory {
         
 
         // Pesca le domande già pronte e cifrate direttamente dal database
-        List<Domanda> domande = domandaDAO.estraiDomandeCasuali(doc.getIdDocumento(), difficolta, 1);
+        List<DomandaEntity> domande = domandaDAO.estraiDomandeCasuali(doc.getIdDocumento(), difficolta, 1);
         
         // Controllo di sicurezza: verifichiamo se il DB ha abbastanza domande pronte
         if (domande != null && !domande.isEmpty()) {
             domandeMischiate.add(domande.get(0));
-            System.out.println("Round " + (i + 1) + " pronto -> Documento ID: " +
-                    doc.getIdDocumento() + " (Domanda ID: " + domande.get(0).getIdDomanda() + ")");
+            System.out.println("Round " + (i + 1) + " pronto -> DocumentoEntity ID: " +
+                    doc.getIdDocumento() + " (DomandaEntity ID: " + domande.get(0).getIdDomanda() + ")");
         }else {
             // Se questo libro non ha domande medie, torniamo indietro di un giro e riproviamo con un altro
             System.out.println("Il documento ID " + doc.getIdDocumento() + " non ha domande. Riprovo...");

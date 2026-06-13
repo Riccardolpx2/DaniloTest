@@ -8,8 +8,8 @@ import java.sql.SQLException;
 import java.util.List;
 import server.model.database.PartitaDAO;
 import server.model.database.StatisticaDAO;
-import server.gameUtil.Partita;
-import server.gameUtil.Statistica;
+import server.model.database.entity.PartitaEntity;
+import server.model.database.entity.StatisticaEntity;
 import server.model.database.entity.UtenteEntity;
 
 /**
@@ -27,10 +27,10 @@ private final StatisticaDAO statisticaDAO = new StatisticaDAO();
      * Termina formalmente una partita, memorizzandone i dati e aggiornando i profili statistici dei giocatori.
      * L'operazione persiste la macro-partita (con relativi tempi dei round) e, in modo sequenziale, 
      * ricalcola e aggiorna i record storici di rendimento sia del Giocatore 1 che del Giocatore 2.
-     * @param p L'oggetto {@link Partita} da storicizzare nel database.
+     * @param p L'oggetto {@link PartitaEntity} da storicizzare nel database.
      * @throws SQLException Se si verifica un errore durante il salvataggio della partita o dell'aggiornamento statistico.
      */
-    public void terminaESalvaPartita(Partita p) throws SQLException {
+    public void terminaESalvaPartita(PartitaEntity p) throws SQLException {
         // 1. Salva la macro-partita e i relativi tempi dei round nel database
         partitaDAO.aggiungi(p); 
         
@@ -40,7 +40,7 @@ private final StatisticaDAO statisticaDAO = new StatisticaDAO();
         // 3. Aggiorna o crea le statistiche per il Giocatore 2
         aggiornaStatisticheUtente(p.getPlayer2(), p.getTempiRispostaG2(), p.getVincitore());
         
-        System.out.println("Partita e statistiche aggiornate con successo nel DB.");
+        System.out.println("PartitaEntity e statistiche aggiornate con successo nel DB.");
     }
 
     /**
@@ -55,12 +55,12 @@ private final StatisticaDAO statisticaDAO = new StatisticaDAO();
      */
     private void aggiornaStatisticheUtente(UtenteEntity giocatore, List<Integer> tempiPartita, UtenteEntity vincitorePartita) throws SQLException {
         // Cerchiamo le statistiche usando lo username estratto dall'entità player
-        Statistica stat = statisticaDAO.cerca(giocatore.getUsername());
+        StatisticaEntity stat = statisticaDAO.cerca(giocatore.getUsername());
         
         // Se l'utente non ha mai giocato (statistiche nulle), creiamo un nuovo record pulito
         if (stat == null) {
-            // Usiamo il costruttore completo della tua classe Statistica (vittorie=0, sconfitte=0, %vittorie=0, media=0.0)
-            stat = new Statistica(giocatore, 0, 0, 0, 0.0);
+            // Usiamo il costruttore completo della tua classe StatisticaEntity (vittorie=0, sconfitte=0, %vittorie=0, media=0.0)
+            stat = new StatisticaEntity(giocatore, 0, 0, 0, 0.0);
             statisticaDAO.aggiungi(stat);
         }
 
@@ -105,27 +105,27 @@ private final StatisticaDAO statisticaDAO = new StatisticaDAO();
     /**
      * Recupera le statistiche globali di un utente specifico partendo dal suo identificativo.
      * @param username Lo username del giocatore da cercare.
-     * @return L'oggetto {@link Statistica} popolato con le metriche storiche, o null se l'utente non ha registrazioni.
+     * @return L'oggetto {@link StatisticaEntity} popolato con le metriche storiche, o null se l'utente non ha registrazioni.
      * @throws SQLException In caso di errori di lettura dal database.
      */
-    public Statistica getStatistica(String username) throws SQLException {
+    public StatisticaEntity getStatistica(String username) throws SQLException {
         return statisticaDAO.cerca(username);
     }
     /**
      * Aggiorna forzatamente sul database i dati contenuti in un'istanza statistica.
-     * @param s L'oggetto {@link Statistica} modificato da sovrascrivere sul DB.
+     * @param s L'oggetto {@link StatisticaEntity} modificato da sovrascrivere sul DB.
      * @throws SQLException Se l'operazione di update fallisce.
      */
-    public void aggiornaStatistica(Statistica s) throws SQLException {
+    public void aggiornaStatistica(StatisticaEntity s) throws SQLException {
         statisticaDAO.aggiorna(s);
     }
     
     /**
      * Registra  un record di statistiche all'interno del database.
-     * @param s Il nuovo oggetto {@link Statistica} da inserire a sistema.
+     * @param s Il nuovo oggetto {@link StatisticaEntity} da inserire a sistema.
      * @throws SQLException In caso di collisione di chiavi o errori di rete con il DB.
      */
-    public void creaStatistica(Statistica s) throws SQLException {
+    public void creaStatistica(StatisticaEntity s) throws SQLException {
         statisticaDAO.aggiungi(s);
     }
 }

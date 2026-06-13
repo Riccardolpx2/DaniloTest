@@ -12,14 +12,14 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import server.gameUtil.Domanda;
+import server.model.database.entity.DomandaEntity;
 
 /**
  * Gestisce la persistenza e il recupero delle domande di gioco.
- * Mappa gli oggetti {@link Domanda} sulla tabella domande. 
+ * Mappa gli oggetti {@link DomandaEntity} sulla tabella domande.
  * * @author Utente
  */
-public class DomandaDAO implements DAO<Domanda,Integer>{
+public class DomandaDAO implements DAO<DomandaEntity,Integer>{
  
     /**
      * Inserisce una nuova domanda nel database.
@@ -27,11 +27,11 @@ public class DomandaDAO implements DAO<Domanda,Integer>{
      * e lo imposta nell'oggetto passato come parametro.
      * Converte le liste paroleSoluzioni e paroleSoluzioniCifrate
      * in stringhe piane separate da virgola prima del salvataggio e sincronizza l'ID generato.
-     * @param d L'oggetto Domanda completo da persistere.
+     * @param d L'oggetto DomandaEntity completo da persistere.
      * @throws SQLException Se si verifica un errore di scrittura o se non viene generata la chiave primaria.
      */
 @Override
-    public void aggiungi(Domanda d) throws SQLException {
+    public void aggiungi(DomandaEntity d) throws SQLException {
         String sql = "INSERT INTO domande (idDocumento, difficolta, testoCifrato, paroleSoluzioni, paroleCifrate) VALUES (?, ?, ?, ?, ?);";
         
         try (Connection conn = DatabaseManager.getConnection();
@@ -56,7 +56,7 @@ public class DomandaDAO implements DAO<Domanda,Integer>{
                     throw new SQLException("Errore: Inserimento fallito, nessun idDomanda generato.");
                 }
             }
-            System.out.println("Domanda salvata con successo. ID Assegnato dal DB: " + d.getIdDomanda());
+            System.out.println("DomandaEntity salvata con successo. ID Assegnato dal DB: " + d.getIdDomanda());
         } catch (SQLException e) {
             System.out.println("Errore nel metodo aggiungi di DomandaDAO: " + e.getMessage());
             throw e;
@@ -69,7 +69,7 @@ public class DomandaDAO implements DAO<Domanda,Integer>{
      * @throws UnsupportedOperationException Sempre. Consiglia l'uso di estraiDomandeCasuali.
      */
     @Override
-    public Domanda cerca(Integer key) throws SQLException {
+    public DomandaEntity cerca(Integer key) throws SQLException {
         throw new UnsupportedOperationException("Ricerca singola non supportata. Usa estraiDomandeCasuali.");
     }
     
@@ -80,8 +80,8 @@ public class DomandaDAO implements DAO<Domanda,Integer>{
      * @throws UnsupportedOperationException Sempre.
      */
     @Override
-    public void rimuovi(Domanda d) throws SQLException {
-        // Non serve: la cancellazione è gestita dal DB in cascata (ON DELETE CASCADE) quando elimini un Documento
+    public void rimuovi(DomandaEntity d) throws SQLException {
+        // Non serve: la cancellazione è gestita dal DB in cascata (ON DELETE CASCADE) quando elimini un DocumentoEntity
         throw new UnsupportedOperationException("Rimozione singola domanda non supportata.");
     }
 
@@ -91,7 +91,7 @@ public class DomandaDAO implements DAO<Domanda,Integer>{
      * @throws UnsupportedOperationException Sempre.
      */
     @Override
-    public void aggiorna(Domanda d) throws SQLException {
+    public void aggiorna(DomandaEntity d) throws SQLException {
         throw new UnsupportedOperationException("L'aggiornamento delle domande non è supportato.");
     }
     
@@ -101,7 +101,7 @@ public class DomandaDAO implements DAO<Domanda,Integer>{
      * @throws UnsupportedOperationException Sempre.
      */
     @Override
-    public List<Domanda> elencaTutti() throws SQLException {
+    public List<DomandaEntity> elencaTutti() throws SQLException {
         throw new UnsupportedOperationException("Usa il metodo estraiDomandeCasuali filtrato per match.");
     }
     
@@ -112,11 +112,11 @@ public class DomandaDAO implements DAO<Domanda,Integer>{
      * @param idDocumento L'identificativo del documento da cui attingere le domande.
      * @param difficolta Il livello di difficoltà richiesto (es. "FACILE", "MEDIA", "DIFFICILE").
      * @param quantita Il numero massimo di domande da inserire nel round di gioco.
-     * @return Una List di oggetti {@link Domanda} pronti per la partita; restituisce una lista vuota se nessun match corrisponde ai filtri.
+     * @return Una List di oggetti {@link DomandaEntity} pronti per la partita; restituisce una lista vuota se nessun match corrisponde ai filtri.
      * @throws SQLException In caso di problemi di comunicazione con il database o nel parsing dei campi CSV.
      */
-    public List<Domanda> estraiDomandeCasuali(int idDocumento, String difficolta, int quantita) throws SQLException {
-        List<Domanda> domande = new ArrayList<>();
+    public List<DomandaEntity> estraiDomandeCasuali(int idDocumento, String difficolta, int quantita) throws SQLException {
+        List<DomandaEntity> domande = new ArrayList<>();
 
         String sql = "SELECT idDomanda, testoCifrato, paroleSoluzioni, paroleCifrate FROM domande " +
                      "WHERE idDocumento = ? AND difficolta = ? ORDER BY RANDOM() LIMIT ?;";
@@ -136,7 +136,7 @@ public class DomandaDAO implements DAO<Domanda,Integer>{
                     List<String> soluzioni = Arrays.asList(rs.getString("paroleSoluzioni").split(","));
                     List<String> cifrate = Arrays.asList(rs.getString("paroleCifrate").split(","));
 
-                    Domanda d = new Domanda(idDomanda, idDocumento, testoCifrato, soluzioni, cifrate, difficolta);
+                    DomandaEntity d = new DomandaEntity(idDomanda, idDocumento, testoCifrato, soluzioni, cifrate, difficolta);
 
                     domande.add(d); // Appena la lista raggiunge la dimensione di 'quantita', il ciclo si interrompe
                 }

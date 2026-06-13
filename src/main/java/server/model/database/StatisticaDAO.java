@@ -10,24 +10,25 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
+import server.model.database.entity.StatisticaEntity;
 import server.model.database.entity.UtenteEntity;
-import server.gameUtil.Statistica;
 
 /**
  * Gestisce la persistenza e l'aggiornamento delle metriche di gioco.
- * Implementa l'interfaccia generica {@link DAO} mappando gli oggetti {@link Statistica}
+ * Implementa l'interfaccia generica {@link DAO} mappando gli oggetti {@link StatisticaEntity}
  * sulla tabella statistiche, utilizzando lo username del giocatore (String) come chiave primaria.
  * * @author Utente
  */
-public class StatisticaDAO implements DAO<Statistica,String>{
+public class StatisticaDAO implements DAO<StatisticaEntity,String>{
 
     /**
      * Inserisce un nuovo record di statistiche per un utente appena registrato.
-     * @param st L'oggetto Statistica contenente i valori iniziali (solitamente azzerati) del giocatore.
+     * @param st L'oggetto StatisticaEntity contenente i valori iniziali (solitamente azzerati) del giocatore.
      * @throws SQLException Se si verifica un errore durante l'operazione di inserimento.
      */
     @Override
-    public void aggiungi(Statistica st) throws SQLException{
+    public void aggiungi(StatisticaEntity st) throws SQLException{
         String sql = "INSERT INTO statistiche (username, vittorie, sconfitte, percentualeVittorie, mediaRisposta) VALUES (?, ?, ?, ?, ?);";
 
         try (Connection conn = DatabaseManager.getConnection();
@@ -40,7 +41,7 @@ public class StatisticaDAO implements DAO<Statistica,String>{
             pstmt.setDouble(5, st.getMediaRisposta());
 
             pstmt.executeUpdate();
-            System.out.println("Statistica inserita con successo per l'utente: " + st.getPlayer().getUsername());
+            System.out.println("StatisticaEntity inserita con successo per l'utente: " + st.getPlayer().getUsername());
         } catch (SQLException e) {
             System.out.println(e.getMessage());
             throw e;
@@ -56,7 +57,7 @@ public class StatisticaDAO implements DAO<Statistica,String>{
      * @throws UnsupportedOperationException Sempre, indicando la gestione in cascata del DBMS.
      */
     @Override
-    public void rimuovi(Statistica st) throws SQLException{
+    public void rimuovi(StatisticaEntity st) throws SQLException{
         throw new UnsupportedOperationException("Operazione di rimozione non supportata per le statistiche delle partite."
                 + " Se elimini l'utente verranno eliminate le statistiche in cascata");
     }
@@ -64,11 +65,11 @@ public class StatisticaDAO implements DAO<Statistica,String>{
     /**
      * Aggiorna i dati storici sul rendimento del giocatore (vittorie, sconfitte, percentuali e tempi medi).
      * Viene invocato al termine di ogni round per consolidare i nuovi punteggi.
-     * @param st L'oggetto Statistica aggiornato in memoria da sincronizzare sul database.
+     * @param st L'oggetto StatisticaEntity aggiornato in memoria da sincronizzare sul database.
      * @throws SQLException In caso di problemi di comunicazione con il database.
      */
     @Override
-    public void aggiorna(Statistica st) throws SQLException{
+    public void aggiorna(StatisticaEntity st) throws SQLException{
     String sql = "UPDATE statistiche SET vittorie = ?, sconfitte = ?, percentualeVittorie = ?, mediaRisposta = ? WHERE username = ?;";
 
         try (Connection conn = DatabaseManager.getConnection();
@@ -81,7 +82,7 @@ public class StatisticaDAO implements DAO<Statistica,String>{
             pstmt.setString(5, st.getPlayer().getUsername());
 
             int righeModificate = pstmt.executeUpdate();
-            System.out.println("Statistica aggiornata. Righe modificate: " + righeModificate);
+            System.out.println("StatisticaEntity aggiornata. Righe modificate: " + righeModificate);
         } catch (SQLException e) {
             System.out.println(e.getMessage());
             throw e;
@@ -91,13 +92,13 @@ public class StatisticaDAO implements DAO<Statistica,String>{
     /**
      * Cerca e restituisce le statistiche accumulate da un singolo giocatore identificato dal suo username.
      * @param key Lo username del giocatore di cui si vogliono ottenere le statistiche.
-     * @return L'oggetto {@link Statistica} popolato con i dati del DB, oppure null se lo username non esiste.
+     * @return L'oggetto {@link StatisticaEntity} popolato con i dati del DB, oppure null se lo username non esiste.
      * @throws SQLException Se si verificano errori nell'esecuzione della query di selezione.
      */
     @Override
-    public Statistica cerca(String key) throws SQLException{
+    public StatisticaEntity cerca(String key) throws SQLException{
         String sql = "SELECT * FROM statistiche WHERE username = ?;";
-        Statistica st = null;
+        StatisticaEntity st = null;
 
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -112,7 +113,7 @@ public class StatisticaDAO implements DAO<Statistica,String>{
                     double media = rs.getDouble("mediaRisposta");
                     UtenteEntity player = new UtenteEntity(key, null, null, null, null);
 
-                    st = new Statistica(player, vittorie, sconfitte, percentuale, media);
+                    st = new StatisticaEntity(player, vittorie, sconfitte, percentuale, media);
                 }
             }
         } catch (SQLException e) {
@@ -125,13 +126,13 @@ public class StatisticaDAO implements DAO<Statistica,String>{
     
     /**
      * Estrae la lista globale delle statistiche di tutti i giocatori registrati a sistema.
-     * @return Una List di oggetti {@link Statistica}. Se non ci sono record, restituisce una lista vuota.
+     * @return Una List di oggetti {@link StatisticaEntity}. Se non ci sono record, restituisce una lista vuota.
      * @throws SQLException In caso di anomalie di lettura massiva dal database.
      */
     @Override
-    public List<Statistica> elencaTutti() throws SQLException{
+    public List<StatisticaEntity> elencaTutti() throws SQLException{
         String sql = "SELECT * FROM statistiche;";
-        List<Statistica> lista = new ArrayList<>();
+        List<StatisticaEntity> lista = new ArrayList<>();
 
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -145,7 +146,7 @@ public class StatisticaDAO implements DAO<Statistica,String>{
                 double media = rs.getDouble("mediaRisposta");
 
                 UtenteEntity player = new UtenteEntity(username, null, null, null, null);
-                Statistica st = new Statistica(player, vittorie, sconfitte, percentuale, media);
+                StatisticaEntity st = new StatisticaEntity(player, vittorie, sconfitte, percentuale, media);
 
                 lista.add(st);
             }
