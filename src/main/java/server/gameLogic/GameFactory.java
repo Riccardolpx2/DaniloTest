@@ -6,6 +6,7 @@ package server.gameLogic;
 
 import server.gameUtil.Domanda;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import server.model.database.DocumentoDAO;
 import server.model.database.entity.UtenteEntity;
@@ -38,25 +39,36 @@ public class GameFactory {
      * nel database per quel testo e difficoltà è inferiore a quello richiesto.
      */
     public MatchManager creaMatch(UtenteEntity p1, UtenteEntity p2, String difficolta, int numDomande) throws SQLException {
+        
+        List<Domanda> domandeMischiate = new ArrayList<>();
+        for (int i = 0; i < numDomande; i++) {
         //  Estrae un documento casuale 
         Documento doc = documentoDAO.estraiDocumentoCasuale();
         
         if (doc == null) {
             throw new SQLException("Impossibile avviare il match: non ci sono documenti caricati nel database.");
         }
+        
 
         // Pesca le domande già pronte e cifrate direttamente dal database
-        List<Domanda> domande = domandaDAO.estraiDomandeCasuali(doc.getIdDocumento(), difficolta, numDomande);
+        List<Domanda> domande = domandaDAO.estraiDomandeCasuali(doc.getIdDocumento(), difficolta, 1);
         
         // Controllo di sicurezza: verifichiamo se il DB ha abbastanza domande pronte
-        if (domande == null || domande.size() < numDomande) {
-            System.out.println("ERRORE: Il documento ID " + doc.getIdDocumento() + " non ha abbastanza domande precalcolate nel DB per la difficoltà " + difficolta);
-            throw new SQLException("Errore di matchmaking: domande insufficienti nel database per questo testo.");
+        if (domande != null && !domande.isEmpty()) {
+            domandeMischiate.add(domande.get(0));
+            System.out.println("Round " + (i + 1) + " pronto -> Documento ID: " +
+                    doc.getIdDocumento() + " (Domanda ID: " + domande.get(0).getIdDomanda() + ")");
+        }else {
+            // Se questo libro non ha domande medie, torniamo indietro di un giro e riproviamo con un altro
+            System.out.println("Il documento ID " + doc.getIdDocumento() + " non ha domande. Riprovo...");
+            i--; 
         }
+    }    
+        
 
-        System.out.println("Match creato con successo! Caricate " + domande.size() + " domande istantaneamente.");
+        System.out.println("Match creato con successo! Caricate " + domandeMischiate.size() + " domande istantaneamente.");
         
         // Crea e restituisce il matchmanager pronto per giocare
-        return new MatchManager(p1, p2, difficolta, domande);
+        return new MatchManager(p1, p2, difficolta, domandeMischiate);
     }
 }
