@@ -4,6 +4,8 @@ import client.ClientApp;
 import client.network.ConnectionHandler;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -82,7 +84,7 @@ public class GameController {
     private Label gameEndOpponentScoreLabel;
 
     private int timeRemaining = 30;
-    private Thread timerThread;
+    private Timeline timeline;
     private String currentUser;
     private String usernameAvversario;
 
@@ -117,8 +119,8 @@ public class GameController {
                     DomandaDTO domanda = (DomandaDTO) message.getPayload();
                     updateTextFlow(domanda.getTestoCifrato(), domanda.getParoleCifrate());
 
-                    if (timerThread != null && timerThread.isAlive()) {
-                        timerThread.interrupt();
+                    if (timeline != null) {
+                        timeline.stop();
                     }
                     timeRemaining = 30;
                     startTimer();
@@ -126,8 +128,8 @@ public class GameController {
                 break;
             case gameResponse:
                 Platform.runLater(() -> {
-                    if (timerThread != null) {
-                        timerThread.interrupt();
+                    if (timeline != null) {
+                        timeline.stop();
                     }
                     EsitoRoundDTO esito = (EsitoRoundDTO) message.getPayload();
                     showRoundResult(esito);
@@ -135,8 +137,8 @@ public class GameController {
                 break;
             case gameEnd:
                 Platform.runLater(() -> {
-                    if (timerThread != null) {
-                        timerThread.interrupt();
+                    if (timeline != null) {
+                        timeline.stop();
                     }
                     // Adesso riceve correttamente il DTO di fine partita
                     EsitoPartitaDTO esitoPartita = (EsitoPartitaDTO) message.getPayload();
@@ -223,8 +225,6 @@ public class GameController {
             if (abbandono) {
                 if (vincitore != null && vincitore.equals(currentUser)) {
                     gameEndReasonLabel.setText("Vittoria a tavolino: l'avversario ha abbandonato.");
-                } else {
-                    gameEndReasonLabel.setText("Hai abbandonato la partita.");
                 }
             } else {
                 gameEndReasonLabel.setText("Tutti i round sono stati completati.");
@@ -257,27 +257,17 @@ public class GameController {
     }
 
     private void startTimer() {
-        Task<Void> timerTask = new Task<Void>() {
-            @Override
-            protected Void call() throws Exception {
-                while (timeRemaining > 0 && !isCancelled()) {
-                    Platform.runLater(() -> updateTimerLabel(timeRemaining));
-                    Thread.sleep(1000);
-                    timeRemaining--;
-                }
-                if (timeRemaining <= 0) {
-                    Platform.runLater(() -> {
-                        updateTimerLabel(0);
-                        timeUp();
-                    });
-                }
-                return null;
+        updateTimerLabel(timeRemaining);
+        timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
+            timeRemaining--;
+            updateTimerLabel(timeRemaining);
+            if (timeRemaining <= 0) {
+                timeline.stop();
+                timeUp();
             }
-        };
-
-        timerThread = new Thread(timerTask);
-        timerThread.setDaemon(true);
-        timerThread.start();
+        }));
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.play();
     }
 
     private void updateTimerLabel(int seconds) {
