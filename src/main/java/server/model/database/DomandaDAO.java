@@ -79,20 +79,18 @@ public class DomandaDAO implements DAO<Domanda,Integer>{
     public List<Domanda> estraiDomandeCasuali(int idDocumento, String difficolta, int quantita) throws SQLException {
         List<Domanda> domande = new ArrayList<>();
 
-        // Rimosso il LIMIT ?, ora ci sono esattamente DUE punti interrogativi
         String sql = "SELECT idDomanda, testoCifrato, paroleSoluzioni, paroleCifrate FROM domande " +
-                     "WHERE idDocumento = ? AND difficolta = ? ORDER BY RANDOM();";
+                     "WHERE idDocumento = ? AND difficolta = ? ORDER BY RANDOM() LIMIT ?;";
 
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            // Impostiamo solo i 2 parametri della clausola WHERE
             pstmt.setInt(1, idDocumento);
             pstmt.setString(2, difficolta.toUpperCase());
+            pstmt.setInt(3, quantita);
 
             try (ResultSet rs = pstmt.executeQuery()) {
-                // Usiamo il ciclo while ma aggiungiamo un controllo sulla dimensione della lista
-                while (rs.next() && domande.size() < quantita) {
+                while (rs.next()) {
                     int idDomanda = rs.getInt("idDomanda");
                     String testoCifrato = rs.getString("testoCifrato");
 
