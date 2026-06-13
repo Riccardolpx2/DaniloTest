@@ -88,13 +88,11 @@ public class ClientHandler implements Runnable{
             currentMatch.disconnettiClient();
         }
 
-        try {
-            if (in != null) in.close();
-            if (out != null) out.close();
-            if (socket != null && !socket.isClosed()) socket.close();
-        } catch (IOException e) {
-            System.err.println("Errore durante la chiusura del socket: " + e.getMessage());
-        }
+        // Chiudiamo le risorse singolarmente. Ignoriamo le eccezioni perché
+        // in fase di disconnessione non c'è nulla da recuperare se la chiusura fallisce.
+        try { if (in != null) in.close(); } catch (IOException ignored) {}
+        try { if (out != null) out.close(); } catch (IOException ignored) {}
+        try { if (socket != null && !socket.isClosed()) socket.close(); } catch (IOException ignored) {}
     }
 
     public UtenteEntity getLoggedUser() {

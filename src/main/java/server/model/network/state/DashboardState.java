@@ -77,9 +77,9 @@ public class DashboardState extends ClientState{
             if (clientHandler.getLoggedUser() != null) {
                 SessionManager.getInstance().logout(clientHandler.getLoggedUser().getUsername());
             }
+            MatchmakingManager.exitLobby(clientHandler);
             clientHandler.setLoggedUser(null);
             clientHandler.setCurrentState(new AuthState());
-            MatchmakingManager.exitLobby(clientHandler); // per assicurarci di uscire dalla lobby (il metodo gestisce il fatto che non fosse in lobby)
         } catch (Exception e) {
             e.printStackTrace();
         }
