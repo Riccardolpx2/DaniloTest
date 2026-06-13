@@ -5,10 +5,24 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+/**
+ * Gestore centralizzato del ciclo di vita del Database.
+ * Fornisce i metodi statici per ottenere connessioni JDBC al database SQLite,
+ * si occupa dell'inizializzazione automatica dello schema relazionale all'avvio del server
+ * e offre funzionalità native per il backup e il ripristino dei dati.
+ */
 public class  DatabaseManager {
-
+    
+    /** Percorso di connessione al database SQLite locale (file fisico del DB) */
     private static final String DB_URL = "jdbc:sqlite:database.db";
-
+    
+    /**
+     * Apre e restituisce una connessione attiva verso il database SQLite.
+     * Carica dinamicamente il driver JDBC e forza l'attivazione del supporto alle Foreign Key 
+     * tramite il comando specifico di SQLite 'PRAGMA foreign_keys = ON;'.
+     * @return Un oggetto {@link Connection} valido e configurato.
+     * @throws SQLException Se il driver non viene trovato o se fallisce lo stabilimento della connessione.
+     */
     public static Connection getConnection() throws SQLException {//metodo statico per ottenere connessione
             try {
                 Class.forName("org.sqlite.JDBC");
@@ -21,7 +35,20 @@ public class  DatabaseManager {
         conn.createStatement().execute("PRAGMA foreign_keys = ON;");
         return conn;
     }
-
+    /**
+     * Inizializza l'intero schema del database creando le tabelle necessarie al funzionamento 
+     * del gioco qualora non fossero già presenti nel file di persistenza.
+     * Le tabelle generate includono:
+     * utenti: Anagrafica e credenziali dei giocatori.
+     * amministratori: Credenziali per il pannello di gestione.
+     * documenti: Testi in chiaro sorgente.
+     * partite: Storico dei match di gioco.
+     * partite_tempi_round: Dettaglio dei tempi spesi round per round (chiave composta).
+     * statistiche: Rendimento storico dei singoli utenti.
+     * domande: Testi cifrati associati ai documenti.
+     * analisi_parole: Mappa delle frequenze delle parole estratte (chiave composta).
+     * I vincoli di eliminazione sono configurati prevalentemente in modalità ON DELETE CASCADE.
+     */
     public static void inizializzaDatabase() {
         String creaTabellaUtenti = "CREATE TABLE IF NOT EXISTS utenti (" +
                 "username TEXT PRIMARY KEY," +
@@ -129,14 +156,25 @@ public class  DatabaseManager {
         }
         
     }
-
+    /**
+     * Esegue una copia di backup a caldo  dell'intero stato corrente del database
+     * salvandola nel percorso file specificato. Sfrutta il comando nativo SQLite 'BACKUP TO'.
+     * @param filePath Il percorso assoluto o relativo del file di destinazione (es. "backup.db").
+     * @throws SQLException Se si verificano errori di I/O o di blocco durante la copia dei blocchi di memoria.
+     */
     public static void eseguiBackup(String filePath) throws SQLException{
         try (Connection connection = getConnection();
         Statement stmt = connection.createStatement()) {
             stmt.executeUpdate("BACKUP TO '" + filePath +"'");
         }
     }
-
+    /**
+     * Ripristina integralmente lo stato del database partendo da un file di backup precedentemente creato.
+     * Sfrutta il comando nativo SQLite 'RESTORE FROM'.
+     * Questa operazione sovrascrive completamente tutti i dati correnti in memoria.
+     * @param filePath Il percorso del file di backup da cui attingere i dati.
+     * @throws SQLException Se il file non è valido, è corrotto o se fallisce il ripristino delle tabelle.
+     */
     public static void eseguiRestore(String filePath) throws SQLException{
         try(Connection connection = getConnection();
         Statement stmt = connection.createStatement()){

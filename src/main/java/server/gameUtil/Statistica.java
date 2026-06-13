@@ -7,9 +7,9 @@ package server.gameUtil;
 import server.model.database.entity.UtenteEntity;
 
 /**
- *
+ * Rappresenta il riepilogo delle statistiche di gioco storiche di uno specifico utente.
+ * Viene utilizzata per tracciare le performance (vittorie, sconfitte, tempi medi) 
  * @author Utente
- * 
  */
 public class Statistica {
     private UtenteEntity player;
@@ -18,6 +18,15 @@ public class Statistica {
     private int percentualeVittorie;
     private double mediaRisposta;
 
+    /**
+     * Costruttore completo per l'inizializzazione delle statistiche di un giocatore.
+     * Viene invocato dal DAO quando recupera i dati storici dal Database.
+     * @param player L'entità utente a cui si riferiscono queste statistiche.
+     * @param vittorie Il numero totale di partite vinte.
+     * @param sconfitte Il numero totale di partite perse.
+     * @param percentualeVittorie La percentuale di successo (vittorie rispetto al totale dei match).
+     * @param mediaRisposta Il tempo medio di risposta del giocatore espresso in secondi.
+     */
     public Statistica(UtenteEntity player, int vittorie, int sconfitte, int percentualeVittorie, double mediaRisposta) {
         this.player = player;
         this.vittorie = vittorie;

@@ -15,11 +15,21 @@ import java.util.List;
 import server.gameUtil.Domanda;
 
 /**
- *
- * @author Utente
+ * Gestisce la persistenza e il recupero delle domande di gioco.
+ * Mappa gli oggetti {@link Domanda} sulla tabella domande. 
+ * * @author Utente
  */
 public class DomandaDAO implements DAO<Domanda,Integer>{
-    
+ 
+    /**
+     * Inserisce una nuova domanda nel database.
+     * Recupera automaticamente l'ID generato (autoincrement)
+     * e lo imposta nell'oggetto passato come parametro.
+     * Converte le liste paroleSoluzioni e paroleSoluzioniCifrate
+     * in stringhe piane separate da virgola prima del salvataggio e sincronizza l'ID generato.
+     * @param d L'oggetto Domanda completo da persistere.
+     * @throws SQLException Se si verifica un errore di scrittura o se non viene generata la chiave primaria.
+     */
 @Override
     public void aggiungi(Domanda d) throws SQLException {
         String sql = "INSERT INTO domande (idDocumento, difficolta, testoCifrato, paroleSoluzioni, paroleCifrate) VALUES (?, ?, ?, ?, ?);";
@@ -31,7 +41,6 @@ public class DomandaDAO implements DAO<Domanda,Integer>{
             pstmt.setString(2, d.getDifficolta().toUpperCase());
             pstmt.setString(3, d.getTestoCifrato());
             
-            // Mappatura esatta sui tuoi getter: paroleSoluzioni e paroleSoluzioniCifrate
             String soluzioniFlat = String.join(",", d.getParoleSoluzioni()); 
             String cifrateFlat = String.join(",", d.getParoleSoluzioniCifrate());
             
@@ -40,10 +49,9 @@ public class DomandaDAO implements DAO<Domanda,Integer>{
             
             pstmt.executeUpdate();
             
-            // Recuperiamo la chiave primaria autogenerata da SQLite
             try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
-                    d.setIdDomanda(generatedKeys.getInt(1)); // Sincronizziamo l'oggetto Java
+                    d.setIdDomanda(generatedKeys.getInt(1)); 
                 } else {
                     throw new SQLException("Errore: Inserimento fallito, nessun idDomanda generato.");
                 }
@@ -55,27 +63,58 @@ public class DomandaDAO implements DAO<Domanda,Integer>{
         }
     }
     
+    /**
+     * Operazione non supportata. La ricerca di una singola domanda per ID non è prevista dal flusso di gioco.
+     * @param key L'ID della domanda.
+     * @throws UnsupportedOperationException Sempre. Consiglia l'uso di estraiDomandeCasuali.
+     */
     @Override
     public Domanda cerca(Integer key) throws SQLException {
         throw new UnsupportedOperationException("Ricerca singola non supportata. Usa estraiDomandeCasuali.");
     }
-
+    
+    /**
+     * Operazione non supportata. La cancellazione delle singole domande non è prevista; 
+     * la rimozione è gestita in cascata dal DBMS (ON DELETE CASCADE) alla rimozione del documento associato.
+     * @param d La domanda da rimuovere.
+     * @throws UnsupportedOperationException Sempre.
+     */
     @Override
     public void rimuovi(Domanda d) throws SQLException {
         // Non serve: la cancellazione è gestita dal DB in cascata (ON DELETE CASCADE) quando elimini un Documento
         throw new UnsupportedOperationException("Rimozione singola domanda non supportata.");
     }
 
+    /**
+     * Operazione non supportata. Le domande inserite nel sistema sono considerate immutabili.
+     * @param d L'oggetto da aggiornare.
+     * @throws UnsupportedOperationException Sempre.
+     */
     @Override
     public void aggiorna(Domanda d) throws SQLException {
         throw new UnsupportedOperationException("L'aggiornamento delle domande non è supportato.");
     }
-
+    
+    /**
+     * Operazione non supportata. Il recupero massivo indiscriminato di tutte le domande non è consentito per motivi di performance.
+     * @return Non restituisce alcun valore.
+     * @throws UnsupportedOperationException Sempre.
+     */
     @Override
     public List<Domanda> elencaTutti() throws SQLException {
         throw new UnsupportedOperationException("Usa il metodo estraiDomandeCasuali filtrato per match.");
     }
     
+    /**
+     * Estrae un set di domande casuali dal database, filtrate per documento di origine e livello di difficoltà.
+     * Sfrutta l'algoritmo nativo ORDER BY RANDOM() limitando il set di risultati 
+     * tramite la clausola LIMIT per ottimizzare l'occupazione di memoria sul server.
+     * @param idDocumento L'identificativo del documento da cui attingere le domande.
+     * @param difficolta Il livello di difficoltà richiesto (es. "FACILE", "MEDIA", "DIFFICILE").
+     * @param quantita Il numero massimo di domande da inserire nel round di gioco.
+     * @return Una List di oggetti {@link Domanda} pronti per la partita; restituisce una lista vuota se nessun match corrisponde ai filtri.
+     * @throws SQLException In caso di problemi di comunicazione con il database o nel parsing dei campi CSV.
+     */
     public List<Domanda> estraiDomandeCasuali(int idDocumento, String difficolta, int quantita) throws SQLException {
         List<Domanda> domande = new ArrayList<>();
 

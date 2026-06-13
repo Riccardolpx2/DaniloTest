@@ -6,14 +6,23 @@ package server.gameUtil;
 
 
 /**
- *
+ * Rappresenta un documento di testo presente nel sistema.
+ * Contiene il materiale testuale in chiaro (es. un articolo, una frase o un brano)
+ * utilizzato come base per la generazione degli enigmi o delle domande cifrate.
  * @author Utente
  */
 public class Documento {
     private int idDocumento;
     private String nome;
     private String testo;
-
+    
+    /**
+     * Costruttore completo per l'inizializzazione di un oggetto Documento.
+     * Viene utilizzato tipicamente dal DAO per caricare i testi originali dal Database.
+     * @param idDocumento L'identificativo univoco del documento nel database.
+     * @param nome Il titolo o una breve descrizione identificativa del documento.
+     * @param testo Il contenuto testuale completo in chiaro.
+     */
     public Documento(int idDocumento, String nome, String testo) {
         this.idDocumento = idDocumento;
         this.nome = nome;

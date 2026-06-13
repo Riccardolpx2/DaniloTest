@@ -15,6 +15,7 @@ import shared.protocol.DTO.RispostaGiocatoreDTO;
 /**
  * Gestisce la logica di dominio di una partita in corso.
  * Mantiene lo stato dei giocatori, il punteggio, le domande e gestisce l'evoluzione dei round.
+ * @author Utente
  */
 public class MatchManager {
     // Servizio di persistenza per salvare la partita e aggiornare le statistiche globali
@@ -24,7 +25,7 @@ public class MatchManager {
     private final Partita partitaInCorso;
     private final List<Domanda> domande;
     private final String difficolta;
-    
+
     // Stato di avanzamento della partita
     private int indiceRoundCorrente;
     private Domanda domandaCorrente;
@@ -33,11 +34,11 @@ public class MatchManager {
     private final UtenteEntity p1;
     private final UtenteEntity p2;
 
-    // STATO DEL MATCH (Punteggi)
+    // Stato del match (Punteggi)
     private int punteggioG1;
     private int punteggioG2;
 
-    // STATO DEL ROUND CORRENTE (Dati temporanei che si resettano a ogni round)
+    // Stato del round corrente (Dati temporanei che si resettano a ogni round)
     private String ultimaRispostaG1;
     private String ultimaRispostaG2;
     private int tempoG1;
@@ -53,12 +54,11 @@ public class MatchManager {
      * @param domande La lista di domande caricate per questa partita.
      */
     public MatchManager(UtenteEntity p1, UtenteEntity p2, String difficolta, List<Domanda> domande) {
-        // TODO: Implementare l'inizializzazione delle variabili interne
         this.p1 = p1;
         this.p2 = p2;
         this.difficolta = difficolta;
         this.domande = domande;
-        this.indiceRoundCorrente = -1; // La partita non è ancora iniziata (-1)
+        this.indiceRoundCorrente = -1; 
         
         // Inizializzazione punteggi globali del match
         this.punteggioG1 = 0;
@@ -98,21 +98,26 @@ public class MatchManager {
 
     /**
      * Registra la risposta fornita da un utente durante il round corrente e verifica se è la soluzione.
-     * * @param utente L'utente che ha inviato la risposta.
+     * @param utente L'utente che ha inviato la risposta.
      * @param risposta Il DTO contenente la parola tentata dal giocatore.
      * @param tempo I secondi impiegati dal giocatore per rispondere.
      * @return true se la risposta è corretta (utile al Thread per fermare l'attesa), false altrimenti.
      */
     public boolean elaboraRisposta(UtenteEntity utente, RispostaGiocatoreDTO risposta, int tempo) {
-        // TODO: Salvare localmente la risposta associata all'utente
-        // TODO: Confrontare la stringa contenuta nel DTO con le soluzioni della domanda corrente
         if (domandaCorrente == null) {
             return false;
         }
 
-        // La parola da indovinare inserita dal GeneratoreDomanda è sempre a indice 0
-        String soluzioneUfficiale = domandaCorrente.getParoleSoluzioni().get(0);
-        boolean esatta = soluzioneUfficiale.equalsIgnoreCase(risposta.getParolaTentata().trim());
+        String tentativo = risposta.getParolaTentata().trim();
+        boolean esatta = false;
+
+        //Scansiona tutte le varianti cifrate per verificare il tentativo
+        for (String soluzioneValida : domandaCorrente.getParoleSoluzioni()) {
+            if (soluzioneValida.equalsIgnoreCase(tentativo)) {
+                esatta = true;
+                break; // Trovata la corrispondenza, possiamo fermare il ciclo
+            }
+        }
 
         // Verifichiamo quale dei due giocatori sta rispondendo in base allo username
         if (utente.getUsername().equals(p1.getUsername())) {
@@ -124,7 +129,7 @@ public class MatchManager {
             this.tempoG2 = tempo;
             this.haIndovinatoG2 = esatta;
         } else {
-            return false; // L'utente non fa parte di questa partita
+            return false; 
         }
 
         return esatta;
@@ -134,13 +139,10 @@ public class MatchManager {
      * Viene invocato alla fine del timer o non appena il round si sblocca (qualcuno ha indovinato o tutti hanno risposto).
      * Valuta le risposte salvate in precedenza, determina il vincitore del singolo round, aggiorna i punti
      * dei giocatori e prepara il risultato da inviare.
-     * * @return Il DTO con l'esito del round pronto per essere inviato ai client.
+     * @return Il DTO con l'esito del round pronto per essere inviato ai client.
      * @throws SQLException In caso di errori durante eventuali salvataggi a Database.
      */
     public EsitoRoundDTO chiudiRound() throws SQLException {
-        // TODO: Calcolare chi ha vinto il round (chi ha indovinato col tempo minore)
-        // TODO: Incrementare il punteggio del vincitore
-        // TODO: Costruire e restituire l'EsitoRoundDTO
         if (domandaCorrente == null) return null;
 
         // Registriamo i tempi di questo round nell'oggetto Partita per il DB
@@ -148,7 +150,7 @@ public class MatchManager {
 
         String usernameVincitoreRound = null;
 
-        // VALUTAZIONE DEL VINCITORE DEL ROUND
+        // Valutazione del vincitore del round
         if (haIndovinatoG1 && haIndovinatoG2) {
             if (tempoG1 < tempoG2) {
                 usernameVincitoreRound = p1.getUsername();
@@ -181,24 +183,24 @@ public class MatchManager {
 
     /**
      * Gestisce la fine definita della partita, sia essa naturale o per abbandono.
-     * * @param quitter L'utente che ha abbandonato la partita. Se viene passato 'null', significa che
+     * @param quitter L'utente che ha abbandonato la partita. Se viene passato 'null', significa che
      * la partita è giunta al termine naturalmente e il vincitore va calcolato in base ai punti.
      * @throws SQLException In caso di errori nell'aggiornamento delle statistiche sul Database.
      * @return L'esito della partita.
      */
-public EsitoPartitaDTO terminaPartita(UtenteEntity quitter) throws SQLException {
+    public EsitoPartitaDTO terminaPartita(UtenteEntity quitter) throws SQLException {
         UtenteEntity vincitoreMatch = null;
         boolean perAbbandono = (quitter != null);
 
         if (!perAbbandono) {
-            // FINE NATURALE: Vince chi ha totalizzato più punti nei round
+            // Fine Naturale: Vince chi ha totalizzato più punti nei round
             if (punteggioG1 > punteggioG2) {
                 vincitoreMatch = p1;
             } else if (punteggioG2 > punteggioG1) {
                 vincitoreMatch = p2;
             }
         } else {
-            // FINE PER ABBANDONO: Vince a tavolino chi NON ha abbandonato
+            // Fine per abbandono: Vince a tavolino chi Non ha abbandonato
             if (quitter.getUsername().equals(p1.getUsername())) {
                 vincitoreMatch = p2;
             } else {
@@ -212,10 +214,10 @@ public EsitoPartitaDTO terminaPartita(UtenteEntity quitter) throws SQLException 
         partitaInCorso.setPunteggioTotaleG2(punteggioG2);
         partitaInCorso.setStato(perAbbandono ? "TERMINATA_ABBANDONO" : "TERMINATA");
 
-        // SALVATAGGIO REALE SUL DB (Salva il match e aggiorna le statistiche globali)
+        // Salvataggio sul DB (Salva il match e aggiorna le statistiche globali)
         gameService.terminaESalvaPartita(partitaInCorso);
 
-        // Prepariamo la mappa dei punteggi finali richiesta dal tuo EsitoPartitaDTO
+        // Prepariamo la mappa dei punteggi finali
         Map<String, Integer> punteggiFinali = new HashMap<>();
         punteggiFinali.put(p1.getUsername(), punteggioG1);
         punteggiFinali.put(p2.getUsername(), punteggioG2);
@@ -227,16 +229,16 @@ public EsitoPartitaDTO terminaPartita(UtenteEntity quitter) throws SQLException 
 
     /**
      * Recupera il punteggio attuale totalizzato da uno specifico utente durante questa partita.
-     * * @param utente L'entità utente di cui si vuole conoscere il punteggio.
+     * @param utente L'entità utente di cui si vuole conoscere il punteggio.
      * @return Il punteggio attuale dell'utente. Restituisce 0 se l'utente non fa parte della partita.
      */
     public int punteggioAttualeDi(UtenteEntity utente) {
-        // TODO: Restituire i punti attuali associati all'utente passato come parametro
-if (utente.getUsername().equals(p1.getUsername())) {
+
+        if (utente.getUsername().equals(p1.getUsername())) {
             return punteggioG1;
         } else if (utente.getUsername().equals(p2.getUsername())) {
             return punteggioG2;
         }
-        return 0; // L'utente non appartiene al match
+        return 0; 
     }
 }

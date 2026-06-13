@@ -7,8 +7,10 @@ package server.gameUtil;
 import java.util.List;
 
 /**
- *
- * @author Utente
+ * Rappresenta la struttura di una singola domanda all'interno del gioco.
+ * Contiene i riferimenti al testo cifrato da mostrare e le relative soluzioni, sia in chiaro
+ * (per la verifica delle risposte) sia cifrate ( necessarie alla logica di gioco).
+ *  @author Utente
  */
 public class Domanda {
     private int idDomanda;
@@ -17,7 +19,17 @@ public class Domanda {
     private List<String> paroleSoluzioni;
     private List<String> paroleSoluzioniCifrate;
     private String difficolta;
-
+    
+    /**
+     * Costruttore completo per l'inizializzazione di una domanda.
+     * Viene invocato solitamente dal DAO o dal gestore delle domande quando carica i dati dal DB.
+     * @param idDomanda L'identificativo univoco della domanda.
+     * @param idDocumento L'ID del documento di origine associato alla domanda.
+     * @param testoCifrato Il testo principale dell'enigma in formato cifrato.
+     * @param paroleSoluzioni La lista delle risposte corrette accettate in chiaro.
+     * @param paroleSoluzioniCifrate La lista delle risposte corrette in formato cifrato.
+     * @param difficolta Il livello di difficoltà associato (es. "FACILE", "MEDIA", "DIFFICILE").
+     */
     public Domanda(int idDomanda,int idDocumento,String testoCifrato, List<String> paroleSoluzioni, List<String> paroleSoluzioniCifrate, String difficolta) {
         this.idDomanda=idDomanda;
         this.idDocumento=idDocumento;
@@ -42,9 +54,7 @@ public class Domanda {
     public void setIdDocumento(int idDocumento) {
         this.idDocumento = idDocumento;
     }
-    
-    
-    
+      
     public String getTestoCifrato() {
         return testoCifrato;
     }

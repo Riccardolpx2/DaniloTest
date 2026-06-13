@@ -1,5 +1,10 @@
 package server.model.database.entity;
 
+/**
+ * Rappresenta l'entità di dominio Amministratore mappata direttamente sulla tabella amministratori del database.
+ * Questa classe definisce il modello dei dati minimo per identificare e autenticare gli utenti con 
+ * privilegi amministrativi all'interno del sistema, separandoli loggicamente dai normali giocatori.
+ */
 public class AmministratoreEntity {
     private String password;
     private String username;

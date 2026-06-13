@@ -13,17 +13,22 @@ import server.gameUtil.Statistica;
 import server.model.database.entity.UtenteEntity;
 
 /**
- *
- * @author Utente
+ * Servizio di logica applicativa dedicato alla gestione del ciclo post-partita e delle metriche dei giocatori.
+ * Coordina le operazioni transazionali di salvataggio dei match e aggiorna in tempo reale 
+ * lo storico e le medie ponderate delle performance (statistiche) dei singoli utenti coinvolti.
+ * * @author Utente
  */
 public class GameService {
 
 private final PartitaDAO partitaDAO = new PartitaDAO();
 private final StatisticaDAO statisticaDAO = new StatisticaDAO();
 
-    /**
-     * Salva la partita (compresi i tempi dei round in batch) e aggiorna 
-     * le statistiche globali di entrambi i giocatori.
+/**
+     * Termina formalmente una partita, memorizzandone i dati e aggiornando i profili statistici dei giocatori.
+     * L'operazione persiste la macro-partita (con relativi tempi dei round) e, in modo sequenziale, 
+     * ricalcola e aggiorna i record storici di rendimento sia del Giocatore 1 che del Giocatore 2.
+     * @param p L'oggetto {@link Partita} da storicizzare nel database.
+     * @throws SQLException Se si verifica un errore durante il salvataggio della partita o dell'aggiornamento statistico.
      */
     public void terminaESalvaPartita(Partita p) throws SQLException {
         // 1. Salva la macro-partita e i relativi tempi dei round nel database
@@ -39,7 +44,14 @@ private final StatisticaDAO statisticaDAO = new StatisticaDAO();
     }
 
     /**
-     * Metodo di supporto privato per ricalcolare e salvare le statistiche del singolo giocatore.
+     * Algoritmo interno di supporto per il ricalcolo analitico e la persistenza delle statistiche del singolo giocatore.
+     * Se l'utente non possiede uno storico, viene generata una riga di baseline sul DB. Successivamente 
+     * il metodo calcola la media dei tempi correnti, aggiorna la media storica ponderata, incrementa 
+     * il contatore dei risultati (vittoria/sconfitta/pareggio) e aggiorna il rateo percentuale finale.
+     * * @param giocatore        L'entità {@link UtenteEntity} del giocatore da aggiornare.
+     * @param tempiPartita     La lista dei tempi di risposta (in secondi/millisecondi) accumulati nel match corrente.
+     * @param vincitorePartita L'entità del vincitore del match (può essere null in caso di pareggio).
+     * @throws SQLException Se si verificano anomalie durante le query di selezione, inserimento o aggiornamento.
      */
     private void aggiornaStatisticheUtente(UtenteEntity giocatore, List<Integer> tempiPartita, UtenteEntity vincitorePartita) throws SQLException {
         // Cerchiamo le statistiche usando lo username estratto dall'entità player
@@ -52,13 +64,13 @@ private final StatisticaDAO statisticaDAO = new StatisticaDAO();
             statisticaDAO.aggiungi(stat);
         }
 
-        // 1. CALCOLO DELLA MEDIA DEI TEMPI DI QUESTA PARTITA
+        // Calcolo della media dei tempi di questa partita
         double mediaTempiPartitaCorrente = tempiPartita.stream()
                 .mapToInt(Integer::intValue)
                 .average()
-                .orElse(30.0); // Default a 30 secondi in caso di liste vuote (timeout)
+                .orElse(30.0); // Default a 30 secondi in caso di liste vuote
 
-        // 2. CALCOLO DELLA NUOVA MEDIA PONDERATA STORICA
+        // Calcolo dedlla nuova media ponderata storica
         int totalePartitePrecedenti = stat.getVittorie() + stat.getSconfitte();
         double nuovaMediaStorica;
         
@@ -69,7 +81,7 @@ private final StatisticaDAO statisticaDAO = new StatisticaDAO();
         }
         stat.setMediaRisposta(nuovaMediaStorica);
 
-        // 3. AGGIORNAMENTO DI VITTORIE E SCONFITTE
+        // Aggiornamento di vittorie e sconfitte
         if (vincitorePartita != null) {
             if (vincitorePartita.getUsername().equals(giocatore.getUsername())) {
                 stat.setVittorie(stat.getVittorie() + 1);
@@ -78,27 +90,41 @@ private final StatisticaDAO statisticaDAO = new StatisticaDAO();
             }
         } else {
             // In caso di pareggio perfetto (nessun vincitore), incrementiamo le sconfitte di entrambi 
-            // o lasciamo invariato a seconda delle vostre regole di business. Qui incrementiamo le sconfitte.
             stat.setSconfitte(stat.getSconfitte() + 1);
         }
 
-        // 4. CALCOLO DELLA NUOVA PERCENTUALE DI VITTORIE
+        // Calcolo della nuova percentuale di vittorie 
         int totalePartiteNuovo = stat.getVittorie() + stat.getSconfitte();
         int nuovaPercentuale = (totalePartiteNuovo > 0) ? (stat.getVittorie() * 100) / totalePartiteNuovo : 0;
         stat.setPercentualeVittorie(nuovaPercentuale);
 
-        // 5. UPDATE FINALE SUL DATABASE
+        // Aggiornamento finale del database
         statisticaDAO.aggiorna(stat);
     }
-
+    
+    /**
+     * Recupera le statistiche globali di un utente specifico partendo dal suo identificativo.
+     * @param username Lo username del giocatore da cercare.
+     * @return L'oggetto {@link Statistica} popolato con le metriche storiche, o null se l'utente non ha registrazioni.
+     * @throws SQLException In caso di errori di lettura dal database.
+     */
     public Statistica getStatistica(String username) throws SQLException {
         return statisticaDAO.cerca(username);
     }
-
+    /**
+     * Aggiorna forzatamente sul database i dati contenuti in un'istanza statistica.
+     * @param s L'oggetto {@link Statistica} modificato da sovrascrivere sul DB.
+     * @throws SQLException Se l'operazione di update fallisce.
+     */
     public void aggiornaStatistica(Statistica s) throws SQLException {
         statisticaDAO.aggiorna(s);
     }
-
+    
+    /**
+     * Registra  un record di statistiche all'interno del database.
+     * @param s Il nuovo oggetto {@link Statistica} da inserire a sistema.
+     * @throws SQLException In caso di collisione di chiavi o errori di rete con il DB.
+     */
     public void creaStatistica(Statistica s) throws SQLException {
         statisticaDAO.aggiungi(s);
     }

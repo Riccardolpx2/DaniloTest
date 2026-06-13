@@ -16,14 +16,22 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- *
+ * Gestisce l'elaborazione statistica dei testi dei documenti di gioco.
+ * Si occupa di filtrare le parole non rilevanti (stop-words), ripulire il testo da punteggiatura
+ * e calcolare la frequenza di occorrenza delle parole significative per la generazione degli enigmi.
  * @author Utente
  */
-public class AnalisiTesto{
-private int idDocumento;
+    public class AnalisiTesto{
+    private int idDocumento;
     private Map<String, Integer> frequenzaParole; 
+    /** Set statico e immutabile contenente le parole irrilevanti da scartare (articoli, preposizioni, ecc.) */
     private static final Set<String> stopWords = caricaStopWords();
 
+    /**
+     * Costruttore: inizializza il gestore dell'analisi per uno specifico documento.
+     * Prepara la mappa interna che conterrà le frequenze.
+     * @param idDocumento L'identificativo del documento da analizzare o associato.
+     */
     public AnalisiTesto(int idDocumento) {
         this.idDocumento = idDocumento;
         this.frequenzaParole = new HashMap<>();
@@ -32,12 +40,13 @@ private int idDocumento;
     /**
      * Permette di inserire una coppia parola-frequenza direttamente nella mappa.
      * Utilizzato dall'AnalisiTestoDAO quando ricostruisce l'oggetto dal database.
+     * @param parola La parola target.
+     * @param frequenza Il numero di occorrenze di quella parola nel documento.
      */
     public void aggiungiParolaFrequenza(String parola, int frequenza) {
         this.frequenzaParole.put(parola, frequenza);
     }
 
-    // --- GETTER E SETTER (I tuoi originali) ---
     public int getIdDocumento() {
         return idDocumento;
     }
@@ -54,7 +63,11 @@ private int idDocumento;
         this.frequenzaParole = frequenzaParole;
     }
 
-    // --- LOGICA DI CARICAMENTO FILE (La tua originale) ---
+    /**
+     * Carica il file delle stop-words.
+     * Esegue la pulizia di ogni riga eliminando commenti (righe che iniziano con #) e spazi vuoti.
+     * @return Un Set di stringhe contenente tutte le stop-words caricate, oppure un Set vuoto in caso di errore.
+     */
     private static Set<String> caricaStopWords() {
         try {
             InputStream is = AnalisiTesto.class.getResourceAsStream("/txt/stop-words.txt");
@@ -83,7 +96,15 @@ private int idDocumento;
         }
     }
 
-    // --- LOGICA DI ANALISI STREAM (La tua originale) ---
+    /**
+     * Esegue l'analisi testuale vera e propria su una stringa in chiaro.
+     * Il processo prevede:
+     * Conversione in minuscolo e rimozione di caratteri non alfabetici tramite Regex.
+     * Divisione in token (parole) sugli spazi bianchi.
+     * Filtraggio delle stringhe vuote, delle parole con lunghezza minore uguale 3 caratteri e delle stop-words.
+     * Raggruppamento in una mappa delle frequenze.
+     *  @param testo Il testo in chiaro del documento da analizzare.
+     */
     public void analizza(String testo) {
         if (testo == null || testo.trim().isEmpty()) return;
 

@@ -8,21 +8,30 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import server.model.database.entity.UtenteEntity;
-import server.gameUtil.Documento;
 import server.gameUtil.Partita;
 
 /**
- *
+ * Gestione della persistenza delle partite.
+ * Mappa gli oggetti {@link Partita} su uno schema a due tabelle correlate partite e 
+ * partite_tempi_round per tracciare sia i dati riassuntivi del match sia il dettaglio 
+ * dei tempi di risposta round per round.
  * @author Utente
  */
 public class PartitaDAO implements DAO<Partita,Integer>{
-    
+/**
+     * Inserisce una nuova partita nel database relazionale.
+     * Salva prima i dati generali del match recuperando l'ID autoincrementale generato e, 
+     * successivamente, invoca il salvataggio in modalità batch dei tempi di risposta 
+     * associati ai singoli round.
+     * @param p L'oggetto Partita contenente i dati correnti del match concluso o in corso.
+     * @throws SQLException Se si verifica un errore durante l'inserimento principale o nel blocco batch dei round.
+     */    
 @Override
     public void aggiungi(Partita p) throws SQLException {
-        // Query principale: salva i dati generali della sfida
         String sql = "INSERT INTO partite (dataInizio, durataPartita, stato, player1_username, player2_username, "
                    + "vincitore_username, punteggioTotaleG1, punteggioTotaleG2) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -38,7 +47,8 @@ public class PartitaDAO implements DAO<Partita,Integer>{
             if (p.getVincitore() != null) {
                 pstmt.setString(6, p.getVincitore().getUsername());
             } else {
-                pstmt.setNull(6, java.sql.Types.VARCHAR); // Gestione del pareggio
+                // Gestione del pareggio
+                pstmt.setNull(6, java.sql.Types.VARCHAR); 
             }
             
             pstmt.setInt(7, p.getPunteggioTotaleG1());
@@ -46,7 +56,6 @@ public class PartitaDAO implements DAO<Partita,Integer>{
 
             pstmt.executeUpdate();
 
-            // Recuperiamo l'ID generato automaticamente dal Database per associarlo all'oggetto
             try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     p.setIdPartita(generatedKeys.getInt(1));
@@ -55,19 +64,21 @@ public class PartitaDAO implements DAO<Partita,Integer>{
             
             System.out.println("Partita inserita nel DB con successo! ID assegnato: " + p.getIdPartita());
 
-            // --- SALVATAGGIO DEI TEMPI DI RISPOSTA DEI ROUND ---
             // Sfruttiamo l'ID appena ottenuto per salvare tutti i tempi storici accumulati nelle liste
             salvaTempiRound(conn, p);
 
         } catch (SQLException e) {
-            System.err.println("Errore nell'inserimento della partita: " + e.getMessage());
+            System.out.println( e.getMessage());
             throw e;
         }
     }
 
     /**
-     * Metodo di supporto privato che effettua l'inserimento batch dei tempi dei singoli round 
-     * sfruttando la stessa connessione della transazione principale.
+     * Metodo di supporto privato che effettua l'inserimento batch dei tempi dei singoli round.
+     * Ottimizza le performance inviando i record in un unico blocco.
+     * @param conn La connessione SQL attiva ereditata dal metodo chiamante.
+     * @param p La partita da cui estrarre le liste dei tempi di risposta dei giocatori.
+     * @throws SQLException Se l'esecuzione del batch fallisce.
      */
     private void salvaTempiRound(Connection conn, Partita p) throws SQLException {
         String sqlRound = "INSERT INTO partite_tempi_round (idPartita, numero_round, tempo_g1, tempo_g2) VALUES (?, ?, ?, ?)";
@@ -76,31 +87,45 @@ public class PartitaDAO implements DAO<Partita,Integer>{
         List<Integer> tempiG2 = p.getTempiRispostaG2();
 
         try (PreparedStatement pstmtRound = conn.prepareStatement(sqlRound)) {
-            // Cicliamo sulla dimensione degli array dei tempi accumulati in RAM
             for (int i = 0; i < tempiG1.size(); i++) {
                 pstmtRound.setInt(1, p.getIdPartita());
-                pstmtRound.setInt(2, i + 1); // Contatore del round (Round 1, Round 2, ecc.)
+                pstmtRound.setInt(2, i + 1); 
                 pstmtRound.setInt(3, tempiG1.get(i));
                 pstmtRound.setInt(4, tempiG2.get(i));
-                
-                pstmtRound.addBatch(); // Prepariamo l'inserimento in blocco (Batch)
+                // Prepariamo l'inserimento in blocco (Batch)
+                pstmtRound.addBatch(); 
             }
-            
-            pstmtRound.executeBatch(); // Spediamo tutti i record dei round in un colpo solo
+            // Spediamo tutti i record dei round in un colpo solo
+            pstmtRound.executeBatch(); 
             System.out.println("Salvati " + tempiG1.size() + " round nel database per la partita " + p.getIdPartita());
         }
     }
-
+    /**
+     * Operazione non supportata. La rimozione della cronologia delle partite non è consentita per preservare l'integrità dei dati storici.
+     * * @throws UnsupportedOperationException Sempre.
+     */
     @Override
     public void rimuovi(Partita p) throws SQLException {
         throw new UnsupportedOperationException("Operazione di rimozione non supportata per la cronologia delle partite.");
     }
-
+    
+    /**
+     * Operazione non supportata. I record delle partite storiche sono considerati immutabili per scopi statistici.
+     * * @throws UnsupportedOperationException Sempre.
+     */
     @Override
     public void aggiorna(Partita p) throws SQLException {
         throw new UnsupportedOperationException("Operazione di aggiornamento non supportata. Le partite storiche sono immutabili.");
     }
-
+    
+    /**
+     * Ricerca e ricostruisce una partita passata partendo dal suo ID identificativo.
+     * Esegue in modo sequenziale il recupero dei dati macro della partita e il ripopolamento 
+     * delle liste interne relative ai tempi dei round.
+     * @param key L'ID numerico della partita da cercare.
+     * @return L'oggetto {@link Partita} interamente ricostruito, oppure null se l'ID non corrisponde ad alcun record.
+     * @throws SQLException In caso di anomalie di lettura o conversione dati.
+     */
     @Override
     public Partita cerca(Integer key) throws SQLException {
         String sql = "SELECT * FROM partite WHERE idPartita = ?";
@@ -114,7 +139,7 @@ public class PartitaDAO implements DAO<Partita,Integer>{
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     int id = rs.getInt("idPartita");
-                    java.time.LocalDateTime inizio = rs.getTimestamp("dataInizio").toLocalDateTime();
+                    LocalDateTime inizio = rs.getTimestamp("dataInizio").toLocalDateTime();
                     int durata = rs.getInt("durataPartita");
                     String stato = rs.getString("stato");
                     int puntiG1 = rs.getInt("punteggioTotaleG1");
@@ -129,24 +154,25 @@ public class PartitaDAO implements DAO<Partita,Integer>{
                         vincitore = new UtenteEntity(usernameVincitore, null, null, null, null);
                     }
 
-                    // Utilizziamo il costruttore completo che hai scritto tu in Partita
                     p = new Partita(id, inizio, durata, stato, p1, p2, vincitore, puntiG1, puntiG2);
                     
-                    // Recuperiamo anche l'array dei tempi storici di questa specifica partita dal DB
                     recuperaTempiRound(conn, p);
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Errore nella ricerca della partita: " + e.getMessage());
+            System.out.println(e.getMessage());
             throw e;
         }
         return p;
     }
 
     /**
-     * Metodo di supporto privato che ripopola gli array di tempi rispostaG1 e rispostaG2 
-     * quando viene estratta una partita passata.
-     */
+     * Metodo di supporto privato che ripopola gli array dei tempi di risposta di una partita 
+     * recuperando i record dalla tabella dipendente, ordinati in ordine cronologico di round.
+     * @param conn La connessione SQL attiva ereditata dal metodo chiamante.
+     * @param p L'istanza di partita da ripopolare.
+     * @throws SQLException Se si verificano errori nella query di selezione dei round.
+     */ 
     private void recuperaTempiRound(Connection conn, Partita p) throws SQLException {
         String sql = "SELECT tempo_g1, tempo_g2 FROM partite_tempi_round WHERE idPartita = ? ORDER BY numero_round ASC";
         
@@ -162,6 +188,11 @@ public class PartitaDAO implements DAO<Partita,Integer>{
         }
     }
 
+    /**
+     * Estrae l'elenco completo di tutte le partite registrate a sistema.
+     * @return Una List contenente tutte le istanze di Partita memorizzate.
+     * @throws SQLException In caso di errore di lettura massiva.
+     */
     @Override
     public List<Partita> elencaTutti() throws SQLException {
         String sql = "SELECT * FROM partite";
@@ -190,13 +221,13 @@ public class PartitaDAO implements DAO<Partita,Integer>{
 
                 Partita p = new Partita(id, inizio, durata, stato, p1, p2, vincitore, puntiG1, puntiG2);
                 
-                // Opzionale: se volete che l'elenco completo si tiri dietro anche tutti gli array di tempi:
-                // recuperaTempiRound(conn, p);
+                //prendiamo anche gli arry dei tempi
+                recuperaTempiRound(conn, p);
                 
                 listaPartite.add(p);
             }
         } catch (SQLException e) {
-            System.err.println("Errore nell'elencare le partite: " + e.getMessage());
+            System.out.println(e.getMessage());
             throw e;
         }
         return listaPartite;

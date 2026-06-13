@@ -14,11 +14,18 @@ import server.model.database.entity.UtenteEntity;
 import server.gameUtil.Statistica;
 
 /**
- *
- * @author Utente
+ * Gestisce la persistenza e l'aggiornamento delle metriche di gioco.
+ * Implementa l'interfaccia generica {@link DAO} mappando gli oggetti {@link Statistica}
+ * sulla tabella statistiche, utilizzando lo username del giocatore (String) come chiave primaria.
+ * * @author Utente
  */
 public class StatisticaDAO implements DAO<Statistica,String>{
 
+    /**
+     * Inserisce un nuovo record di statistiche per un utente appena registrato.
+     * @param st L'oggetto Statistica contenente i valori iniziali (solitamente azzerati) del giocatore.
+     * @throws SQLException Se si verifica un errore durante l'operazione di inserimento.
+     */
     @Override
     public void aggiungi(Statistica st) throws SQLException{
         String sql = "INSERT INTO statistiche (username, vittorie, sconfitte, percentualeVittorie, mediaRisposta) VALUES (?, ?, ?, ?, ?);";
@@ -40,13 +47,26 @@ public class StatisticaDAO implements DAO<Statistica,String>{
         }
 
     }
-
+    
+    /**
+     * Operazione non supportata. La cancellazione delle singole statistiche è  
+     * delegata direttamente al vincolo di integrità referenziale 
+     * ON DELETE CASCADE presente sulla tabella utenti.
+     * @param st L'entità statistica che si vorrebbe rimuovere.
+     * @throws UnsupportedOperationException Sempre, indicando la gestione in cascata del DBMS.
+     */
     @Override
     public void rimuovi(Statistica st) throws SQLException{
         throw new UnsupportedOperationException("Operazione di rimozione non supportata per le statistiche delle partite."
                 + " Se elimini l'utente verranno eliminate le statistiche in cascata");
     }
-
+    
+    /**
+     * Aggiorna i dati storici sul rendimento del giocatore (vittorie, sconfitte, percentuali e tempi medi).
+     * Viene invocato al termine di ogni round per consolidare i nuovi punteggi.
+     * @param st L'oggetto Statistica aggiornato in memoria da sincronizzare sul database.
+     * @throws SQLException In caso di problemi di comunicazione con il database.
+     */
     @Override
     public void aggiorna(Statistica st) throws SQLException{
     String sql = "UPDATE statistiche SET vittorie = ?, sconfitte = ?, percentualeVittorie = ?, mediaRisposta = ? WHERE username = ?;";
@@ -68,6 +88,12 @@ public class StatisticaDAO implements DAO<Statistica,String>{
         }
     }
 
+    /**
+     * Cerca e restituisce le statistiche accumulate da un singolo giocatore identificato dal suo username.
+     * @param key Lo username del giocatore di cui si vogliono ottenere le statistiche.
+     * @return L'oggetto {@link Statistica} popolato con i dati del DB, oppure null se lo username non esiste.
+     * @throws SQLException Se si verificano errori nell'esecuzione della query di selezione.
+     */
     @Override
     public Statistica cerca(String key) throws SQLException{
         String sql = "SELECT * FROM statistiche WHERE username = ?;";
@@ -96,6 +122,12 @@ public class StatisticaDAO implements DAO<Statistica,String>{
         return st;
     }
 
+    
+    /**
+     * Estrae la lista globale delle statistiche di tutti i giocatori registrati a sistema.
+     * @return Una List di oggetti {@link Statistica}. Se non ci sono record, restituisce una lista vuota.
+     * @throws SQLException In caso di anomalie di lettura massiva dal database.
+     */
     @Override
     public List<Statistica> elencaTutti() throws SQLException{
         String sql = "SELECT * FROM statistiche;";

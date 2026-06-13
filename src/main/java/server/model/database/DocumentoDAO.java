@@ -13,11 +13,20 @@ import java.util.List;
 import server.gameUtil.Documento;
 
 /**
- *
+ * Gestisce la persistenza dei dati della tabella documenti.
+ * Implementa l'interfaccia generica {@link DAO} mappando gli oggetti {@link Documento}
+ * usando l'identificativo numerico autoincrementante (Integer) come chiave primaria.
  * @author Utente
  */
 public class DocumentoDAO implements DAO<Documento,Integer>{
     
+    /**
+     * Inserisce un nuovo documento nel database.
+     * Recupera automaticamente l'ID generato (autoincrement)
+     * e lo imposta nell'oggetto passato come parametro.
+     * @param d L'oggetto Documento contenente nome e testo da salvare.
+     * @throws SQLException Se si verificano errori di connessione o di scrittura sul database.
+     */
     @Override
     public void aggiungi(Documento d) throws SQLException{
     String sql = "INSERT INTO documenti (nome, testo) VALUES (?, ?);";
@@ -43,7 +52,11 @@ public class DocumentoDAO implements DAO<Documento,Integer>{
     }
     }
     
-
+    /**
+     * Rimuove un documento dal database basandosi sul suo ID univoco.
+     * @param d L'oggetto Documento da eliminare (deve contenere un idDocumento valido).
+     * @throws SQLException Se fallisce l'operazione di cancellazione o per violazione di chiavi esterne.
+     */
     @Override
     public void rimuovi(Documento d) throws SQLException{
     String sql = "DELETE FROM documenti WHERE idDocumento = ?;";
@@ -64,11 +77,23 @@ public class DocumentoDAO implements DAO<Documento,Integer>{
             }
     }
 
+    /**
+     * Operazione non supportata. L'aggiornamento dei documenti non è previsto dalle regole di dominio.
+     * @param d L'entità che si vorrebbe aggiornare.
+     * @throws UnsupportedOperationException Sempre, poiché la modifica dei testi non è consentita.
+     * @throws SQLException Non viene lanciata in questo contesto ma è presente per firma dell'interfaccia.
+     */
     @Override
     public void aggiorna(Documento d) throws SQLException{
     throw new UnsupportedOperationException("L'aggiornamento dei documenti non è supportato in questo gioco.");
     }
-
+    
+    /**
+     * Cerca un documento specifico nel database tramite il suo ID numerico.
+     * @param key L'idDocumento del record da cercare.
+     * @return L'oggetto Documento mappato se trovato, null altrimenti.
+     * @throws SQLException Se si verificano errori nell'esecuzione della query di selezione.
+     */
     @Override
     public Documento cerca(Integer key) throws SQLException{
     String sqlDoc = "SELECT idDocumento, nome, testo FROM documenti WHERE idDocumento = ?;";
@@ -92,7 +117,12 @@ public class DocumentoDAO implements DAO<Documento,Integer>{
     }
     return doc;
     }
-   
+    
+    /**
+     * Recupera l'elenco di tutti i documenti memorizzati nella tabella.
+     * @return Una List di oggetti Documento. Se la tabella è vuota restituisce una lista vuota.
+     * @throws SQLException In caso di errori di lettura dal database.
+     */
     @Override
     public List<Documento> elencaTutti() throws SQLException{
     String sql = "SELECT idDocumento, nome, testo FROM documenti;";
@@ -118,16 +148,21 @@ public class DocumentoDAO implements DAO<Documento,Integer>{
     }  
     
     
+    /**
+     * Seleziona ed estrae un singolo documento in modo completamente casuale dalla tabella.
+     * Sfrutta l'algoritmo di ordinamento del DBMS tramite la clausola ORDER BY RANDOM().
+     * @return Un'istanza di Documento scelta casualmente, oppure null se la tabella è vuota.
+     * @throws SQLException In caso di problemi di comunicazione con il database.
+     */
     public Documento estraiDocumentoCasuale() throws SQLException {
-    // Ordina i documenti in modo casuale direttamente lato DB (senza clausola LIMIT)
-    String sql = "SELECT * FROM documenti ORDER BY RANDOM();";
+    // Ordina i documenti in modo casuale 
+    String sql = "SELECT * FROM documenti ORDER BY RANDOM() LIMIT 1;";
     
     try (Connection conn = DatabaseManager.getConnection();
          PreparedStatement pstmt = conn.prepareStatement(sql);
          ResultSet rs = pstmt.executeQuery()) {
         
-        // Spostiamo il cursore sul primo record rimescolato. 
-        // Java leggerà SOLO questa riga dal flusso di rete, ignorando il resto.
+        // Spostiamo il cursore sul primo record rimescolato verrà letta solo questa riga dal flusso di rete, ignorando il resto.
         if (rs.next()) {
             int id = rs.getInt("idDocumento");
             String nome = rs.getString("nome");
@@ -135,7 +170,7 @@ public class DocumentoDAO implements DAO<Documento,Integer>{
             return new Documento(id, nome, testo);
         }
     }
-    return null; // Restituisce null se la tabella documenti è vuota
+    return null; 
     }
     
 }
