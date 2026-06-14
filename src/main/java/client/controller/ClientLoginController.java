@@ -10,6 +10,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import shared.gui.util.SceneManager;
 import shared.protocol.DTO.LoginDTO;
@@ -22,17 +23,14 @@ public class ClientLoginController {
 
     private ConnectionHandler connectionHandler;
 
-    @FXML
-    private TextField usernameField;
+    @FXML private VBox mainContent;
+    @FXML private VBox connectingOverlay;
+    @FXML private VBox errorOverlay;
 
-    @FXML
-    private PasswordField passwordField;
-
-    @FXML
-    private Button loginButton;
-
-    @FXML
-    private Button registerButton;
+    @FXML private TextField usernameField;
+    @FXML private PasswordField passwordField;
+    @FXML private Button loginButton;
+    @FXML private Button registerButton;
 
     @FXML
     private void initialize(){
@@ -43,8 +41,45 @@ public class ClientLoginController {
 
         this.connectionHandler = ClientApp.getInstance().getConnectionHandler();
         this.connectionHandler.setCurrentListener(this::handleMessage);
+
+        // Imposta le callback di successo o fallimento della connessione
+        this.connectionHandler.setConnectionCallbacks(
+                this::showMainContent,
+                this::showErrorOverlay
+        );
+
+        // Verifica lo stato iniziale: se è già connesso mostra la schermata principale,
+        // altrimenti imposta l'overlay di caricamento iniziale
+        if (this.connectionHandler.isConnected()) {
+            showMainContent();
+        } else {
+            showConnectingOverlay();
+        }
     }
 
+    private void showMainContent() {
+        connectingOverlay.setVisible(false);
+        errorOverlay.setVisible(false);
+        mainContent.setDisable(false);
+    }
+
+    private void showConnectingOverlay() {
+        connectingOverlay.setVisible(true);
+        errorOverlay.setVisible(false);
+        mainContent.setDisable(true);
+    }
+
+    private void showErrorOverlay() {
+        connectingOverlay.setVisible(false);
+        errorOverlay.setVisible(true);
+        mainContent.setDisable(true);
+    }
+
+    @FXML
+    private void chiudiApplicazione(ActionEvent event) {
+        Platform.exit();
+        System.exit(0);
+    }
 
     private void handleMessage(Message message) {
         switch (message.getMsgType()) {
@@ -68,7 +103,6 @@ public class ClientLoginController {
                 break;
         }
     }
-
 
     @FXML
     private void login(ActionEvent event) throws IOException, ClassNotFoundException {
