@@ -91,7 +91,7 @@ public class GameController {
         usernameAvversario = messaggio;
         Platform.runLater(() -> {
             if (sfidanteLabel != null) {
-                sfidanteLabel.setText("PartitaEntity contro " + usernameAvversario);
+                sfidanteLabel.setText("Partita contro " + usernameAvversario);
             }
         });
     }
@@ -208,13 +208,13 @@ public class GameController {
         // 1. Titolo dell'esito finale e colori
         if (gameEndTitleLabel != null) {
             if (vincitore == null) {
-                gameEndTitleLabel.setText("PartitaEntity Terminata: Pareggio!");
+                gameEndTitleLabel.setText("Partita Terminata: Pareggio!");
                 gameEndTitleLabel.setStyle("-fx-text-fill: #f39c12;"); // Arancione
             } else if (vincitore.equals(currentUser)) {
-                gameEndTitleLabel.setText("Hai Vinto la PartitaEntity!");
+                gameEndTitleLabel.setText("Hai Vinto la Partita!");
                 gameEndTitleLabel.setStyle("-fx-text-fill: #2ecc71;"); // Verde
             } else {
-                gameEndTitleLabel.setText("Hai Perso la PartitaEntity.");
+                gameEndTitleLabel.setText("Hai Perso la Partita.");
                 gameEndTitleLabel.setStyle("-fx-text-fill: #e74c3c;"); // Rosso
             }
         }
