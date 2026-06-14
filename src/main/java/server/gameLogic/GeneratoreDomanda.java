@@ -8,6 +8,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -218,9 +221,14 @@ public class GeneratoreDomanda {
      */
     private static Map<String, String> caricaDizionarioLemmi() {
         Map<String, String> mappa = new HashMap<>();
+        Path lemmiPath = Paths.get("txt", "lemmi.txt");
+
+        if (!Files.exists(lemmiPath)) {
+            System.err.println("Il file dei lemmi non è stato trovato nel percorso: " + lemmiPath);
+            return mappa;
+        }
         try {
-            InputStream is = GeneratoreDomanda.class.getResourceAsStream("/txt/lemmi.txt");
-            if (is == null) return mappa;
+            InputStream is = Files.newInputStream(lemmiPath);
             try (BufferedReader br = new BufferedReader( new InputStreamReader(is,StandardCharsets.UTF_8))) {
                 mappa = br.lines().map(String::trim).filter(l -> !l.isEmpty() && !l.startsWith("#"))
                         .map(l -> l.split("\\s+")).filter(a -> a.length >= 2).collect(Collectors.toMap(a -> a[0].toLowerCase(),

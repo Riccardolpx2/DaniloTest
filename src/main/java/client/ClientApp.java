@@ -11,6 +11,9 @@ import shared.protocol.MessageType;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 public class ClientApp extends Application {
@@ -41,35 +44,35 @@ public class ClientApp extends Application {
     }
 
     @Override
-    public  void init() throws Exception{
-
+    public void init() throws Exception {
         instance = this;
 
         Properties prop = new Properties();
-        String filename = "client.properties";
 
-        try (InputStream input = ClientApp.class.getClassLoader().getResourceAsStream(filename)) {
+        Path configPath = Paths.get("properties", "client.properties");
 
-            if (input == null) {
-                System.out.println("Il file di configurazione non è stato trovato " + filename);
-                return;
-            }
-
-            prop.load(input);
-            port=prop.getProperty("server.port");
-            ipAddress =prop.getProperty("server.ip");
-            vers=prop.getProperty("version");
-
-
-
-            System.out.println("Avvio connessione verso :" + ipAddress + ":"+port+" version "+vers);
-
-
-        } catch (IOException ex) {
-            System.err.println("errore lettura file configurazione");
+        // Controlliamo preventivamente che il file esista
+        if (!Files.exists(configPath)) {
+            System.out.println("Il file di configurazione non è stato trovato nel percorso: " + configPath);
+            return;
         }
 
-        connectionHandler=new ConnectionHandler(Integer.parseInt(port), ipAddress);
+        try (InputStream input = Files.newInputStream(configPath)) {
+
+            prop.load(input);
+            port = prop.getProperty("server.port");
+            ipAddress = prop.getProperty("server.ip");
+            vers = prop.getProperty("version");
+
+            System.out.println("Avvio connessione verso :" + ipAddress + ":" + port + " version " + vers);
+
+        } catch (IOException ex) {
+            System.err.println("Errore durante la lettura del file di configurazione in " + configPath);
+            ex.printStackTrace();
+            return;
+        }
+
+        connectionHandler = new ConnectionHandler(Integer.parseInt(port), ipAddress);
 
         connectionHandlerThread = new Thread(connectionHandler);
         connectionHandlerThread.setDaemon(true);

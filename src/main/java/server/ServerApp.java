@@ -11,6 +11,9 @@ import server.model.network.state.ClientState;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 public class ServerApp extends Application {
@@ -25,28 +28,24 @@ public class ServerApp extends Application {
 
         Properties prop = new Properties();
         String port = "9090";//default se non letto
-        String ip_addr;
         String vers;
-        /*
-        Lettura dei parametri di configurazione dal file .propetries
-         */
-        String filename = "server.properties";
 
-        try (InputStream input = ServerApp.class.getClassLoader().getResourceAsStream(filename)) {
+        // carica IP e porta dal file properties
+        Path configPath = Paths.get("properties", "server.properties");
 
-            if (input == null) {
-                System.out.println("Il file di configurazione non è stato trovato " + filename);
-                return;
-            }
+        if (!Files.exists(configPath)) {
+            System.out.println("Il file di configurazione non è stato trovato nel percorso: " + configPath);
+            return;
+        }
+
+        try (InputStream input = Files.newInputStream(configPath)) {
 
             prop.load(input);
             port=prop.getProperty("server.port");
-            ip_addr=prop.getProperty("server.ip");
             vers=prop.getProperty("version");
 
 
-
-            System.out.println("inizializzazione su :" + ip_addr + ":"+port+" version "+vers);
+            System.out.println("inizializzazione su porta: " +port+" version "+vers);
 
 
         } catch (IOException ex) {

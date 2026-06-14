@@ -1,5 +1,6 @@
 package server.model.database;
 
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -14,7 +15,7 @@ import java.sql.Statement;
 public class  DatabaseManager {
     
     /** Percorso di connessione al database SQLite locale (file fisico del DB) */
-    private static final String DB_URL = "jdbc:sqlite:database.db";
+    private static final String DB_URL = "jdbc:sqlite:" + Paths.get("db", "database.db").toString();
     
     /**
      * Apre e restituisce una connessione attiva verso il database SQLite.

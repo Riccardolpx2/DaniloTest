@@ -9,6 +9,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -70,14 +73,14 @@ import java.util.stream.Stream;
      */
     private static Set<String> caricaStopWords() {
         try {
-            InputStream is = AnalisiTesto.class.getResourceAsStream("/txt/stop-words.txt");
+            Path path = Paths.get("txt","stop-words.txt");
             
-            if (is == null) {
+            if (!Files.exists(path)) {
                 System.out.println("ERRORE: File stop-words.txt non trovato in resources!");
                 return new java.util.HashSet<>(); // Evita il NullPointerException restituendo un set vuoto
             }
             
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(Files.newInputStream(path), StandardCharsets.UTF_8))) {
                 Set<String> risultato = new java.util.HashSet<>();
                 String linea;
             
