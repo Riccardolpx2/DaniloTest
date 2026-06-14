@@ -15,12 +15,15 @@ import javafx.scene.control.TextField;
 
 import java.time.LocalDate;
 
+import javafx.util.StringConverter;
 import shared.gui.util.SceneManager;
 import shared.protocol.DTO.RegisterDTO;
 import shared.protocol.Message;
 import shared.protocol.MessageType;
 
 import java.io.IOException;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 public class ClientRegisterController {
 
@@ -60,6 +63,33 @@ public class ClientRegisterController {
 
         this.connectionHandler = ClientApp.getInstance().getConnectionHandler();
         this.connectionHandler.setCurrentListener(this::handleMessage);
+
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        birthdate.setConverter(new StringConverter<LocalDate>() {
+            @Override
+            public String toString(LocalDate date) {
+                if (date != null) {
+                    return dateFormatter.format(date);
+                } else {
+                    return "";
+                }
+            }
+
+            @Override
+            public LocalDate fromString(String string) {
+                if (string != null && !string.trim().isEmpty()) {
+                    try {
+                        return LocalDate.parse(string, dateFormatter);
+                    } catch (DateTimeParseException e) {
+                        // Se la data digitata non è valida restituisce null.
+                        return null;
+                    }
+                } else {
+                    return null;
+                }
+            }
+        });
     }
 
     private void handleMessage(Message message){

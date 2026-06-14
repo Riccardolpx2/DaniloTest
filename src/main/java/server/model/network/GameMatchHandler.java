@@ -26,7 +26,7 @@ public class GameMatchHandler implements Runnable {
     private final String difficolta;
 
     private boolean matchRunning = true;
-    private final int NUM_ROUNDS = 2;
+    private final int NUM_ROUNDS = 5;
 
     private long roundStartTime;
     private boolean roundConcluso = false;
